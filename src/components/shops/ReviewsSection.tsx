@@ -6,7 +6,8 @@ import { CheckCircle2, Lock, ShieldCheck, Star } from "lucide-react";
 import type { Review } from "@/lib/database.types";
 import { cn, initials } from "@/lib/utils";
 import { getLocalContactStats } from "@/lib/tracking";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { addDoc, collection } from "firebase/firestore/lite";
+import { COLLECTIONS, auth, db, isFirebaseConfigured } from "@/lib/firebase";
 
 const LS_KEY = (id: string) => `fasolink:reviews:${id}`;
 
@@ -65,16 +66,20 @@ export function ReviewsSection({
       created_at: new Date().toISOString(),
     };
 
-    if (isSupabaseConfigured) {
-      const { data: auth } = await supabase.auth.getUser();
-      await supabase.from("reviews").insert({
-        shop_id: shopId,
-        author_id: auth.user?.id ?? null,
-        author_name: review.author_name,
-        rating,
-        comment: review.comment,
-        is_verified: true,
-      });
+    if (isFirebaseConfigured) {
+      try {
+        await addDoc(collection(db, COLLECTIONS.reviews), {
+          shop_id: shopId,
+          author_id: auth.currentUser?.uid ?? null,
+          author_name: review.author_name,
+          rating,
+          comment: review.comment,
+          is_verified: true,
+          created_at: review.created_at,
+        });
+      } catch (error) {
+        console.warn("[FasoLink] review:", error);
+      }
     } else {
       try {
         const local = JSON.parse(

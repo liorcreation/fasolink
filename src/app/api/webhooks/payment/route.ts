@@ -1,19 +1,28 @@
 import { NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase";
+import {
+  collection,
+  doc,
+  getDocs,
+  limit,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore/lite";
+import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
 
 /**
  * Webhook passerelle Mobile Money (CinetPay / PayDunya).
  *
  * Flux : le vendeur paie via Orange Money / Moov Money / Wave → la passerelle
- * notifie cette route → on vérifie la signature → on active l'abonnement et la
- * boutique automatiquement (pas d'intervention manuelle).
+ * notifie cette route → vérification de signature HMAC → activation de
+ * l'abonnement (`subscriptions`) et publication de la boutique (`shops`).
  *
- * Configurez l'URL `https://<domaine>/api/webhooks/payment` dans le dashboard
- * de la passerelle et le secret dans `PAYMENT_WEBHOOK_SECRET`.
+ * Prod : pour un accès Firestore privilégié, déployer cette logique en
+ * **Firebase Cloud Function** ou signer un JWT de compte de service. Ici, on
+ * écrit via le SDK `firestore/lite` (Edge) — les règles Firestore doivent
+ * autoriser la mise à jour ciblée (voir firestore.rules).
  */
 
-// Cloudflare Pages : runtime Edge (Workers). `crypto`, `fetch` et le SDK
-// Supabase (fetch-based) sont disponibles.
 export const runtime = "edge";
 
 interface GatewayPayload {
@@ -48,7 +57,6 @@ async function verifySignature(
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  // Comparaison à temps quasi constant.
   const got = signature.trim().toLowerCase().replace(/^sha256=/, "");
   if (got.length !== expected.length) return false;
   let diff = 0;
@@ -56,6 +64,10 @@ async function verifySignature(
     diff |= got.charCodeAt(i) ^ expected.charCodeAt(i);
   }
   return diff === 0;
+}
+
+function planMonths(plan?: string): number {
+  return plan === "annuel" ? 12 : plan === "trimestriel" ? 3 : 1;
 }
 
 export async function POST(request: Request) {
@@ -79,50 +91,53 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true, activated: false });
   }
 
+  if (!isFirebaseConfigured) {
+    return NextResponse.json(
+      { error: "firebase not configured" },
+      { status: 503 },
+    );
+  }
+
   try {
-    const supabase = createServiceClient();
     const now = new Date();
+    const expires = new Date(now);
+    expires.setMonth(expires.getMonth() + planMonths(payload.metadata?.plan));
 
-    const { data: sub, error } = await supabase
-      .from("subscriptions")
-      .update({
-        status: "active",
-        started_at: now.toISOString(),
-        expires_at: addMonths(
-          now,
-          planMonths(payload.metadata?.plan),
-        ).toISOString(),
-        reference: payload.reference,
-      })
-      .eq("reference", payload.reference)
-      .select("shop_id")
-      .single();
+    const subSnap = await getDocs(
+      query(
+        collection(db, COLLECTIONS.subscriptions),
+        where("reference", "==", payload.reference),
+        limit(1),
+      ),
+    );
 
-    if (error || !sub) {
+    if (subSnap.empty) {
       return NextResponse.json(
         { error: "subscription not found" },
         { status: 404 },
       );
     }
 
-    await supabase
-      .from("shops")
-      .update({ status: "active" })
-      .eq("id", sub.shop_id);
+    const subDoc = subSnap.docs[0];
+    const shopId = (subDoc.data() as { shop_id: string }).shop_id;
+
+    await updateDoc(subDoc.ref, {
+      status: "active",
+      started_at: now.toISOString(),
+      expires_at: expires.toISOString(),
+      updated_at: now.toISOString(),
+    });
+
+    if (shopId) {
+      await updateDoc(doc(db, COLLECTIONS.shops, shopId), {
+        status: "active",
+        updated_at: now.toISOString(),
+      });
+    }
 
     return NextResponse.json({ received: true, activated: true });
   } catch (err) {
     console.error("[FasoLink] webhook:", err);
     return NextResponse.json({ error: "server error" }, { status: 500 });
   }
-}
-
-function planMonths(plan?: string): number {
-  return plan === "annuel" ? 12 : plan === "trimestriel" ? 3 : 1;
-}
-
-function addMonths(date: Date, months: number): Date {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + months);
-  return d;
 }

@@ -1,4 +1,11 @@
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import {
+  addDoc,
+  collection,
+  doc,
+  increment,
+  updateDoc,
+} from "firebase/firestore/lite";
+import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
 
 const STORE_KEY = "fasolink:contact-events";
 
@@ -27,8 +34,9 @@ function writeLocal(events: LocalEvent[]) {
 
 /**
  * Enregistre un clic « Contacter sur WhatsApp ».
- * - Supabase configuré  → RPC `track_contact` (incrémente shops.whatsapp_clicks).
- * - Mode démo           → compteur local (localStorage) pour alimenter le dashboard.
+ * - Firebase configuré → document dans `contact_events` + incrément
+ *   `shops/<id>.whatsapp_clicks`.
+ * - Toujours            → compteur local (localStorage) pour le dashboard.
  * Ne bloque jamais la navigation (fire-and-forget).
  */
 export function trackContact(shopId: string, productId?: string | null) {
@@ -36,12 +44,22 @@ export function trackContact(shopId: string, productId?: string | null) {
   events.push({ shopId, productId: productId ?? null, at: Date.now() });
   writeLocal(events);
 
-  if (isSupabaseConfigured) {
-    void supabase
-      .rpc("track_contact", { p_shop_id: shopId, p_product_id: productId ?? null })
-      .then(({ error }) => {
-        if (error) console.warn("[FasoLink] track_contact:", error.message);
-      });
+  if (isFirebaseConfigured) {
+    void (async () => {
+      try {
+        await addDoc(collection(db, COLLECTIONS.contactEvents), {
+          shop_id: shopId,
+          product_id: productId ?? null,
+          channel: "whatsapp",
+          created_at: new Date().toISOString(),
+        });
+        await updateDoc(doc(db, COLLECTIONS.shops, shopId), {
+          whatsapp_clicks: increment(1),
+        });
+      } catch (error) {
+        console.warn("[FasoLink] trackContact:", error);
+      }
+    })();
   }
 }
 

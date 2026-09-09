@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Règles de sécurité Firestore — FasoLink
+// Déploiement : firebase deploy --only firestore:rules
+// (ou copier/coller dans Console → Firestore Database → Rules)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Le document shops/<shopId> existe-t-il et appartient-il à l'appelant ?
+    function ownsShop(shopId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/shops/$(shopId))
+        && get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
+    }
+
+    // ── shops : lecture publique, écriture par le propriétaire ──
+    match /shops/{shopId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.owner_id == request.auth.uid;
+      // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
+      // de contacts WhatsApp (increment).
+      allow update: if (isSignedIn() && resource.data.owner_id == request.auth.uid)
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['whatsapp_clicks']);
+      allow delete: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+    }
+
+    // ── products : lecture publique, écriture par le propriétaire de la boutique ──
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if ownsShop(request.resource.data.shop_id);
+      allow update, delete: if ownsShop(resource.data.shop_id);
+    }
+
+    // ── subscriptions : gérées par le propriétaire de la boutique ──
+    // (le webhook de paiement doit passer par une Cloud Function / Admin SDK
+    //  pour écrire ici en production)
+    match /subscriptions/{subId} {
+      allow read: if ownsShop(resource.data.shop_id);
+      allow create: if ownsShop(request.resource.data.shop_id);
+      allow update: if ownsShop(resource.data.shop_id);
+    }
+
+    // ── reviews : lecture publique, dépôt par un utilisateur connecté ──
+    // (le contrôle « après contact vérifié » est appliqué côté client)
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() >= 5;
+    }
+
+    // ── contact_events : création libre (journalisation), lecture par le vendeur ──
+    match /contact_events/{eventId} {
+      allow read: if ownsShop(resource.data.shop_id);
+      allow create: if request.resource.data.shop_id is string;
+    }
+
+    // ── profiles : privé à chaque utilisateur ──
+    match /profiles/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+  }
+}

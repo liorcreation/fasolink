@@ -1,163 +1,112 @@
 /**
- * Injecte le jeu de données de démonstration (src/lib/mock-data.ts) dans Supabase.
+ * Injecte le jeu de démonstration (src/lib/mock-data.ts) dans Firestore.
  *
  *   npm run seed
  *
- * Requis dans .env.local :
- *   NEXT_PUBLIC_SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY   (Settings → API → service_role)
+ * Authentification (Admin SDK) — l'un des deux :
+ *   • un fichier `serviceAccountKey.json` à la racine (git-ignoré), OU
+ *   • la variable d'env `FIREBASE_SERVICE_ACCOUNT` = contenu JSON de la clé.
+ * Console Firebase → Project settings → Service accounts → Generate new private key.
  *
- * Le script :
- *   1. crée (ou réutilise) un compte vendeur de démo  → seller@fasolink.demo
- *   2. upsert les 8 boutiques + 24 produits + avis
- *   3. crée un abonnement « active » pour chaque boutique
- *
- * Idempotent : relançable sans créer de doublons (upsert par slug / id).
+ * Idempotent : `set()` par identifiant de document, relançable sans doublon.
  */
 import { readFileSync } from "node:fs";
-import { createClient } from "@supabase/supabase-js";
+import { cert, initializeApp, type ServiceAccount } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import { MOCK_SHOPS } from "../src/lib/mock-data";
-import type { Database } from "../src/lib/database.types";
 
-// ── chargement minimal de .env.local ─────────────────────────────
+// ── chargement minimal de .env.local ──────────────────────────────
 try {
   for (const line of readFileSync(".env.local", "utf8").split("\n")) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    if (m && !process.env[m[1]]) {
+      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    }
   }
 } catch {
-  /* pas de .env.local — on compte sur l'environnement */
+  /* pas de .env.local */
 }
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!url || !serviceKey) {
-  console.error(
-    "❌ NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont requis (.env.local).",
-  );
-  process.exit(1);
+function loadServiceAccount(): ServiceAccount {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) as ServiceAccount;
+  }
+  try {
+    return JSON.parse(
+      readFileSync("serviceAccountKey.json", "utf8"),
+    ) as ServiceAccount;
+  } catch {
+    console.error(
+      "❌ Clé de compte de service introuvable.\n" +
+        "   Placez serviceAccountKey.json à la racine, ou définissez " +
+        "FIREBASE_SERVICE_ACCOUNT dans .env.local.",
+    );
+    process.exit(1);
+  }
 }
 
-const db = createClient<Database>(url, serviceKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
-
-const DEMO_EMAIL = "seller@fasolink.demo";
-const DEMO_PASSWORD = "FasoLink-demo-2026";
-
-async function getOrCreateSeller(): Promise<string> {
-  const { data: list } = await db.auth.admin.listUsers();
-  const existing = list?.users.find((u) => u.email === DEMO_EMAIL);
-  if (existing) return existing.id;
-
-  const { data, error } = await db.auth.admin.createUser({
-    email: DEMO_EMAIL,
-    password: DEMO_PASSWORD,
-    email_confirm: true,
-    user_metadata: { full_name: "Boutique Démo FasoLink", role: "seller" },
-  });
-  if (error || !data.user) throw error ?? new Error("createUser a échoué");
-  return data.user.id;
-}
+initializeApp({ credential: cert(loadServiceAccount()) });
+const db = getFirestore();
+const DEMO_OWNER = "seed-demo-owner";
 
 async function main() {
-  console.log("→ Vendeur de démo…");
-  const ownerId = await getOrCreateSeller();
-  await db
-    .from("profiles")
-    .upsert({ id: ownerId, full_name: "Boutique Démo FasoLink", role: "seller" });
-
+  const now = new Date().toISOString();
   let shopCount = 0;
   let productCount = 0;
 
-  for (const shop of MOCK_SHOPS) {
-    const { data: saved, error } = await db
-      .from("shops")
-      .upsert(
-        {
-          id: shop.id,
-          owner_id: ownerId,
-          name: shop.name,
-          slug: shop.slug,
-          category: shop.category,
-          description: shop.description,
-          city: shop.city,
-          neighborhood: shop.neighborhood,
-          latitude: shop.latitude,
-          longitude: shop.longitude,
-          opening_hours: shop.opening_hours,
-          whatsapp: shop.whatsapp,
-          logo_url: shop.logo_url,
-          cover_url: shop.cover_url,
-          gallery: shop.gallery,
-          status: "active",
-          verification_status: shop.verification_status,
-          is_featured: shop.is_featured,
-          rating: shop.rating,
-          rating_count: shop.rating_count,
-        },
-        { onConflict: "id" },
-      )
-      .select("id")
-      .single();
+  await db
+    .collection("profiles")
+    .doc(DEMO_OWNER)
+    .set(
+      {
+        role: "seller",
+        full_name: "Boutique Démo FasoLink",
+        created_at: now,
+        updated_at: now,
+      },
+      { merge: true },
+    );
 
-    if (error || !saved) {
-      console.error(`  ✗ ${shop.name}:`, error?.message);
-      continue;
-    }
+  for (const shop of MOCK_SHOPS) {
+    const { products, reviews, ...shopFields } = shop;
+
+    await db
+      .collection("shops")
+      .doc(shop.id)
+      .set({ ...shopFields, owner_id: DEMO_OWNER, status: "active" });
     shopCount++;
 
-    if (shop.products.length) {
-      const { error: pErr } = await db.from("products").upsert(
-        shop.products.map((p) => ({
-          id: p.id,
-          shop_id: saved.id,
-          name: p.name,
-          description: p.description,
-          price: p.price,
-          currency: p.currency,
-          image_url: p.image_url,
-          availability: p.availability,
-        })),
-        { onConflict: "id" },
-      );
-      if (pErr) console.error(`  ✗ produits ${shop.name}:`, pErr.message);
-      else productCount += shop.products.length;
+    for (const p of products) {
+      await db.collection("products").doc(p.id).set(p);
+      productCount++;
     }
 
-    if (shop.reviews?.length) {
-      await db.from("reviews").upsert(
-        shop.reviews.map((r) => ({
-          id: r.id,
-          shop_id: saved.id,
-          author_name: r.author_name,
-          rating: r.rating,
-          comment: r.comment,
-          is_verified: true,
-        })),
-        { onConflict: "id" },
-      );
+    for (const r of reviews ?? []) {
+      await db.collection("reviews").doc(r.id).set(r);
     }
 
     const end = new Date();
     end.setDate(end.getDate() + 30);
-    await db.from("subscriptions").upsert(
-      {
-        shop_id: saved.id,
+    await db
+      .collection("subscriptions")
+      .doc(`seed-${shop.slug}`)
+      .set({
+        shop_id: shop.id,
         plan: "mensuel",
         status: "active",
         provider: "orange_money",
         gateway: "seed",
         amount: 5000,
+        phone: null,
         reference: `SEED-${shop.slug}`,
-        started_at: new Date().toISOString(),
+        trial_ends_at: null,
+        started_at: now,
         expires_at: end.toISOString(),
-      },
-      { onConflict: "reference" },
-    );
+        created_at: now,
+        updated_at: now,
+      });
 
-    console.log(`  ✓ ${shop.name} (${shop.products.length} produits)`);
+    console.log(`  ✓ ${shop.name} (${products.length} produits)`);
   }
 
   console.log(

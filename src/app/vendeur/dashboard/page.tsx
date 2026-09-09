@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function VendorDashboardPage() {
   // Démo : on prend la première boutique comme « ma boutique ».
-  // Connecté à Supabase : filtrer par owner_id = auth.uid().
+  // Connecté à Firebase : filtrer shops par owner_id == auth.currentUser.uid.
   const shops = await fetchShops();
   const myShop = shops[0];
 

@@ -1,14 +1,26 @@
+import { signInAnonymously } from "firebase/auth";
 import {
-  SHOP_ASSETS_BUCKET,
-  isSupabaseConfigured,
-  supabase,
-} from "@/lib/supabase";
+  addDoc,
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore/lite";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import {
+  COLLECTIONS,
+  auth,
+  db,
+  isFirebaseConfigured,
+  storage,
+} from "@/lib/firebase";
 import type {
   PaymentProvider,
   ShopCategory,
   SubscriptionPlan,
 } from "@/lib/database.types";
 import { PAYMENT_GATEWAY, TRIAL_DAYS } from "@/lib/constants";
+import { STANDARD_HOURS } from "@/lib/hours";
 import { slugify } from "@/lib/utils";
 
 /**
@@ -16,8 +28,9 @@ import { slugify } from "@/lib/utils";
  * Utilisée par les composants clients de /vendeur/inscription et /vendeur/paiement.
  *
  * Auth : l'app n'a pas de tunnel de connexion classique. On ouvre une session
- * Supabase **anonyme** (à activer dans Auth → Providers → Anonymous) pour que
- * `auth.uid()` alimente les policies RLS (owner_id, storage, subscriptions).
+ * Firebase **anonyme** (à activer dans Firebase Console → Authentication →
+ * Sign-in method → Anonymous) pour identifier le propriétaire (`owner_id`) et
+ * satisfaire les règles de sécurité Firestore / Storage.
  */
 
 export interface ShopDraft {
@@ -38,19 +51,19 @@ export class VendorError extends Error {
   }
 }
 
-/** Renvoie l'uid de la session courante, en créant une session anonyme au besoin. */
+/** Renvoie l'uid courant, en ouvrant une session anonyme au besoin. */
 export async function ensureSession(): Promise<string> {
-  const { data: current } = await supabase.auth.getUser();
-  if (current.user) return current.user.id;
-
-  const { data, error } = await supabase.auth.signInAnonymously();
-  if (error || !data.user) {
+  if (auth.currentUser) return auth.currentUser.uid;
+  try {
+    const cred = await signInAnonymously(auth);
+    return cred.user.uid;
+  } catch {
     throw new VendorError(
       "auth",
-      "Impossible d'ouvrir une session. Activez la connexion anonyme dans votre projet Supabase (Auth → Providers → Anonymous).",
+      "Impossible d'ouvrir une session. Activez la connexion anonyme dans " +
+        "Firebase Console → Authentication → Sign-in method → Anonymous.",
     );
   }
-  return data.user.id;
 }
 
 async function uploadPublicAsset(
@@ -59,22 +72,17 @@ async function uploadPublicAsset(
   file: File,
 ): Promise<string | null> {
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const path = `${shopId}/${key}.${ext}`;
-
-  const { error } = await supabase.storage
-    .from(SHOP_ASSETS_BUCKET)
-    .upload(path, file, {
-      upsert: true,
-      cacheControl: "3600",
+  const objectRef = ref(storage, `shops/${shopId}/${key}.${ext}`);
+  try {
+    await uploadBytes(objectRef, file, {
       contentType: file.type || undefined,
+      cacheControl: "public,max-age=3600",
     });
-
-  if (error) {
-    console.warn("[FasoLink] upload:", error.message);
+    return await getDownloadURL(objectRef);
+  } catch (error) {
+    console.warn("[FasoLink] upload:", error);
     return null;
   }
-  return supabase.storage.from(SHOP_ASSETS_BUCKET).getPublicUrl(path).data
-    .publicUrl;
 }
 
 export interface CreatedShop {
@@ -83,25 +91,26 @@ export interface CreatedShop {
 }
 
 /**
- * 1) insère la boutique dans `shops` (statut `pending`)
- * 2) téléverse logo + photos produits dans le bucket `shop-assets`
- * 3) met à jour la boutique avec les URL publiques
+ * 1) crée la boutique dans la collection `shops` (statut `pending`)
+ * 2) téléverse logo + photos produits dans Firebase Storage (`shops/<id>/…`)
+ * 3) met à jour la boutique avec les URL de téléchargement
  */
 export async function createShopWithAssets(
   draft: ShopDraft,
   logo: File | null,
   gallery: File[],
 ): Promise<CreatedShop> {
-  if (!isSupabaseConfigured) {
-    throw new VendorError("config", "Supabase n'est pas configuré.");
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
   }
 
   const ownerId = await ensureSession();
+  const now = new Date().toISOString();
   const slug = `${slugify(draft.name)}-${Date.now().toString(36)}`;
+  const id = slug; // id du document = slug (URL lisible)
 
-  const { data: shop, error } = await supabase
-    .from("shops")
-    .insert({
+  try {
+    await setDoc(doc(db, COLLECTIONS.shops, id), {
       owner_id: ownerId,
       name: draft.name.trim(),
       slug,
@@ -109,41 +118,54 @@ export async function createShopWithAssets(
       description: draft.description.trim(),
       city: draft.city,
       neighborhood: draft.neighborhood?.trim() || null,
+      latitude: null,
+      longitude: null,
+      opening_hours: STANDARD_HOURS,
       whatsapp: draft.whatsapp.trim(),
+      logo_url: null,
+      cover_url: null,
+      gallery: [],
       status: "pending",
       verification_status: "unverified",
-    })
-    .select("id, slug")
-    .single();
-
-  if (error || !shop) {
+      is_featured: false,
+      rating: 0,
+      rating_count: 0,
+      whatsapp_clicks: 0,
+      created_at: now,
+      updated_at: now,
+    });
+  } catch (error) {
     throw new VendorError(
       "insert",
-      error?.message ??
-        "L'enregistrement de la boutique a échoué. Vérifiez que le schéma SQL est appliqué.",
+      error instanceof Error
+        ? error.message
+        : "L'enregistrement de la boutique a échoué.",
     );
   }
 
   // Marque le profil comme vendeur (best-effort).
-  void supabase.from("profiles").update({ role: "seller" }).eq("id", ownerId);
+  void setDoc(
+    doc(db, COLLECTIONS.profiles, ownerId),
+    { role: "seller", updated_at: now },
+    { merge: true },
+  );
 
-  // Téléversements + URL publiques
+  // Téléversements + URL
   const patch: {
     logo_url?: string;
     cover_url?: string;
     gallery?: string[];
-  } = {};
+    updated_at: string;
+  } = { updated_at: new Date().toISOString() };
 
   if (logo) {
-    const url = await uploadPublicAsset(shop.id, "logo", logo);
+    const url = await uploadPublicAsset(id, "logo", logo);
     if (url) patch.logo_url = url;
   }
 
   if (gallery.length) {
     const urls = await Promise.all(
-      gallery.map((file, i) =>
-        uploadPublicAsset(shop.id, `produit-${i + 1}`, file),
-      ),
+      gallery.map((file, i) => uploadPublicAsset(id, `produit-${i + 1}`, file)),
     );
     const clean = urls.filter((u): u is string => Boolean(u));
     if (clean.length) {
@@ -153,11 +175,11 @@ export async function createShopWithAssets(
     }
   }
 
-  if (Object.keys(patch).length) {
-    await supabase.from("shops").update(patch).eq("id", shop.id);
+  if (Object.keys(patch).length > 1) {
+    await updateDoc(doc(db, COLLECTIONS.shops, id), patch);
   }
 
-  return shop;
+  return { id, slug };
 }
 
 export interface ActivationInput {
@@ -180,14 +202,14 @@ export interface ActivationResult {
 
 /**
  * Après validation du paiement Mobile Money :
- * 1) crée l'entrée `subscriptions` (started_at, expires_at, statut `active`)
+ * 1) crée un document dans `subscriptions` (started_at, expires_at, statut `active`)
  * 2) passe la boutique en statut `active` (= « publiée »)
  */
 export async function activateSubscription(
   input: ActivationInput,
 ): Promise<ActivationResult> {
-  if (!isSupabaseConfigured) {
-    throw new VendorError("config", "Supabase n'est pas configuré.");
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
   }
   await ensureSession();
 
@@ -204,31 +226,32 @@ export async function activateSubscription(
     input.reference ??
     "FL-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
-  const { error: subError } = await supabase.from("subscriptions").insert({
-    shop_id: input.shopId,
-    plan: input.plan,
-    status: input.trial ? "trialing" : "active",
-    provider: input.provider,
-    gateway: PAYMENT_GATEWAY.name,
-    amount: input.trial ? 0 : input.amount,
-    phone: input.phone ?? null,
-    reference,
-    trial_ends_at: input.trial ? expires.toISOString() : null,
-    started_at: now.toISOString(),
-    expires_at: expires.toISOString(),
-  });
+  try {
+    await addDoc(collection(db, COLLECTIONS.subscriptions), {
+      shop_id: input.shopId,
+      plan: input.plan,
+      status: input.trial ? "trialing" : "active",
+      provider: input.provider,
+      gateway: PAYMENT_GATEWAY.name,
+      amount: input.trial ? 0 : input.amount,
+      phone: input.phone ?? null,
+      reference,
+      trial_ends_at: input.trial ? expires.toISOString() : null,
+      started_at: now.toISOString(),
+      expires_at: expires.toISOString(),
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+    });
 
-  if (subError) {
-    throw new VendorError("insert", subError.message);
-  }
-
-  const { error: shopError } = await supabase
-    .from("shops")
-    .update({ status: "active" })
-    .eq("id", input.shopId);
-
-  if (shopError) {
-    throw new VendorError("insert", shopError.message);
+    await updateDoc(doc(db, COLLECTIONS.shops, input.shopId), {
+      status: "active",
+      updated_at: now.toISOString(),
+    });
+  } catch (error) {
+    throw new VendorError(
+      "insert",
+      error instanceof Error ? error.message : "L'activation a échoué.",
+    );
   }
 
   return {

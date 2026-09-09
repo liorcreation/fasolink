@@ -2,13 +2,13 @@ name = "fasolink"
 compatibility_date = "2024-09-23"
 
 # Requis par @cloudflare/next-on-pages : active les API Node.js polyfillées
-# (Buffer, etc.) utilisées par Next.js et @supabase/supabase-js sur l'Edge.
+# (Buffer, etc.) utilisées par Next.js et le SDK Firebase sur l'Edge.
 compatibility_flags = ["nodejs_compat"]
 
 # Sortie produite par `npm run pages:build`.
 pages_build_output_dir = ".vercel/output/static"
 
-# Variables NON secrètes (les clés Supabase / secrets se définissent dans
+# Variables NON secrètes (les clés Firebase / secrets se définissent dans
 # le dashboard Cloudflare Pages → Settings → Environment variables).
 # [vars]
 # NEXT_PUBLIC_SITE_URL = "https://fasolink.pages.dev"

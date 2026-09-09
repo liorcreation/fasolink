@@ -9,13 +9,14 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
+    "firebase:rules": "firebase deploy --only firestore:rules,storage",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:preview": "npm run pages:build && wrangler pages dev",
     "pages:deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.45.6",
     "clsx": "2.1.1",
+    "firebase": "^10.14.1",
     "framer-motion": "11.11.9",
     "lucide-react": "0.454.0",
     "next": "14.2.15",
@@ -33,6 +34,7 @@
     "autoprefixer": "10.4.20",
     "eslint": "8.57.1",
     "eslint-config-next": "14.2.15",
+    "firebase-admin": "^12.7.0",
     "postcss": "8.4.47",
     "tailwindcss": "3.4.14",
     "tsx": "^4.19.1",

@@ -10,7 +10,7 @@ mobile-first, contact WhatsApp direct.
 | ----------- | ------------------------------------------------------- |
 | Framework   | Next.js 14 (App Router) + TypeScript                    |
 | Style / UI  | Tailwind CSS · Lucide React · Framer Motion             |
-| Backend     | Supabase (PostgreSQL · Auth · Storage)                  |
+| Backend     | Firebase (Firestore · Auth · Storage)                   |
 | Utilitaires | clsx · tailwind-merge · qrcode                          |
 | PWA         | Web App Manifest + service worker maison (offline-first)|
 
@@ -18,39 +18,42 @@ mobile-first, contact WhatsApp direct.
 
 ```bash
 npm install
-cp .env.local.example .env.local   # renseignez vos clés Supabase
+cp .env.local.example .env.local   # renseignez vos clés Firebase
 npm run dev
 ```
 
-> Sans clés Supabase, l'application tourne en **mode démo** avec le jeu de
+> Sans clés Firebase, l'application tourne en **mode démo** avec le jeu de
 > données `src/lib/mock-data.ts` (9 boutiques, 27 produits) — toutes les pages
-> restent navigables. Avec Supabase : `npm run seed` injecte ce même jeu.
+> restent navigables. Avec Firebase : `npm run seed` injecte ce même jeu.
 
-## Configuration Supabase
+## Configuration Firebase
 
-1. Créez un projet sur [supabase.com](https://supabase.com).
-2. Éditeur SQL → collez le contenu de [`schema.sql`](./schema.sql) et exécutez.
-   Cela crée les tables `profiles`, `shops`, `products`, `subscriptions`,
-   `reviews`, `contact_events`, les policies RLS, les triggers et le bucket
-   Storage public `shop-assets`.
-3. **Auth → Providers → activez « Anonymous sign-ins »**. Le formulaire vendeur
-   ouvre une session anonyme pour satisfaire les policies RLS (`owner_id`,
-   `subscriptions`, upload Storage) sans imposer une inscription complète.
-4. Settings → API → copiez `Project URL` et `anon public key` dans `.env.local`.
-5. (Optionnel) Régénérez les types :
-   `npx supabase gen types typescript --project-id <ref> > src/lib/database.types.ts`
+1. Créez un projet sur [console.firebase.google.com](https://console.firebase.google.com).
+2. **Firestore Database** → *Create database* (mode production).
+3. **Authentication → Sign-in method → Anonymous → Enable**. Le formulaire
+   vendeur ouvre une session anonyme (`owner_id`, écriture Firestore/Storage).
+4. **Storage → Get started** (bucket par défaut `…​.appspot.com`).
+5. **Project settings → General → Your apps → Web app** : copiez la config
+   (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`,
+   `appId`) dans `.env.local` (préfixe `NEXT_PUBLIC_FIREBASE_*`).
+6. Déployez les règles :
+   `firebase deploy --only firestore:rules,storage`
+   (ou copier/coller `firestore.rules` / `storage.rules` dans la console).
+
+Firestore est utilisé via le SDK **lite** (REST) — compatible runtime Edge /
+Cloudflare Pages, pas de listeners temps réel (non nécessaires ici).
 
 ### Flux vendeur connecté (`src/lib/vendor.ts`)
 
-| Étape | Action Supabase |
+| Étape | Action Firebase |
 | ----- | --------------- |
-| `/vendeur/inscription` — soumission | `signInAnonymously()` → `insert` dans `shops` (statut `pending`) → upload logo + photos vers `shop-assets` → `update` `shops` avec `logo_url` / `cover_url` / `gallery` (URL publiques) → redirection vers `/vendeur/paiement?shop=<id>` |
-| `/vendeur/paiement` — paiement validé | `insert` dans `subscriptions` (`started_at`, `expires_at` = +30 j × durée, `status` `active`, provider Orange/Moov/Wave) → `update` `shops.status` = `active` (publiée) → redirection `/boutiques/<id>?published=1` + toast « Félicitations, votre boutique est en ligne ! » |
-| Essai 14 j | même flux, `subscriptions.status` = `trialing`, `trial_ends_at` = +14 j, montant 0 |
+| `/vendeur/inscription` — soumission | `signInAnonymously()` → `setDoc` `shops/<slug>` (statut `pending`) → `uploadBytes` logo + photos vers `shops/<id>/…` → `getDownloadURL` → `updateDoc` `shops/<id>` (`logo_url` / `cover_url` / `gallery`) → redirection `/vendeur/paiement?shop=<id>` |
+| `/vendeur/paiement` — paiement validé | `addDoc` `subscriptions` (`started_at`, `expires_at` = +30 j × durée, `status` `active`) → `updateDoc` `shops/<id>.status` = `active` → redirection `/boutiques/<id>?published=1` + toast « Félicitations, votre boutique est en ligne ! » |
+| Essai 14 j | même flux, `status` = `trialing`, `trial_ends_at` = +14 j, montant 0 |
 
-> Le webhook `/api/webhooks/payment` reste la voie d'activation en production
-> réelle (confirmation asynchrone de l'agrégateur). La page `/vendeur/paiement`
-> écrit directement pour la démo interactive.
+> Le webhook `/api/webhooks/payment` écrit via `firestore/lite` (Edge). En
+> production, préférez une **Firebase Cloud Function** (accès Admin privilégié)
+> déclenchée par l'agrégateur.
 
 ## Structure
 
@@ -82,17 +85,18 @@ src/
 │   ├── pwa/                        # ServiceWorkerRegister, InstallPrompt
 │   └── ui/                         # Button, Badge, Reveal, Skeletons, BottomSheet
 ├── lib/
-│   ├── supabase.ts                 # Client Supabase typé (+ mode démo) & service client
-│   ├── database.types.ts           # Typage BDD (reflète schema.sql)
-│   ├── shops.ts                    # Lecture données (Supabase → fallback démo) + estimateLocalImpact
+│   ├── firebase.ts                 # App + Firestore lite (db) + Auth + Storage + isFirebaseConfigured
+│   ├── database.types.ts           # Types de données (collections Firestore)
+│   ├── shops.ts                    # Lecture Firestore → fallback mock-data + estimateLocalImpact
 │   ├── vendor.ts                   # Écriture vendeur : createShopWithAssets(), activateSubscription()
 │   ├── geo.ts                      # haversine, géolocalisation, distance
 │   ├── hours.ts                    # getOpenState() — « Ouvert actuellement »
-│   ├── tracking.ts                 # trackContact() + stats locales (démo)
+│   ├── tracking.ts                 # trackContact() (contact_events + increment) + stats locales
 │   ├── constants.ts                # Catégories, villes, quartiers géo, formules, opérateurs
 │   ├── mock-data.ts                # Seed : 9 boutiques + 27 produits + avis
 │   └── utils.ts                    # cn(), formatCFA(), buildWhatsAppLink(), formatPhoneBF()…
-└── scripts/seed.ts                 # `npm run seed` → injecte mock-data dans Supabase
+├── firestore.rules · storage.rules · firestore.indexes.json · firebase.json
+└── scripts/seed.ts                 # `npm run seed` (firebase-admin) → injecte mock-data
 ```
 
 ## Routes
@@ -158,7 +162,7 @@ npm run dev          # développement
 npm run build        # build production Next.js
 npm run start        # serveur production
 npm run lint         # ESLint
-npm run seed         # injecte mock-data dans Supabase
+npm run seed         # injecte mock-data dans Firestore (firebase-admin)
 npm run pages:build  # build Cloudflare Pages (.vercel/output/static)
 npm run pages:deploy # build + wrangler pages deploy
 ```
@@ -166,7 +170,7 @@ npm run pages:deploy # build + wrangler pages deploy
 ## Déploiement
 
 Voir **[DEPLOY.md](./DEPLOY.md)** — Cloudflare Pages (`@cloudflare/next-on-pages`,
-runtime Edge) + Supabase, avec la liste des variables d'environnement et le
+runtime Edge) + Firebase, avec la liste des variables d'environnement et le
 flag de compatibilité `nodejs_compat`.
 
 ---

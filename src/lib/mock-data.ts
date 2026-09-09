@@ -4,10 +4,10 @@ import { STANDARD_HOURS } from "@/lib/hours";
 
 /**
  * Jeu de données de démonstration (seed) — 9 boutiques locales, 27 produits.
- * Utilisé tant que Supabase n'est pas connecté (ou en secours si la requête
+ * Utilisé tant que Firebase n'est pas connecté (ou en secours si la requête
  * échoue). Images : Unsplash (autorisées dans next.config.mjs).
  *
- * Pour injecter ce jeu dans Supabase : `npm run seed` (voir scripts/seed.ts).
+ * Pour injecter ce jeu dans Firestore : `npm run seed` (voir scripts/seed.ts).
  */
 
 const now = "2026-02-01T09:00:00.000Z";

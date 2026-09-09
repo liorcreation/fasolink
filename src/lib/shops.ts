@@ -1,41 +1,119 @@
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
-import type { ShopWithProducts } from "@/lib/database.types";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  type DocumentData,
+  type QueryDocumentSnapshot,
+} from "firebase/firestore/lite";
+import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
+import type {
+  Product,
+  Review,
+  Shop,
+  ShopWithProducts,
+} from "@/lib/database.types";
 import { MOCK_SHOPS, getMockShop } from "@/lib/mock-data";
 
 /**
- * Couche d'accès aux données. Utilise Supabase si configuré, sinon retombe
- * proprement sur les données de démonstration afin que l'UI reste fonctionnelle.
+ * Couche d'accès aux données (Firestore). Utilise Firebase si configuré, sinon
+ * retombe proprement sur `mock-data.ts` pour que l'UI reste fonctionnelle.
  */
 
-const SELECT = "*, products(*), reviews(*)";
+function fromDoc<T>(d: QueryDocumentSnapshot<DocumentData>): T {
+  return { id: d.id, ...d.data() } as unknown as T;
+}
+
+function groupBy<T extends { shop_id: string }>(items: T[]): Map<string, T[]> {
+  const map = new Map<string, T[]>();
+  for (const item of items) {
+    const arr = map.get(item.shop_id) ?? [];
+    arr.push(item);
+    map.set(item.shop_id, arr);
+  }
+  return map;
+}
 
 export async function fetchShops(): Promise<ShopWithProducts[]> {
-  if (!isSupabaseConfigured) return MOCK_SHOPS;
+  if (!isFirebaseConfigured) return MOCK_SHOPS;
 
-  const { data, error } = await supabase
-    .from("shops")
-    .select(SELECT)
-    .eq("status", "active")
-    .order("is_featured", { ascending: false })
-    .order("rating", { ascending: false });
+  try {
+    const [shopSnap, productSnap, reviewSnap] = await Promise.all([
+      getDocs(
+        query(collection(db, COLLECTIONS.shops), where("status", "==", "active")),
+      ),
+      getDocs(collection(db, COLLECTIONS.products)),
+      getDocs(collection(db, COLLECTIONS.reviews)),
+    ]);
 
-  if (error || !data || data.length === 0) return MOCK_SHOPS;
-  return data as unknown as ShopWithProducts[];
+    if (shopSnap.empty) return MOCK_SHOPS;
+
+    const productsByShop = groupBy(productSnap.docs.map(fromDoc<Product>));
+    const reviewsByShop = groupBy(reviewSnap.docs.map(fromDoc<Review>));
+
+    return shopSnap.docs
+      .map(fromDoc<Shop>)
+      .map((shop) => ({
+        ...shop,
+        products: productsByShop.get(shop.id) ?? [],
+        reviews: reviewsByShop.get(shop.id) ?? [],
+      }))
+      .sort(
+        (a, b) =>
+          Number(b.is_featured) - Number(a.is_featured) || b.rating - a.rating,
+      );
+  } catch (error) {
+    console.warn("[FasoLink] fetchShops:", error);
+    return MOCK_SHOPS;
+  }
 }
 
 export async function fetchShopById(
   id: string,
 ): Promise<ShopWithProducts | null> {
-  if (!isSupabaseConfigured) return getMockShop(id) ?? null;
+  if (!isFirebaseConfigured) return getMockShop(id) ?? null;
 
-  const { data, error } = await supabase
-    .from("shops")
-    .select(SELECT)
-    .or(`id.eq.${id},slug.eq.${id}`)
-    .maybeSingle();
+  try {
+    let shop: Shop | null = null;
 
-  if (error || !data) return getMockShop(id) ?? null;
-  return data as unknown as ShopWithProducts;
+    const byId = await getDoc(doc(db, COLLECTIONS.shops, id));
+    if (byId.exists()) {
+      shop = { id: byId.id, ...byId.data() } as unknown as Shop;
+    } else {
+      const bySlug = await getDocs(
+        query(collection(db, COLLECTIONS.shops), where("slug", "==", id)),
+      );
+      if (!bySlug.empty) shop = fromDoc<Shop>(bySlug.docs[0]);
+    }
+
+    if (!shop) return getMockShop(id) ?? null;
+
+    const [productSnap, reviewSnap] = await Promise.all([
+      getDocs(
+        query(
+          collection(db, COLLECTIONS.products),
+          where("shop_id", "==", shop.id),
+        ),
+      ),
+      getDocs(
+        query(
+          collection(db, COLLECTIONS.reviews),
+          where("shop_id", "==", shop.id),
+        ),
+      ),
+    ]);
+
+    return {
+      ...shop,
+      products: productSnap.docs.map(fromDoc<Product>),
+      reviews: reviewSnap.docs.map(fromDoc<Review>),
+    };
+  } catch (error) {
+    console.warn("[FasoLink] fetchShopById:", error);
+    return getMockShop(id) ?? null;
+  }
 }
 
 export async function fetchProduct(shopId: string, productId: string) {
@@ -46,11 +124,7 @@ export async function fetchProduct(shopId: string, productId: string) {
   return { shop, product };
 }
 
-/**
- * Estimation de l'impact économique local :
- * panier moyen par boutique x volume de contacts mensuels estimé.
- * Extrapolé à l'échelle de la plateforme (facteur `scale`).
- */
+/** Estimation de l'impact économique local (panier moyen × contacts estimés). */
 export function estimateLocalImpact(
   shops: ShopWithProducts[],
   platformShops = 520,
@@ -66,7 +140,6 @@ export function estimateLocalImpact(
         shop.whatsapp_clicks,
         40 + Math.round(shop.rating * 12),
       );
-      // ~35 % des contacts se concluent par un achat.
       return sum + basket * monthlyContacts * 0.35;
     }, 0) / shops.length;
 

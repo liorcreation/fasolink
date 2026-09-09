@@ -249,9 +249,9 @@ export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
           "rounded-xl bg-clay-50 px-4 py-3 text-center text-xs text-ink-muted",
         )}
       >
-        Démo — les contacts sont simulés localement. Connecté à Supabase, ces
-        chiffres proviennent de <code>shops.whatsapp_clicks</code> et de la table{" "}
-        <code>contact_events</code>.
+        Démo — les contacts sont simulés localement. Connecté à Firebase, ces
+        chiffres proviennent de <code>shops/&lt;id&gt;.whatsapp_clicks</code> et de
+        la collection <code>contact_events</code>.
       </p>
     </div>
   );

@@ -9,7 +9,7 @@ import { ImpactCounter } from "@/components/home/ImpactCounter";
 import { Reveal } from "@/components/ui/Reveal";
 import { ButtonLink } from "@/components/ui/Button";
 
-// Cloudflare Pages : rendu à la demande (données Supabase fraîches à chaque visite).
+// Cloudflare Pages : rendu à la demande (données Firestore fraîches à chaque visite).
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 

@@ -16,7 +16,7 @@ import {
 import type { ShopCategory } from "@/lib/database.types";
 import { BURKINA_CITIES, CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isFirebaseConfigured } from "@/lib/firebase";
 import { createShopWithAssets, VendorError } from "@/lib/vendor";
 import { Button } from "@/components/ui/Button";
 
@@ -78,7 +78,7 @@ export function ShopRegistrationForm() {
     setError(null);
 
     try {
-      if (isSupabaseConfigured) {
+      if (isFirebaseConfigured) {
         const shop = await createShopWithAssets(
           {
             name: form.name,

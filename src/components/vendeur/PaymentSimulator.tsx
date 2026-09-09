@@ -23,7 +23,7 @@ import {
   TRIAL_DAYS,
 } from "@/lib/constants";
 import { cn, formatCFA } from "@/lib/utils";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isFirebaseConfigured } from "@/lib/firebase";
 import { activateSubscription, VendorError } from "@/lib/vendor";
 import { Button, ButtonLink } from "@/components/ui/Button";
 
@@ -38,7 +38,7 @@ type Step =
   | "trial"
   | "error";
 
-/** Boutique de démonstration utilisée pour la redirection hors Supabase. */
+/** Boutique de démonstration utilisée pour la redirection hors Firebase. */
 const DEMO_SHOP_ID = "faso-delices";
 
 export function PaymentSimulator({ shopId }: { shopId?: string }) {
@@ -73,7 +73,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
     await new Promise((r) => setTimeout(r, opts.trial ? 700 : 2200));
 
     try {
-      if (isSupabaseConfigured && shopId) {
+      if (isFirebaseConfigured && shopId) {
         const res = await activateSubscription({
           shopId,
           plan: planId,
