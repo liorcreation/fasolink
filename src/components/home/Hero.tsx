@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, MapPin, ShieldCheck, Sparkles } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { ButtonLink } from "@/components/ui/Button";
+import { LogoMark } from "@/components/site/Logo";
 import { PredictiveSearch } from "@/components/home/PredictiveSearch";
 
 const stats = [
@@ -101,13 +102,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           <div className="card-premium overflow-hidden p-0 shadow-premium-lg">
             <div className="relative h-64 bg-faso-gradient bg-[length:200%_200%] animate-gradient-pan sm:h-80">
               <div className="absolute inset-0 grid place-items-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-24 w-24 text-white/90 drop-shadow"
-                  fill="currentColor"
-                >
-                  <path d="M12 2l2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 14.77l-4.7 2.47.9-5.23-3.8-3.7 5.25-.76L12 2z" />
-                </svg>
+                <LogoMark mono className="h-24 w-24 text-white drop-shadow-lg" />
               </div>
             </div>
             <div className="space-y-3 p-5">

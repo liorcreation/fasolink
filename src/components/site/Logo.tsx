@@ -1,6 +1,40 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/**
+ * Monogramme FasoLink : un « F » géométrique dont la barre centrale est une
+ * pastille or — la « connexion » (link) et un clin d'œil à l'étoile du drapeau.
+ * `currentColor` pour le F (s'adapte au fond), or fixe (#F4A93C).
+ */
+export function LogoMark({
+  className,
+  mono = false,
+}: {
+  className?: string;
+  /** Version 1 ton (la barre centrale reprend `currentColor` au lieu de l'or). */
+  mono?: boolean;
+}) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      className={cn("h-8 w-8 text-ink", className)}
+      role="img"
+      aria-label="FasoLink"
+    >
+      <rect
+        x="6"
+        y="14"
+        width="13.5"
+        height="6"
+        rx="3"
+        fill={mono ? "currentColor" : "#F4A93C"}
+      />
+      <rect x="6" y="4.5" width="6.6" height="23" rx="2" fill="currentColor" />
+      <rect x="6" y="4.5" width="16" height="6.6" rx="2" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function Logo({
   className,
   compact = false,
@@ -14,14 +48,11 @@ export function Logo({
       className={cn("group inline-flex items-center gap-2.5", className)}
       aria-label="FasoLink — accueil"
     >
-      <span className="relative grid h-10 w-10 place-items-center rounded-2xl bg-faso-gradient shadow-premium transition-transform duration-300 group-hover:scale-105">
-        <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" fill="currentColor">
-          <path d="M12 2l2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 14.77l-4.7 2.47.9-5.23-3.8-3.7 5.25-.76L12 2z" />
-        </svg>
-      </span>
+      <LogoMark className="h-8 w-8 shrink-0 text-ink transition-transform duration-300 group-hover:-translate-y-0.5" />
       {!compact && (
-        <span className="text-lg font-display font-extrabold tracking-tight text-ink">
-          Faso<span className="text-faso-red">Link</span>
+        <span className="font-display text-lg leading-none tracking-tight text-ink">
+          <span className="font-semibold">Faso</span>
+          <span className="font-extrabold">Link</span>
         </span>
       )}
     </Link>
