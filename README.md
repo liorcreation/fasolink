@@ -154,11 +154,20 @@ Typographies : **Sora** (titres) + **Inter** (texte).
 ## Scripts
 
 ```bash
-npm run dev     # développement
-npm run build   # build production
-npm run start   # serveur production
-npm run lint    # ESLint
+npm run dev          # développement
+npm run build        # build production Next.js
+npm run start        # serveur production
+npm run lint         # ESLint
+npm run seed         # injecte mock-data dans Supabase
+npm run pages:build  # build Cloudflare Pages (.vercel/output/static)
+npm run pages:deploy # build + wrangler pages deploy
 ```
+
+## Déploiement
+
+Voir **[DEPLOY.md](./DEPLOY.md)** — Cloudflare Pages (`@cloudflare/next-on-pages`,
+runtime Edge) + Supabase, avec la liste des variables d'environnement et le
+flag de compatibilité `nodejs_compat`.
 
 ---
 

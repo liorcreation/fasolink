@@ -14,6 +14,7 @@ import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { Reveal } from "@/components/ui/Reveal";
 
 export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

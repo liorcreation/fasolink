@@ -19,8 +19,9 @@ import { PublishedToast } from "@/components/shops/PublishedToast";
 import { Reveal } from "@/components/ui/Reveal";
 
 // Cloudflare Pages : rendu Edge à la demande — les boutiques créées après le
-// déploiement (via /vendeur/inscription) ont immédiatement leur page.
+// déploiement (via /vendeur/inscription) ont immédiatement leur page, fraîche.
 export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
