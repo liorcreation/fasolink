@@ -4,7 +4,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight, MapPin, Store } from "lucide-react";
 import { fetchProduct } from "@/lib/shops";
-import { MOCK_SHOPS } from "@/lib/mock-data";
 import { CATEGORY_MAP } from "@/lib/constants";
 import { formatCFA } from "@/lib/utils";
 import { AvailabilityBadge } from "@/components/shops/AvailabilityBadge";
@@ -14,13 +13,7 @@ import { WhatsAppButton } from "@/components/shops/WhatsAppButton";
 import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { Reveal } from "@/components/ui/Reveal";
 
-export const revalidate = 300;
-
-export function generateStaticParams() {
-  return MOCK_SHOPS.flatMap((s) =>
-    s.products.map((p) => ({ id: s.id, produit: p.id })),
-  );
-}
+export const runtime = "edge";
 
 export async function generateMetadata({
   params,

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, MessageCircle, Package, Star } from "lucide-react";
 import { fetchShopById } from "@/lib/shops";
-import { MOCK_SHOPS } from "@/lib/mock-data";
 import { CATEGORY_MAP } from "@/lib/constants";
 import { buildWhatsAppLink, formatPhoneBF } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
@@ -19,11 +18,9 @@ import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { PublishedToast } from "@/components/shops/PublishedToast";
 import { Reveal } from "@/components/ui/Reveal";
 
-export const revalidate = 300;
-
-export function generateStaticParams() {
-  return MOCK_SHOPS.map((s) => ({ id: s.id }));
-}
+// Cloudflare Pages : rendu Edge à la demande — les boutiques créées après le
+// déploiement (via /vendeur/inscription) ont immédiatement leur page.
+export const runtime = "edge";
 
 export async function generateMetadata({
   params,

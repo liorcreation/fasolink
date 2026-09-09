@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     "Suivez vos contacts WhatsApp, votre période d'essai, votre vérification et votre QR Code boutique.",
 };
 
-export const revalidate = 300;
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export default async function VendorDashboardPage() {
   // Démo : on prend la première boutique comme « ma boutique ».

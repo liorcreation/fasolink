@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PaymentSimulator } from "@/components/vendeur/PaymentSimulator";
 import { Reveal } from "@/components/ui/Reveal";
 
+export const runtime = "edge";
+
 export const metadata: Metadata = {
   title: "Abonnement vendeur",
   description:

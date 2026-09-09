@@ -12,7 +12,9 @@ import { createServiceClient } from "@/lib/supabase";
  * de la passerelle et le secret dans `PAYMENT_WEBHOOK_SECRET`.
  */
 
-export const runtime = "nodejs";
+// Cloudflare Pages : runtime Edge (Workers). `crypto`, `fetch` et le SDK
+// Supabase (fetch-based) sont disponibles.
+export const runtime = "edge";
 
 interface GatewayPayload {
   reference: string;
@@ -22,13 +24,38 @@ interface GatewayPayload {
   metadata?: { shop_id?: string; plan?: string };
 }
 
-function verifySignature(raw: string, signature: string | null): boolean {
+/** Vérifie la signature HMAC-SHA256 du corps brut (Web Crypto — compatible Edge). */
+async function verifySignature(
+  raw: string,
+  signature: string | null,
+): Promise<boolean> {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET;
-  if (!secret) return false;
-  if (!signature) return false;
-  // Implémentation réelle : HMAC-SHA256(raw, secret) comparé en temps constant.
-  // Placeholder volontairement strict pour éviter les activations non signées.
-  return signature.length > 0;
+  if (!secret || !signature) return false;
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const mac = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(raw),
+  );
+  const expected = [...new Uint8Array(mac)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  // Comparaison à temps quasi constant.
+  const got = signature.trim().toLowerCase().replace(/^sha256=/, "");
+  if (got.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= got.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 export async function POST(request: Request) {
@@ -37,7 +64,7 @@ export async function POST(request: Request) {
     request.headers.get("x-payment-signature") ??
     request.headers.get("x-token");
 
-  if (!verifySignature(raw, signature)) {
+  if (!(await verifySignature(raw, signature))) {
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 

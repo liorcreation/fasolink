@@ -2,8 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 86400,
+    // Cloudflare Pages ne fournit pas l'optimiseur d'images Next (runtime Node).
+    // Les URL Unsplash/Supabase sont déjà dimensionnées (?w=…). `next/image`
+    // conserve lazy-loading, ratio et `sizes`.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "images.unsplash.com" },

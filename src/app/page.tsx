@@ -9,7 +9,9 @@ import { ImpactCounter } from "@/components/home/ImpactCounter";
 import { Reveal } from "@/components/ui/Reveal";
 import { ButtonLink } from "@/components/ui/Button";
 
-export const revalidate = 300;
+// Cloudflare Pages : rendu à la demande (données Supabase fraîches à chaque visite).
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 const STEPS = [
   {
