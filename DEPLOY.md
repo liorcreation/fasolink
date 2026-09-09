@@ -87,6 +87,12 @@ Les autres pages sont **statiques** (`/inscription`, `/vendeur/inscription`,
 
 `next/image` est en `unoptimized` (pas d'optimiseur Node sur CF Pages).
 
+> `src/lib/firebase.ts` initialise `db` (Firestore lite), `auth` et `storage`
+> dans un seul fichier. Firestore lite est prévu pour l'Edge ; `auth` / `storage`
+> ne sont utilisés que côté client. Si, après déploiement, les pages `/boutiques/*`
+> renvoient une erreur d'init Firebase, isolez `auth` + `storage` dans un module
+> importé uniquement par les composants clients (`firebase-client.ts`).
+
 ## 4. Webhook de paiement
 
 Configurez chez l'agrégateur (CinetPay / PayDunya) :
