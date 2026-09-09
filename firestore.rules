@@ -43,7 +43,7 @@ service cloud.firestore {
     match /subscriptions/{subId} {
       allow read: if ownsShop(resource.data.shop_id);
       allow create: if ownsShop(request.resource.data.shop_id);
-      allow update: if ownsShop(resource.data.shop_id);
+      allow update, delete: if ownsShop(resource.data.shop_id);
     }
 
     // ── reviews : lecture publique, dépôt par un utilisateur connecté ──
@@ -60,7 +60,7 @@ service cloud.firestore {
 
     // ── contact_events : création libre (journalisation), lecture par le vendeur ──
     match /contact_events/{eventId} {
-      allow read: if ownsShop(resource.data.shop_id);
+      allow read, delete: if ownsShop(resource.data.shop_id);
       allow create: if request.resource.data.shop_id is string;
     }
 

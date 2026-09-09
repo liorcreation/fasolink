@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
+    "verify": "node --env-file=.env.local scripts/verify-firebase.mjs",
     "firebase:rules": "firebase deploy --only firestore:rules,storage",
     "pages:build": "npx @cloudflare/next-on-pages",
     "pages:preview": "npm run pages:build && wrangler pages dev",
