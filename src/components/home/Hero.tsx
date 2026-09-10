@@ -1,7 +1,8 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, MapPin, ShieldCheck, Sparkles } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { ButtonLink } from "@/components/ui/Button";
@@ -15,14 +16,40 @@ const stats = [
 ];
 
 export function Hero({ shops }: { shops: ShopWithProducts[] }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+
+  // Le hero réagit au défilement : le texte s'estompe et glisse vers le
+  // haut, la carte recule en profondeur, les halos dérivent plus lentement
+  // (parallax) — jusqu'à ce que la section quitte l'écran.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const textY = useTransform(scrollYProgress, [0, 1], [0, 70]);
+  const textOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const cardY = useTransform(scrollYProgress, [0, 1], [0, 130]);
+  const cardScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
+  const cardOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.35]);
+  const blobY1 = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const blobY2 = useTransform(scrollYProgress, [0, 1], [0, -110]);
+
   return (
-    <section className="relative overflow-hidden">
+    <section ref={sectionRef} className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-faso-radial" />
-      <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-faso-red/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-48 h-72 w-72 rounded-full bg-faso-green/10 blur-3xl" />
+      <motion.div
+        style={reduce ? undefined : { y: blobY1 }}
+        className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-faso-red/10 blur-3xl"
+      />
+      <motion.div
+        style={reduce ? undefined : { y: blobY2 }}
+        className="pointer-events-none absolute -right-24 top-48 h-72 w-72 rounded-full bg-faso-green/10 blur-3xl"
+      />
 
       <div className="container-faso relative grid gap-12 py-16 md:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div>
+        <motion.div
+          style={reduce ? undefined : { opacity: textOpacity, y: textY }}
+        >
           <motion.span
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -91,38 +118,46 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
               </div>
             ))}
           </motion.dl>
-        </div>
+        </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          style={
+            reduce
+              ? undefined
+              : { y: cardY, scale: cardScale, opacity: cardOpacity }
+          }
           className="relative"
         >
-          <div className="card-premium overflow-hidden p-0 shadow-premium-lg">
-            <div className="relative h-64 bg-faso-gradient bg-[length:200%_200%] animate-gradient-pan sm:h-80">
-              <div className="absolute inset-0 grid place-items-center">
-                <LogoMark mono className="h-24 w-24 text-white drop-shadow-lg" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="card-premium overflow-hidden p-0 shadow-premium-lg">
+              <div className="relative h-64 bg-faso-gradient bg-[length:200%_200%] animate-gradient-pan sm:h-80">
+                <div className="absolute inset-0 grid place-items-center">
+                  <LogoMark mono className="h-24 w-24 text-white drop-shadow-lg" />
+                </div>
+              </div>
+              <div className="space-y-3 p-5">
+                <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <ShieldCheck className="h-4 w-4 text-faso-green" />
+                  Boutiques vérifiées & géolocalisées
+                </div>
+                <div className="flex items-center gap-2 text-sm text-ink-soft">
+                  <MapPin className="h-4 w-4 text-faso-red" />
+                  Ouagadougou · Bobo-Dioulasso · Koudougou…
+                </div>
+                <Link
+                  href="/inscription"
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-faso-red hover:gap-2 transition-all"
+                >
+                  Rejoindre la communauté
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
-            <div className="space-y-3 p-5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-ink">
-                <ShieldCheck className="h-4 w-4 text-faso-green" />
-                Boutiques vérifiées & géolocalisées
-              </div>
-              <div className="flex items-center gap-2 text-sm text-ink-soft">
-                <MapPin className="h-4 w-4 text-faso-red" />
-                Ouagadougou · Bobo-Dioulasso · Koudougou…
-              </div>
-              <Link
-                href="/inscription"
-                className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-faso-red hover:gap-2 transition-all"
-              >
-                Rejoindre la communauté
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
