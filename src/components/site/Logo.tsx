@@ -2,15 +2,17 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * Monogramme FasoLink — un « F » tissé.
+ * Monogramme FasoLink — ligature F + L.
  *
- * Ruban ink : le Γ (fût + bras haut).
- * Ruban or  : se noue à travers le F — passe DERRIÈRE le fût, PAR-DESSUS le
- *             bras haut. Un vrai croisement de tissage (Faso Dan Fani) = le
- *             « link », la mise en relation.
+ * Deux lettres séparées, chacune sur sa propre tige (le F en haut à gauche,
+ * le L en bas à droite, décalé en diagonale) — jamais trois barres sur une
+ * même tige, pour ne pas se lire comme un « E ». Elles se touchent à un
+ * seul point : là où la grande barre du F rejoint la tige du L. C'est à cet
+ * endroit précis qu'est posé le seul accent d'or, en losange — le rivet qui
+ * relie « Faso » et « Link ».
  *
- * `currentColor` porte le ruban ink (s'adapte au fond) ; l'or est fixe.
- * `mono` : version 1 ton, sans les ombres de profondeur (fonds colorés / petit).
+ * `currentColor` porte le F et le L (s'adapte au fond) ; l'or est fixe.
+ * `mono` : version 1 ton (fonds colorés, tampon, gravure, très petite taille).
  */
 export function LogoMark({
   className,
@@ -29,63 +31,26 @@ export function LogoMark({
     >
       <defs>
         <linearGradient id={`${uid}-ink`} x1="0" y1="6" x2="0" y2="42" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="currentColor" stopOpacity={mono ? 1 : 0.86} />
+          <stop offset="0" stopColor="currentColor" stopOpacity={mono ? 1 : 0.88} />
           <stop offset="1" stopColor="currentColor" />
         </linearGradient>
-        <linearGradient id={`${uid}-gold`} x1="6" y1="21" x2="34" y2="8" gradientUnits="userSpaceOnUse">
+        <linearGradient id={`${uid}-gold`} x1="19" y1="27" x2="29" y2="17" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor={mono ? "currentColor" : "#FBC66A"} />
-          <stop offset="1" stopColor={mono ? "currentColor" : "#E0902A"} />
+          <stop offset="1" stopColor={mono ? "currentColor" : "#C97F16"} />
         </linearGradient>
       </defs>
 
-      {/* Ruban ink : Γ (fût + bras haut) */}
-      <path
-        d="M15 41 L15 9 L36 6.5"
-        fill="none"
-        stroke={`url(#${uid}-ink)`}
-        strokeWidth="8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {/* F — tige, grande barre (coupe 45°), petite barre */}
+      <rect x="8" y="6" width="6" height="26" fill={`url(#${uid}-ink)`} />
+      <polygon points="14,6 24,6 28,10 28,12 14,12" fill={`url(#${uid}-ink)`} />
+      <rect x="14" y="16" width="10" height="6" fill={`url(#${uid}-ink)`} />
 
-      {/* Ombre portée de l'or sur le bras haut (croisement « par-dessus ») */}
-      {!mono && (
-        <path
-          d="M27.5 8 L32 7.3"
-          fill="none"
-          stroke="#0B0704"
-          strokeOpacity="0.17"
-          strokeWidth="8"
-          strokeLinecap="butt"
-        />
-      )}
+      {/* L — tige, pied (coupe 45°), décalé en diagonale sous le F */}
+      <rect x="24" y="22" width="6" height="20" fill={`url(#${uid}-ink)`} />
+      <polygon points="24,36 38,36 38,38 34,42 24,42" fill={`url(#${uid}-ink)`} />
 
-      {/* Ruban or : se noue à travers le F */}
-      <path
-        d="M6 20 L26 18 C31 17 34 15 34 11 C34 7 30.5 6 27.5 8"
-        fill="none"
-        stroke={`url(#${uid}-gold)`}
-        strokeWidth="7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Ombres du fût sur l'or (croisement « par-derrière ») */}
-      {!mono && (
-        <g stroke="#0B0704" strokeOpacity="0.16" strokeWidth="7" strokeLinecap="butt">
-          <path d="M19 18.6 L23 18" fill="none" />
-          <path d="M8 19.9 L12 19.4" fill="none" />
-        </g>
-      )}
-
-      {/* Segment du fût redessiné : l'or passe derrière */}
-      <path
-        d="M15 12.5 L15 25.5"
-        fill="none"
-        stroke={`url(#${uid}-ink)`}
-        strokeWidth="8"
-        strokeLinecap="butt"
-      />
+      {/* Rivet d'or — point de contact unique entre le F et le L */}
+      <polygon points="24,17 29,22 24,27 19,22" fill={`url(#${uid}-gold)`} />
     </svg>
   );
 }

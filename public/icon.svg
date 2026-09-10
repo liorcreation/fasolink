@@ -5,9 +5,9 @@
       <stop offset="0.45" stop-color="#F4A93C" stop-opacity="0.12"/>
       <stop offset="1" stop-color="#15100A" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="fl-gold" x1="140" y1="228" x2="360" y2="112" gradientUnits="userSpaceOnUse">
+    <linearGradient id="fl-gold" x1="19" y1="27" x2="29" y2="17" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#FBC66A"/>
-      <stop offset="1" stop-color="#E0902A"/>
+      <stop offset="1" stop-color="#C97F16"/>
     </linearGradient>
     <pattern id="fl-weave" width="26" height="26" patternUnits="userSpaceOnUse">
       <path d="M0 13 H26 M13 0 V26" stroke="#FFFFFF" stroke-opacity="0.04" stroke-width="6"/>
@@ -16,14 +16,12 @@
   <rect width="512" height="512" rx="118" fill="#15100A"/>
   <rect width="512" height="512" rx="118" fill="url(#fl-weave)"/>
   <rect width="512" height="512" rx="118" fill="url(#fl-glow)"/>
-  <g transform="translate(94.5 75.5) scale(7.6)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M15 41 L15 9 L36 6.5" stroke="#FFFFFF" stroke-width="8"/>
-    <path d="M27.5 8 L32 7.3" stroke="#000000" stroke-opacity="0.22" stroke-width="8" stroke-linecap="butt"/>
-    <path d="M6 20 L26 18 C31 17 34 15 34 11 C34 7 30.5 6 27.5 8" stroke="url(#fl-gold)" stroke-width="7"/>
-    <g stroke="#000000" stroke-opacity="0.2" stroke-width="7" stroke-linecap="butt">
-      <path d="M19 18.6 L23 18"/>
-      <path d="M8 19.9 L12 19.4"/>
-    </g>
-    <path d="M15 12.5 L15 25.5" stroke="#FFFFFF" stroke-width="8" stroke-linecap="butt"/>
+  <g transform="translate(53.6 44.7) scale(8.8)">
+    <rect x="8" y="6" width="6" height="26" fill="#FFFFFF"/>
+    <polygon points="14,6 24,6 28,10 28,12 14,12" fill="#FFFFFF"/>
+    <rect x="14" y="16" width="10" height="6" fill="#FFFFFF"/>
+    <rect x="24" y="22" width="6" height="20" fill="#FFFFFF"/>
+    <polygon points="24,36 38,36 38,38 34,42 24,42" fill="#FFFFFF"/>
+    <polygon points="24,17 29,22 24,27 19,22" fill="url(#fl-gold)"/>
   </g>
 </svg>
