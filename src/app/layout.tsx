@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { BottomNav } from "@/components/site/BottomNav";
+import { SplashScreen } from "@/components/site/SplashScreen";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
@@ -71,6 +72,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${sora.variable}`}>
       <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav md:pb-0">
+        <SplashScreen />
         <Navbar />
         <main>{children}</main>
         <Footer />
