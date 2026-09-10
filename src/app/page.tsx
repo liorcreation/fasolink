@@ -42,15 +42,16 @@ export default async function HomePage() {
       {/* Bandeau catégories — défilable au doigt sur mobile */}
       <section className="border-y border-clay-100 bg-white">
         <div className="snap-row no-scrollbar flex gap-3 overflow-x-auto px-5 py-6 sm:flex-wrap sm:justify-center sm:px-8 lg:px-10">
-          {CATEGORIES.map((c) => (
-            <Link
-              key={c.id}
-              href="/#explorer"
-              className="snap-item group inline-flex shrink-0 items-center gap-2 rounded-full border border-clay-100 bg-clay-50 px-4 py-2 text-sm font-semibold text-ink-soft transition-all hover:border-faso-gold hover:text-ink"
-            >
-              <c.icon className="h-4 w-4 text-faso-red" />
-              {c.label}
-            </Link>
+          {CATEGORIES.map((c, i) => (
+            <Reveal key={c.id} y={12} delay={i * 0.05} className="snap-item shrink-0">
+              <Link
+                href="/#explorer"
+                className="group inline-flex items-center gap-2 rounded-full border border-clay-100 bg-clay-50 px-4 py-2 text-sm font-semibold text-ink-soft transition-all hover:border-faso-gold hover:text-ink"
+              >
+                <c.icon className="h-4 w-4 text-faso-red" />
+                {c.label}
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>

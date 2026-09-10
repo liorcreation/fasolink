@@ -26,6 +26,7 @@ import { getOpenState } from "@/lib/hours";
 import { ShopCard } from "@/components/shops/ShopCard";
 import { ShopGridSkeleton } from "@/components/ui/Skeletons";
 import { BottomSheet } from "@/components/ui/BottomSheet";
+import { Reveal } from "@/components/ui/Reveal";
 
 type GeoState = "off" | "loading" | "on" | "denied";
 const RADII = [3, 5, 10, 25];
@@ -169,7 +170,7 @@ export function SearchExplorer({ shops }: { shops: ShopWithProducts[] }) {
 
   return (
     <section id="explorer" className="container-faso scroll-mt-24 py-16 md:py-24">
-      <div className="mx-auto max-w-2xl text-center">
+      <Reveal className="mx-auto max-w-2xl text-center">
         <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
           Explorer
         </span>
@@ -179,7 +180,7 @@ export function SearchExplorer({ shops }: { shops: ShopWithProducts[] }) {
         <p className="mt-3 text-ink-muted">
           Recherche instantanée parmi les commerçants vérifiés du Burkina Faso.
         </p>
-      </div>
+      </Reveal>
 
       {/* Barre de recherche + géo */}
       <div className="mx-auto mt-10 max-w-3xl space-y-3">
