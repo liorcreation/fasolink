@@ -125,17 +125,19 @@ export default async function ProduitPage({
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5 text-sm font-bold text-ink">
-                {shop.name}
+                <span className="truncate">{shop.name}</span>
                 {shop.verification_status === "verified" && (
-                  <VerifiedBadge label="Vérifié" />
+                  <VerifiedBadge label="Vérifié" className="shrink-0" />
                 )}
               </span>
               <span className="mt-0.5 flex items-center gap-1 text-xs text-ink-muted">
-                <MapPin className="h-3.5 w-3.5" />
-                {cat.label} · {shop.city}
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">
+                  {cat.label} · {shop.city}
+                </span>
               </span>
             </span>
-            <OpenStatus hours={shop.opening_hours} compact />
+            <OpenStatus hours={shop.opening_hours} compact className="shrink-0" />
           </Link>
 
           {/* CTA desktop (le mobile a la barre collante) */}
