@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 const LINKS = [
   {
-    href: "/boutiques",
+    href: "/#explorer",
     icon: Heart,
     title: "Mes favoris",
     desc: "Boutiques enregistrées pour plus tard",
@@ -80,7 +80,7 @@ export default function ProfilPage() {
           <Reveal key={l.href} delay={0.08 + i * 0.04}>
             <Link
               href={l.href}
-              className="card-premium flex items-center gap-4 p-4 hover:-translate-y-1 hover:border-faso-gold hover:shadow-premium-lg"
+              className="flex items-center gap-4 rounded-2xl border border-clay-100 bg-white p-4 transition-colors hover:border-faso-gold"
             >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-clay-50 text-faso-red">
                 <l.icon className="h-5 w-5" />

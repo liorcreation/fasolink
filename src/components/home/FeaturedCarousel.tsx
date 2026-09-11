@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ArrowRight, MapPin, Star } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { CATEGORY_MAP } from "@/lib/constants";
-import { cn, formatCFA } from "@/lib/utils";
+import { formatCFA } from "@/lib/utils";
 import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -13,13 +13,12 @@ export function FeaturedCarousel({ shops }: { shops: ShopWithProducts[] }) {
 
   return (
     <section className="py-14 md:py-20">
-      <div className="container-faso-wide flex items-end justify-between">
+      <div className="container-faso flex items-end justify-between">
         <Reveal>
           <span className="text-sm font-bold uppercase tracking-widest text-faso-gold-dark">
             À la une
           </span>
-          <span className="accent-line mt-2" />
-          <h2 className="mt-3 font-editorial text-display-2 font-semibold text-ink">
+          <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
             Boutiques vedettes
           </h2>
         </Reveal>
@@ -62,7 +61,7 @@ export function FeaturedCarousel({ shops }: { shops: ShopWithProducts[] }) {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-ink/55 to-transparent" />
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-ink backdrop-blur">
-                    <cat.icon className={cn("h-3.5 w-3.5", cat.accent.split(" ")[0])} />
+                    <cat.icon className="h-3.5 w-3.5 text-faso-red" />
                     {cat.label}
                   </span>
                   {shop.verification_status === "verified" && (

@@ -37,7 +37,7 @@ export default function InscriptionPage() {
         <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
           Inscription
         </span>
-        <h1 className="mt-3 font-editorial text-display-2 font-semibold text-ink">
+        <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
           Quel profil vous ressemble&nbsp;?
         </h1>
         <p className="mt-4 text-lg text-ink-soft">
@@ -79,7 +79,7 @@ export default function InscriptionPage() {
 
             <div className="mt-auto pt-8">
               <ButtonLink
-                href="/boutiques"
+                href="/#explorer"
                 variant="secondary"
                 size="lg"
                 className="w-full"
@@ -149,7 +149,7 @@ export default function InscriptionPage() {
       </div>
 
       <Reveal className="mx-auto mt-12 max-w-2xl">
-        <div className="card-premium flex flex-col items-center gap-2 p-6 text-center text-sm text-ink-muted">
+        <div className="flex flex-col items-center gap-2 rounded-3xl border border-clay-100 bg-white p-6 text-center text-sm text-ink-muted">
           <Check className="h-5 w-5 text-faso-green" />
           <p>
             Vous hésitez&nbsp;? Créez un compte acheteur maintenant, vous pourrez

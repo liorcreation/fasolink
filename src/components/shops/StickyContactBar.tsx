@@ -69,8 +69,8 @@ export function StickyContactBar({
 function cnBar(shown: boolean) {
   return [
     "pointer-events-none fixed inset-x-0 z-40 px-3 transition-all duration-300 md:hidden",
-    // au-dessus de la BottomNav + safe area (même source que .pb-bottom-nav)
-    "bottom-[calc(var(--bottom-nav-h)+env(safe-area-inset-bottom)+0.5rem)]",
+    // au-dessus de la BottomNav (h ~4rem) + safe area
+    "bottom-[calc(4rem+env(safe-area-inset-bottom)+0.5rem)]",
     shown ? "translate-y-0 opacity-100" : "translate-y-[140%] opacity-0",
   ].join(" ");
 }

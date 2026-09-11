@@ -19,12 +19,12 @@ export default async function VendorDashboardPage() {
   const myShop = shops[0];
 
   return (
-    <div className="container-faso-wide py-12 md:py-16">
+    <div className="container-faso py-12 md:py-16">
       <Reveal className="max-w-2xl">
         <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
           Espace vendeur
         </span>
-        <h1 className="mt-3 font-editorial text-display-2 font-semibold text-ink">
+        <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
           Tableau de bord
         </h1>
         <p className="mt-3 text-ink-soft">

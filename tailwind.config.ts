@@ -44,21 +44,6 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
-        editorial: ["var(--font-editorial)", "var(--font-display)", "serif"],
-      },
-      fontSize: {
-        "display-1": [
-          "clamp(2.75rem, 2rem + 3.2vw, 5rem)",
-          { lineHeight: "1.02", letterSpacing: "-0.02em" },
-        ],
-        "display-2": [
-          "clamp(2.25rem, 1.7rem + 2.2vw, 3.5rem)",
-          { lineHeight: "1.05", letterSpacing: "-0.015em" },
-        ],
-        "display-3": [
-          "clamp(1.5rem, 1.3rem + 1vw, 2rem)",
-          { lineHeight: "1.15", letterSpacing: "-0.01em" },
-        ],
       },
       backgroundImage: {
         "faso-gradient":
@@ -73,7 +58,6 @@ const config: Config = {
           "0 1px 2px rgba(26,17,9,0.04), 0 12px 32px -12px rgba(26,17,9,0.18)",
         "premium-lg":
           "0 2px 4px rgba(26,17,9,0.05), 0 32px 64px -24px rgba(26,17,9,0.28)",
-        "premium-sm": "0 1px 2px rgba(26,17,9,0.04), 0 4px 12px -4px rgba(26,17,9,0.12)",
         glow: "0 0 0 1px rgba(244,169,60,0.35), 0 16px 48px -12px rgba(214,40,40,0.35)",
       },
       borderRadius: {

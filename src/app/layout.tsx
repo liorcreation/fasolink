@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Sora } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -18,16 +18,6 @@ const sora = Sora({
   subsets: ["latin"],
   weight: ["600", "700", "800"],
   variable: "--font-display",
-  display: "swap",
-});
-
-// Réservée aux grands titres éditoriaux (Hero, intros de section) — jamais
-// pour l'UI (boutons, nav, labels), qui reste Sora/Inter.
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-editorial",
   display: "swap",
 });
 
@@ -80,10 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="fr"
-      className={`${inter.variable} ${sora.variable} ${fraunces.variable}`}
-    >
+    <html lang="fr" className={`${inter.variable} ${sora.variable}`}>
       <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav md:pb-0">
         <SplashScreen />
         <Navbar />

@@ -5,7 +5,7 @@ import { CATEGORIES } from "@/lib/constants";
 export function Footer() {
   return (
     <footer className="mt-24 border-t border-clay-100 bg-white">
-      <div className="container-faso-wide grid gap-10 py-14 md:grid-cols-4">
+      <div className="container-faso grid gap-10 py-14 md:grid-cols-4">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm text-ink-muted">
@@ -20,7 +20,7 @@ export function Footer() {
             {CATEGORIES.map((c) => (
               <li key={c.id}>
                 <Link
-                  href="/boutiques"
+                  href={`/#explorer`}
                   className="transition-colors hover:text-faso-red"
                 >
                   {c.label}
@@ -62,7 +62,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-clay-100">
-        <div className="container-faso-wide flex flex-col items-center justify-between gap-2 py-6 text-xs text-ink-muted sm:flex-row">
+        <div className="container-faso flex flex-col items-center justify-between gap-2 py-6 text-xs text-ink-muted sm:flex-row">
           <p>© {new Date().getFullYear()} FasoLink. Tous droits réservés.</p>
           <p className="flex items-center gap-1.5">
             Fièrement conçu au

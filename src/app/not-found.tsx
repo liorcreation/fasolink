@@ -16,7 +16,7 @@ export default function NotFound() {
           <Home className="h-5 w-5" />
           Accueil
         </ButtonLink>
-        <ButtonLink href="/boutiques" variant="outline" size="lg">
+        <ButtonLink href="/#explorer" variant="outline" size="lg">
           <Search className="h-5 w-5" />
           Explorer les boutiques
         </ButtonLink>

@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   BadgeCheck,
-  BarChart3,
   CalendarClock,
   ExternalLink,
   MessageCircle,
@@ -24,8 +23,6 @@ import {
 } from "@/lib/tracking";
 import { QRCodeCard } from "@/components/vendeur/QRCodeCard";
 import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Skeleton } from "@/components/ui/Skeletons";
 
 export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
   const [stats, setStats] = useState<ContactStats | null>(null);
@@ -172,44 +169,26 @@ export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
       {/* Graphe 14 jours */}
       <div className="card-premium p-5">
         <p className="text-sm font-bold text-ink">Contacts — 14 derniers jours</p>
-        {stats === null ? (
-          <div className="mt-4 flex h-32 items-end gap-1.5">
-            {Array.from({ length: 14 }).map((_, i) => (
-              <Skeleton key={i} className="w-full flex-1 rounded-t" style={{ height: `${20 + (i % 5) * 12}%` }} />
-            ))}
-          </div>
-        ) : stats.total === 0 ? (
-          <EmptyState
-            className="mt-4"
-            size="sm"
-            icon={BarChart3}
-            title="Pas encore de contact"
-            description="Les premiers contacts WhatsApp apparaîtront ici, jour par jour."
-          />
-        ) : (
-          <>
-            <div className="mt-4 flex h-32 items-end gap-1.5">
-              {stats.byDay.map((d) => (
-                <div
-                  key={d.date}
-                  className="group relative flex-1"
-                  title={`${d.date} · ${d.count}`}
-                >
-                  <div
-                    className="w-full rounded-t bg-faso-green/80 transition-all group-hover:bg-faso-green"
-                    style={{
-                      height: `${Math.max((d.count / maxDay) * 100, 4)}%`,
-                    }}
-                  />
-                </div>
-              ))}
+        <div className="mt-4 flex h-32 items-end gap-1.5">
+          {(stats?.byDay ?? []).map((d) => (
+            <div
+              key={d.date}
+              className="group relative flex-1"
+              title={`${d.date} · ${d.count}`}
+            >
+              <div
+                className="w-full rounded-t bg-faso-green/80 transition-all group-hover:bg-faso-green"
+                style={{
+                  height: `${Math.max((d.count / maxDay) * 100, 4)}%`,
+                }}
+              />
             </div>
-            <div className="mt-2 flex justify-between text-[10px] text-ink-muted">
-              <span>il y a 14 j</span>
-              <span>aujourd&apos;hui</span>
-            </div>
-          </>
-        )}
+          ))}
+        </div>
+        <div className="mt-2 flex justify-between text-[10px] text-ink-muted">
+          <span>il y a 14 j</span>
+          <span>aujourd&apos;hui</span>
+        </div>
       </div>
 
       {/* Vérification + QR */}

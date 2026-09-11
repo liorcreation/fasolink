@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Download, Share, X } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -17,7 +17,6 @@ export function InstallPrompt() {
   );
   const [visible, setVisible] = useState(false);
   const [iosHint, setIosHint] = useState(false);
-  const reduce = useReducedMotion();
 
   useEffect(() => {
     try {
@@ -72,10 +71,10 @@ export function InstallPrompt() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 40 }}
-          animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-          exit={reduce ? { opacity: 0 } : { opacity: 0, y: 40 }}
-          className="fixed inset-x-4 bottom-[calc(var(--bottom-nav-h)+env(safe-area-inset-bottom)+0.5rem)] z-[45] mx-auto max-w-md rounded-3xl border border-clay-100 bg-white p-4 shadow-premium-lg sm:left-auto sm:right-4 md:bottom-4 md:z-[65]"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 40 }}
+          className="fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[45] mx-auto max-w-md rounded-3xl border border-clay-100 bg-white p-4 shadow-premium-lg sm:left-auto sm:right-4 md:bottom-4 md:z-[65]"
         >
           <div className="flex items-start gap-3">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-faso-gradient text-white">

@@ -19,9 +19,6 @@ import { cn } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createShopWithAssets, VendorError } from "@/lib/vendor";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { SelectableCard } from "@/components/ui/SelectableCard";
 
 interface FormState {
   name: string;
@@ -48,7 +45,6 @@ export function ShopRegistrationForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [logo, setLogo] = useState<File | null>(null);
   const [gallery, setGallery] = useState<File[]>([]);
-  const [galleryDragOver, setGalleryDragOver] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">(
     "idle",
   );
@@ -149,41 +145,48 @@ export function ShopRegistrationForm() {
           Identité de la boutique
         </legend>
 
-        <Input
-          label="Nom de la boutique"
-          required
-          value={form.name}
-          onChange={(e) => update("name", e.target.value)}
-          placeholder="Ex. Faso Délices"
-        />
+        <Field label="Nom de la boutique" required>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => update("name", e.target.value)}
+            placeholder="Ex. Faso Délices"
+            className={inputCls}
+            required
+          />
+        </Field>
 
-        <div>
-          <span className="mb-1.5 flex items-center gap-1 text-sm font-semibold text-ink">
-            Catégorie
-            <span className="text-faso-red">*</span>
-          </span>
+        <Field label="Catégorie" required>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((c) => (
-              <SelectableCard
+              <button
+                type="button"
                 key={c.id}
-                selected={form.category === c.id}
-                onSelect={() => update("category", c.id)}
-                icon={c.icon}
-                label={c.label}
-              />
+                onClick={() => update("category", c.id)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all",
+                  form.category === c.id
+                    ? "border-transparent bg-faso-gradient text-white shadow-premium"
+                    : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold",
+                )}
+              >
+                <c.icon className="h-4 w-4" />
+                {c.label}
+              </button>
             ))}
           </div>
-        </div>
+        </Field>
 
-        <Textarea
-          label="Description"
-          required
-          hint="Minimum 20 caractères"
-          value={form.description}
-          onChange={(e) => update("description", e.target.value)}
-          rows={4}
-          placeholder="Décrivez vos produits, votre savoir-faire, vos délais de livraison…"
-        />
+        <Field label="Description" required hint="Minimum 20 caractères">
+          <textarea
+            value={form.description}
+            onChange={(e) => update("description", e.target.value)}
+            rows={4}
+            placeholder="Décrivez vos produits, votre savoir-faire, vos délais de livraison…"
+            className={cn(inputCls, "resize-none")}
+            required
+          />
+        </Field>
       </fieldset>
 
       {/* Localisation & contact */}
@@ -194,43 +197,50 @@ export function ShopRegistrationForm() {
         </legend>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Select
-            label="Ville"
-            required
-            value={form.city}
-            onChange={(v) => update("city", v)}
-            placeholder="Sélectionner…"
-            options={BURKINA_CITIES.map((c) => ({ value: c, label: c }))}
-          />
+          <Field label="Ville" required>
+            <select
+              value={form.city}
+              onChange={(e) => update("city", e.target.value)}
+              className={inputCls}
+              required
+            >
+              <option value="">Sélectionner…</option>
+              {BURKINA_CITIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Field>
 
-          <Input
-            label="Quartier / secteur"
-            value={form.neighborhood}
-            onChange={(e) => update("neighborhood", e.target.value)}
-            placeholder="Ex. Ouaga 2000, Secteur 15"
-          />
+          <Field label="Quartier / secteur">
+            <input
+              type="text"
+              value={form.neighborhood}
+              onChange={(e) => update("neighborhood", e.target.value)}
+              placeholder="Ex. Ouaga 2000, Secteur 15"
+              className={inputCls}
+            />
+          </Field>
         </div>
 
-        <div>
-          <span className="mb-1.5 flex items-center gap-1 text-sm font-semibold text-ink">
-            Numéro WhatsApp Business
-            <span className="text-faso-red">*</span>
-          </span>
-          <div className="flex h-12 items-center gap-2 rounded-2xl border border-clay-200 bg-white px-4 transition-colors focus-within:border-faso-gold focus-within:ring-2 focus-within:ring-faso-gold/25">
-            <Phone className="h-4 w-4 shrink-0 text-ink-muted" />
+        <Field
+          label="Numéro WhatsApp Business"
+          required
+          hint="Format local (70 00 00 00) ou international (+226…)"
+        >
+          <div className="flex items-center gap-2 rounded-xl border border-clay-200 bg-white px-3 focus-within:border-faso-gold">
+            <Phone className="h-4 w-4 text-ink-muted" />
             <input
               type="tel"
               value={form.whatsapp}
               onChange={(e) => update("whatsapp", e.target.value)}
               placeholder="70 12 34 56"
-              className="h-full w-full bg-transparent text-sm outline-none"
+              className="h-11 w-full bg-transparent text-sm outline-none"
               required
             />
           </div>
-          <span className="mt-1.5 block text-xs text-ink-muted">
-            Format local (70 00 00 00) ou international (+226…)
-          </span>
-        </div>
+        </Field>
       </fieldset>
 
       {/* Médias */}
@@ -311,28 +321,6 @@ export function ShopRegistrationForm() {
             </Button>
           </div>
 
-          {/* Zone glisser-déposer */}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setGalleryDragOver(true);
-            }}
-            onDragLeave={() => setGalleryDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setGalleryDragOver(false);
-              onGalleryPick(e.dataTransfer.files);
-            }}
-            className={cn(
-              "mt-3 rounded-2xl border-2 border-dashed p-4 text-center text-xs font-medium transition-colors",
-              galleryDragOver
-                ? "border-faso-gold bg-faso-gold-soft/20 text-faso-gold-dark"
-                : "border-clay-200 text-ink-muted",
-            )}
-          >
-            Glissez-déposez vos photos ici, ou utilisez « Ajouter »
-          </div>
-
           {galleryPreviews.length > 0 && (
             <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
               {galleryPreviews.map((p, i) => (
@@ -390,5 +378,31 @@ export function ShopRegistrationForm() {
         </p>
       </div>
     </form>
+  );
+}
+
+const inputCls =
+  "h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-faso-gold";
+
+function Field({
+  label,
+  required,
+  hint,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 flex items-center gap-1 text-sm font-semibold text-ink">
+        {label}
+        {required && <span className="text-faso-red">*</span>}
+      </span>
+      {children}
+      {hint && <span className="mt-1 block text-xs text-ink-muted">{hint}</span>}
+    </label>
   );
 }

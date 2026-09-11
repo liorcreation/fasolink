@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
-import { useFocusTrap } from "@/lib/useFocusTrap";
 
 export function BottomSheet({
   open,
@@ -19,8 +18,6 @@ export function BottomSheet({
   footer?: React.ReactNode;
 }) {
   const reduce = useReducedMotion();
-  const panelRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(panelRef, open);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -49,11 +46,9 @@ export function BottomSheet({
             onClick={onClose}
           />
           <motion.div
-            ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            tabIndex={-1}
             initial={reduce ? { opacity: 0 } : { y: "100%" }}
             animate={reduce ? { opacity: 1 } : { y: 0 }}
             exit={reduce ? { opacity: 0 } : { y: "100%" }}
@@ -64,7 +59,7 @@ export function BottomSheet({
             onDragEnd={(_, info) => {
               if (info.offset.y > 120 || info.velocity.y > 600) onClose();
             }}
-            className="relative z-10 flex max-h-[85vh] w-full flex-col rounded-t-4xl bg-clay-50 shadow-premium-lg outline-none sm:max-w-lg sm:rounded-4xl"
+            className="relative z-10 flex max-h-[85vh] w-full flex-col rounded-t-4xl bg-clay-50 shadow-premium-lg sm:max-w-lg sm:rounded-4xl"
           >
             <div className="shrink-0 px-5 pb-2 pt-3">
               <div className="mx-auto h-1.5 w-10 rounded-full bg-clay-300 sm:hidden" />

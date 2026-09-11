@@ -82,17 +82,16 @@ export function ImpactCounter({
   ];
 
   return (
-    <section className="container-faso-wide py-16 md:py-20">
+    <section className="container-faso py-16 md:py-20">
       <div
         ref={ref}
-        className="relative overflow-hidden rounded-4xl border border-clay-100 bg-white p-8 shadow-premium md:p-12"
+        className="overflow-hidden rounded-4xl border border-clay-100 bg-white p-8 shadow-premium md:p-12"
       >
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-sm font-bold uppercase tracking-widest text-faso-green">
             Impact local
           </span>
-          <span className="accent-line mx-auto mt-2" />
-          <h2 className="mt-3 font-editorial text-display-2 font-semibold text-ink">
+          <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
             Chaque achat compte pour le Faso
           </h2>
           <p className="mt-3 text-ink-muted">
