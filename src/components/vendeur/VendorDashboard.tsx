@@ -148,8 +148,8 @@ export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
 
       {/* Preuve de valeur */}
       <div className="rounded-3xl bg-faso-gradient bg-[length:200%_200%] p-5 text-white animate-gradient-pan">
-        <p className="flex items-center gap-2 text-sm font-semibold">
-          <ArrowUpRight className="h-4 w-4" />
+        <p className="text-sm font-semibold">
+          <ArrowUpRight className="mr-1.5 inline h-4 w-4 shrink-0 align-text-bottom" />
           Votre boutique a généré{" "}
           <strong>{stats?.last30d ?? 0} contacts WhatsApp</strong> ce mois-ci —
           soit une valeur estimée de{" "}

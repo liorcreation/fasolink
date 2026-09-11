@@ -69,7 +69,7 @@ export function ProductCard({
             </p>
           )}
         </Link>
-        <div className="mt-auto flex items-center justify-between pt-2">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
           <span className="text-sm font-extrabold text-faso-green">
             {formatCFA(product.price)}
           </span>
