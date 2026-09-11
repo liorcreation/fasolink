@@ -207,7 +207,7 @@ export default async function BoutiquePage({
         </section>
 
         {/* CTA bas de page */}
-        <section className="mt-16 mb-28 md:mb-16">
+        <section className="mt-16 mb-[calc(4rem+env(safe-area-inset-bottom)+6rem)] md:mb-16">
           <div className="flex flex-col items-center gap-4 rounded-4xl bg-faso-gradient bg-[length:200%_200%] p-8 text-center text-white shadow-premium-lg animate-gradient-pan md:p-12">
             <h2 className="text-2xl font-bold md:text-3xl">
               Une question sur {shop.name} ?

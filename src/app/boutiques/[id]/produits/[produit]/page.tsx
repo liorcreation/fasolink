@@ -48,7 +48,7 @@ export default async function ProduitPage({
   const others = shop.products.filter((p) => p.id !== product.id).slice(0, 6);
 
   return (
-    <div className="container-faso py-6 pb-32 md:py-10 md:pb-16">
+    <div className="container-faso py-6 pb-[calc(4rem+env(safe-area-inset-bottom)+6rem)] md:py-10 md:pb-16">
       {/* Fil d'Ariane */}
       <nav className="flex items-center gap-1.5 text-xs text-ink-muted">
         <Link href="/#explorer" className="hover:text-ink">
