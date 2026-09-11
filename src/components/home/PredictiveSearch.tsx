@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, CornerDownLeft, Search, Store, X } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
@@ -53,7 +54,12 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Le portail vers document.body ne peut être rendu qu'une fois monté côté
+  // client (évite tout mismatch d'hydratation SSR).
+  useEffect(() => setMounted(true), []);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -134,122 +140,134 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
         </kbd>
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] flex items-start justify-center bg-ink/50 p-4 backdrop-blur-sm sm:pt-24"
-            onClick={() => setOpen(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: -12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.98 }}
-              transition={{ duration: 0.18 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-xl overflow-hidden rounded-3xl border border-clay-100 bg-white shadow-premium-lg"
-            >
-              <div className="flex items-center gap-3 border-b border-clay-100 px-4">
-                <Search className="h-5 w-5 shrink-0 text-ink-muted" />
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={onInputKey}
-                  placeholder="Tapez au moins 2 caractères…"
-                  className="h-14 w-full bg-transparent text-base text-ink outline-none placeholder:text-ink-muted"
-                />
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-clay-100"
-                  aria-label="Fermer"
+      {/*
+        Portail vers document.body : le Hero applique un effet de parallax
+        (transform CSS) sur ses enfants au défilement, or un ancêtre avec
+        transform devient le référentiel de tout descendant en
+        position:fixed — sans portail, cette fenêtre de recherche se
+        retrouvait coincée dans la colonne du Hero au lieu de couvrir tout
+        l'écran. Le portail la fait sortir de cette arborescence.
+      */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[70] flex items-start justify-center bg-ink/50 p-4 backdrop-blur-sm sm:pt-24"
+                onClick={() => setOpen(false)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: -12, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full max-w-xl overflow-hidden rounded-3xl border border-clay-100 bg-white shadow-premium-lg"
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+                  <div className="flex items-center gap-3 border-b border-clay-100 px-4">
+                    <Search className="h-5 w-5 shrink-0 text-ink-muted" />
+                    <input
+                      ref={inputRef}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onKeyDown={onInputKey}
+                      placeholder="Tapez au moins 2 caractères…"
+                      className="h-14 w-full bg-transparent text-base text-ink outline-none placeholder:text-ink-muted"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setOpen(false)}
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-clay-100"
+                      aria-label="Fermer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
 
-              <div className="max-h-[60vh] overflow-y-auto p-2">
-                {query.trim().length < 2 && (
-                  <p className="px-3 py-6 text-center text-sm text-ink-muted">
-                    Aperçu instantané des produits et boutiques.
-                  </p>
-                )}
-
-                {query.trim().length >= 2 && results.length === 0 && (
-                  <p className="px-3 py-6 text-center text-sm text-ink-muted">
-                    Rien pour «&nbsp;{query}&nbsp;». Essayez «&nbsp;bissap&nbsp;»,
-                    «&nbsp;pagne&nbsp;», «&nbsp;solaire&nbsp;».
-                  </p>
-                )}
-
-                {results.map((hit, i) => (
-                  <button
-                    key={`${hit.type}-${hit.id}`}
-                    type="button"
-                    onMouseEnter={() => setActive(i)}
-                    onClick={() => go(hit)}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-2xl p-2 text-left transition-colors",
-                      i === active ? "bg-clay-50" : "hover:bg-clay-50",
+                  <div className="max-h-[60vh] overflow-y-auto p-2">
+                    {query.trim().length < 2 && (
+                      <p className="px-3 py-6 text-center text-sm text-ink-muted">
+                        Aperçu instantané des produits et boutiques.
+                      </p>
                     )}
-                  >
-                    <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-clay-100">
-                      {hit.image ? (
-                        <Image
-                          src={hit.image}
-                          alt=""
-                          fill
-                          sizes="48px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <Store className="absolute inset-0 m-auto h-5 w-5 text-ink-muted" />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="truncate text-sm font-semibold text-ink">
-                          {hit.title}
+
+                    {query.trim().length >= 2 && results.length === 0 && (
+                      <p className="px-3 py-6 text-center text-sm text-ink-muted">
+                        Rien pour «&nbsp;{query}&nbsp;». Essayez «&nbsp;bissap&nbsp;»,
+                        «&nbsp;pagne&nbsp;», «&nbsp;solaire&nbsp;».
+                      </p>
+                    )}
+
+                    {results.map((hit, i) => (
+                      <button
+                        key={`${hit.type}-${hit.id}`}
+                        type="button"
+                        onMouseEnter={() => setActive(i)}
+                        onClick={() => go(hit)}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-2xl p-2 text-left transition-colors",
+                          i === active ? "bg-clay-50" : "hover:bg-clay-50",
+                        )}
+                      >
+                        <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-clay-100">
+                          {hit.image ? (
+                            <Image
+                              src={hit.image}
+                              alt=""
+                              fill
+                              sizes="48px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <Store className="absolute inset-0 m-auto h-5 w-5 text-ink-muted" />
+                          )}
                         </span>
-                        <span className="shrink-0 rounded-full bg-clay-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-ink-muted">
-                          {hit.type === "shop" ? "Boutique" : "Produit"}
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="truncate text-sm font-semibold text-ink">
+                              {hit.title}
+                            </span>
+                            <span className="shrink-0 rounded-full bg-clay-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-ink-muted">
+                              {hit.type === "shop" ? "Boutique" : "Produit"}
+                            </span>
+                          </span>
+                          <span className="block truncate text-xs text-ink-muted">
+                            {hit.subtitle}
+                          </span>
                         </span>
-                      </span>
-                      <span className="block truncate text-xs text-ink-muted">
-                        {hit.subtitle}
-                      </span>
-                    </span>
-                    {hit.price != null && (
-                      <span className="shrink-0 text-sm font-extrabold text-faso-green">
-                        {formatCFA(hit.price)}
-                      </span>
-                    )}
-                    {i === active && (
-                      <CornerDownLeft className="h-4 w-4 shrink-0 text-ink-muted" />
-                    )}
-                  </button>
-                ))}
-              </div>
+                        {hit.price != null && (
+                          <span className="shrink-0 text-sm font-extrabold text-faso-green">
+                            {formatCFA(hit.price)}
+                          </span>
+                        )}
+                        {i === active && (
+                          <CornerDownLeft className="h-4 w-4 shrink-0 text-ink-muted" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
 
-              {results.length > 0 && (
-                <div className="border-t border-clay-100 px-4 py-2.5">
-                  <Link
-                    href="/#explorer"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center justify-center gap-1.5 text-xs font-semibold text-faso-red hover:gap-2"
-                  >
-                    Voir tous les résultats dans l&apos;explorateur
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
+                  {results.length > 0 && (
+                    <div className="border-t border-clay-100 px-4 py-2.5">
+                      <Link
+                        href="/#explorer"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-center gap-1.5 text-xs font-semibold text-faso-red hover:gap-2"
+                      >
+                        Voir tous les résultats dans l&apos;explorateur
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </>
   );
 }
