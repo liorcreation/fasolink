@@ -65,6 +65,17 @@ export const CATEGORY_MAP: Record<ShopCategory, CategoryMeta> =
     {} as Record<ShopCategory, CategoryMeta>,
   );
 
+/**
+ * Parcours d'inscription vendeur — affiché en tête des 3 pages
+ * (boutique → paiement → vérification) pour que la navigation entre pages
+ * se lise comme un seul wizard plutôt que 3 écrans disjoints.
+ */
+export const VENDOR_ONBOARDING_STEPS = [
+  { key: "shop", label: "Boutique" },
+  { key: "payment", label: "Paiement" },
+  { key: "verification", label: "Vérification" },
+];
+
 /** Principales villes du Burkina Faso pour les filtres & formulaires. */
 export const BURKINA_CITIES = [
   "Ouagadougou",

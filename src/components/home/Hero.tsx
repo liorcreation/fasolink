@@ -46,7 +46,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
         className="pointer-events-none absolute -right-24 top-48 h-72 w-72 rounded-full bg-faso-green/10 blur-3xl"
       />
 
-      <div className="container-faso relative grid gap-12 py-16 md:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div className="container-faso-wide section-y relative grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <motion.div
           style={reduce ? undefined : { opacity: textOpacity, y: textY }}
         >
@@ -64,10 +64,10 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl"
+            className="mt-5 font-editorial text-display-1 font-semibold text-ink"
           >
             FasoLink —{" "}
-            <span className="text-gradient-faso">Consommer Burkinabè</span>
+            <span className="text-gradient-faso italic">Consommer Burkinabè</span>
           </motion.h1>
 
           <motion.p

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { PartyPopper, X } from "lucide-react";
 
 /**
@@ -15,6 +15,7 @@ export function PublishedToast() {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     if (params.get("published") === "1") {
@@ -30,10 +31,14 @@ export function PublishedToast() {
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.96 }}
-          transition={{ type: "spring", damping: 26, stiffness: 320 }}
+          initial={reduce ? { opacity: 0 } : { opacity: 0, y: -20, scale: 0.96 }}
+          animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+          exit={reduce ? { opacity: 0 } : { opacity: 0, y: -20, scale: 0.96 }}
+          transition={
+            reduce
+              ? { duration: 0.2 }
+              : { type: "spring", damping: 26, stiffness: 320 }
+          }
           className="fixed inset-x-4 top-20 z-[80] mx-auto max-w-md md:left-auto md:right-6 md:top-24"
           role="status"
         >

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { VerificationForm } from "@/components/vendeur/VerificationForm";
+import { Stepper } from "@/components/ui/Stepper";
+import { VENDOR_ONBOARDING_STEPS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Vérification vendeur",
@@ -12,12 +14,17 @@ export const metadata: Metadata = {
 export default function VerificationPage() {
   return (
     <div className="container-faso py-14 md:py-20">
+      <Stepper
+        steps={VENDOR_ONBOARDING_STEPS}
+        currentKey="verification"
+        className="mx-auto mb-10 max-w-md"
+      />
       <Reveal className="mx-auto max-w-2xl text-center">
         <span className="mx-auto inline-flex items-center gap-2 rounded-full bg-faso-gold-soft/50 px-3 py-1 text-xs font-bold text-faso-gold-dark">
           <ShieldCheck className="h-3.5 w-3.5" />
           Trust Engine FasoLink
         </span>
-        <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
+        <h1 className="mt-4 font-editorial text-display-2 font-semibold text-ink">
           Devenez Vendeur Vérifié
         </h1>
         <p className="mt-4 text-lg text-ink-soft">

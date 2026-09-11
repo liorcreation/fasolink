@@ -8,6 +8,7 @@ import { SearchExplorer } from "@/components/home/SearchExplorer";
 import { ImpactCounter } from "@/components/home/ImpactCounter";
 import { Reveal } from "@/components/ui/Reveal";
 import { ButtonLink } from "@/components/ui/Button";
+import { GrainTexture } from "@/components/ui/GrainTexture";
 
 // Cloudflare Pages : rendu à la demande (données Firestore fraîches à chaque visite).
 export const runtime = "edge";
@@ -48,7 +49,11 @@ export default async function HomePage() {
                 href="/#explorer"
                 className="group inline-flex items-center gap-2 rounded-full border border-clay-100 bg-clay-50 px-4 py-2 text-sm font-semibold text-ink-soft transition-all hover:border-faso-gold hover:text-ink"
               >
-                <c.icon className="h-4 w-4 text-faso-red" />
+                <span
+                  className={`grid h-6 w-6 place-items-center rounded-full bg-gradient-to-br ${c.gradient} text-white`}
+                >
+                  <c.icon className="h-3.5 w-3.5" />
+                </span>
                 {c.label}
               </Link>
             </Reveal>
@@ -63,13 +68,14 @@ export default async function HomePage() {
       <ImpactCounter amountCFA={impact} shopCount={520} />
 
       {/* Comment ça marche */}
-      <section className="bg-white py-16 md:py-24">
-        <div className="container-faso">
+      <section className="section-y bg-white">
+        <div className="container-faso-wide">
           <Reveal className="mx-auto max-w-2xl text-center">
             <span className="text-sm font-bold uppercase tracking-widest text-faso-green">
               Comment ça marche
             </span>
-            <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
+            <span className="accent-line mx-auto mt-3" />
+            <h2 className="mt-3 font-editorial text-display-2 font-semibold text-ink">
               Du besoin au commerçant en 3 étapes
             </h2>
           </Reveal>
@@ -93,15 +99,18 @@ export default async function HomePage() {
       </section>
 
       {/* CTA vendeurs */}
-      <section className="container-faso py-16 md:py-24">
+      <section className="container-faso-wide section-y">
         <Reveal>
-          <div className="relative overflow-hidden rounded-4xl bg-faso-gradient bg-[length:200%_200%] p-8 text-white shadow-premium-lg animate-gradient-pan md:p-14">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative overflow-hidden rounded-4xl bg-ink p-8 text-white shadow-premium-lg md:p-14">
+            <GrainTexture className="text-white" opacity={0.04} />
+            <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-faso-gradient opacity-30 blur-3xl" />
+            <div className="pointer-events-none absolute -left-20 bottom-0 h-56 w-56 rounded-full bg-faso-green/20 blur-3xl" />
             <div className="relative max-w-2xl">
-              <h2 className="text-3xl font-bold md:text-4xl">
+              <span className="accent-line" />
+              <h2 className="mt-4 font-editorial text-display-2 font-semibold">
                 Vous êtes commerçant, artisan ou producteur ?
               </h2>
-              <p className="mt-4 text-white/90">
+              <p className="mt-4 text-white/80">
                 Créez votre vitrine FasoLink en quelques minutes, publiez vos
                 produits et recevez vos clients directement sur WhatsApp.
                 14 jours d&apos;essai gratuit, sans carte.
@@ -119,7 +128,7 @@ export default async function HomePage() {
                   href="/inscription"
                   size="lg"
                   variant="outline"
-                  className="border-white/40 bg-white/10 text-white hover:bg-white hover:text-ink"
+                  className="border-white/30 bg-white/5 text-white hover:bg-white hover:text-ink"
                 >
                   Voir les formules
                 </ButtonLink>

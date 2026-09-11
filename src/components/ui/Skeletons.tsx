@@ -1,8 +1,15 @@
 import { cn } from "@/lib/utils";
 
-export function Skeleton({ className }: { className?: string }) {
+export function Skeleton({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <div
+      style={style}
       className={cn(
         "relative overflow-hidden rounded-lg bg-clay-100",
         "before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer",

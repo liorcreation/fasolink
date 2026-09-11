@@ -26,6 +26,7 @@ import { cn, formatCFA } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { activateSubscription, VendorError } from "@/lib/vendor";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { Stepper as SharedStepper } from "@/components/ui/Stepper";
 
 type Provider = (typeof PAYMENT_PROVIDERS)[number]["id"];
 type Step =
@@ -115,7 +116,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       {/* Colonne principale */}
       <div className="space-y-6">
-        <Stepper step={step} />
+        <SharedStepper steps={PAYMENT_STEP_LABELS} currentKey={stepperKey(step)} />
 
         <AnimatePresence mode="wait">
           {/* 1. Choix du plan */}
@@ -586,58 +587,18 @@ function Row({
   );
 }
 
-const STEP_LABELS: { id: Step; label: string }[] = [
-  { id: "plan", label: "Formule" },
-  { id: "method", label: "Paiement" },
-  { id: "confirm", label: "Confirmation" },
-  { id: "success", label: "Terminé" },
+const PAYMENT_STEP_LABELS = [
+  { key: "plan", label: "Formule" },
+  { key: "method", label: "Paiement" },
+  { key: "confirm", label: "Confirmation" },
+  { key: "success", label: "Terminé" },
 ];
 
-function Stepper({ step }: { step: Step }) {
-  const order: Step[] = [
-    "plan",
-    "method",
-    "confirm",
-    "pin",
-    "processing",
-    "success",
-  ];
-  const current =
-    step === "trial"
-      ? order.length
-      : step === "error"
-        ? order.indexOf("confirm")
-        : order.indexOf(step);
-  return (
-    <ol className="flex items-center gap-2">
-      {STEP_LABELS.map((s, i) => {
-        const reached = current >= order.indexOf(s.id);
-        return (
-          <li key={s.id} className="flex flex-1 items-center gap-2">
-            <span
-              className={cn(
-                "grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors",
-                reached
-                  ? "bg-faso-gradient text-white"
-                  : "bg-clay-100 text-ink-muted",
-              )}
-            >
-              {i + 1}
-            </span>
-            <span
-              className={cn(
-                "hidden text-xs font-semibold sm:block",
-                reached ? "text-ink" : "text-ink-muted",
-              )}
-            >
-              {s.label}
-            </span>
-            {i < STEP_LABELS.length - 1 && (
-              <span className="h-px flex-1 bg-clay-200" />
-            )}
-          </li>
-        );
-      })}
-    </ol>
-  );
+/** Ramène l'état interne (incluant pin/processing/trial/error) au repère
+ * des 4 étapes affichées dans le stepper partagé. */
+function stepperKey(step: Step): string {
+  if (step === "trial" || step === "success") return "success";
+  if (step === "pin" || step === "processing" || step === "error" || step === "confirm")
+    return "confirm";
+  return step;
 }

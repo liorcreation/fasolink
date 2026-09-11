@@ -11,12 +11,23 @@ import {
   Upload,
 } from "lucide-react";
 import { getBrowserPosition } from "@/lib/geo";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { SelectableCard } from "@/components/ui/SelectableCard";
+import { Stepper, type StepperStep } from "@/components/ui/Stepper";
 
 const DOC_TYPES = [
   { id: "cnib", label: "CNIB" },
   { id: "passeport", label: "Passeport" },
   { id: "nif", label: "NIF (entreprise)" },
+];
+
+const INTERNAL_STEPS: StepperStep[] = [
+  { key: "identity", label: "Identité" },
+  { key: "documents", label: "Documents" },
+  { key: "location", label: "Localisation" },
+  { key: "submit", label: "Envoi" },
 ];
 
 export function VerificationForm() {
@@ -30,11 +41,18 @@ export function VerificationForm() {
   const rectoRef = useRef<HTMLInputElement>(null);
   const versoRef = useRef<HTMLInputElement>(null);
 
-  const valid =
-    docNumber.trim().length >= 4 &&
-    fullName.trim().length > 3 &&
-    recto &&
-    geo === "ok";
+  const identityDone = docNumber.trim().length >= 4 && fullName.trim().length > 3;
+  const documentsDone = !!recto;
+  const locationDone = geo === "ok";
+  const currentKey = !identityDone
+    ? "identity"
+    : !documentsDone
+      ? "documents"
+      : !locationDone
+        ? "location"
+        : "submit";
+
+  const valid = identityDone && documentsDone && locationDone;
 
   async function confirmLocation() {
     setGeo("loading");
@@ -82,6 +100,8 @@ export function VerificationForm() {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl space-y-6">
+      <Stepper steps={INTERNAL_STEPS} currentKey={currentKey} className="px-1" />
+
       <fieldset className="card-premium space-y-5 p-6 md:p-8">
         <legend className="flex items-center gap-2 px-2 text-sm font-bold text-ink">
           <Fingerprint className="h-4 w-4 text-faso-red" />
@@ -90,44 +110,28 @@ export function VerificationForm() {
 
         <div className="flex flex-wrap gap-2">
           {DOC_TYPES.map((d) => (
-            <button
+            <SelectableCard
               key={d.id}
-              type="button"
-              onClick={() => setDocType(d.id)}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
-                docType === d.id
-                  ? "border-transparent bg-faso-gradient text-white"
-                  : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold"
-              }`}
-            >
-              {d.label}
-            </button>
+              selected={docType === d.id}
+              onSelect={() => setDocType(d.id)}
+              label={d.label}
+            />
           ))}
         </div>
 
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-ink">
-            Numéro du document
-          </span>
-          <input
-            value={docNumber}
-            onChange={(e) => setDocNumber(e.target.value)}
-            placeholder="Ex. B1234567"
-            className="h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm outline-none focus:border-faso-gold"
-          />
-        </label>
+        <Input
+          label="Numéro du document"
+          value={docNumber}
+          onChange={(e) => setDocNumber(e.target.value)}
+          placeholder="Ex. B1234567"
+        />
 
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-ink">
-            Nom complet (tel qu&apos;écrit sur la pièce)
-          </span>
-          <input
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Prénom NOM"
-            className="h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm outline-none focus:border-faso-gold"
-          />
-        </label>
+        <Input
+          label="Nom complet (tel qu'écrit sur la pièce)"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder="Prénom NOM"
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           {[
@@ -145,11 +149,12 @@ export function VerificationForm() {
               <button
                 type="button"
                 onClick={() => f.ref.current?.click()}
-                className={`flex h-24 w-full flex-col items-center justify-center gap-1 rounded-xl border border-dashed text-xs font-semibold transition-colors ${
+                className={cn(
+                  "flex h-24 w-full flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed text-xs font-semibold transition-colors",
                   f.file
                     ? "border-faso-green bg-faso-green-soft/20 text-faso-green-dark"
-                    : "border-clay-300 bg-clay-50 text-ink-muted hover:border-faso-gold"
-                }`}
+                    : "border-clay-300 bg-clay-50 text-ink-muted hover:border-faso-gold",
+                )}
               >
                 {f.file ? (
                   <>

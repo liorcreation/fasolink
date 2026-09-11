@@ -9,7 +9,7 @@ import { Logo } from "@/components/site/Logo";
 import { ButtonLink } from "@/components/ui/Button";
 
 const LINKS = [
-  { href: "/#explorer", label: "Explorer" },
+  { href: "/boutiques", label: "Explorer" },
   { href: "/inscription", label: "Devenir membre" },
   { href: "/vendeur/dashboard", label: "Espace vendeur" },
 ];
@@ -41,7 +41,7 @@ export function Navbar() {
           : "bg-transparent",
       )}
     >
-      <nav className="container-faso flex h-16 items-center justify-between md:h-20">
+      <nav className="container-faso-wide flex h-16 items-center justify-between md:h-20">
         <Logo />
 
         <div className="hidden items-center gap-1 md:flex">
@@ -83,7 +83,7 @@ export function Navbar() {
             transition={{ duration: 0.2 }}
             className="md:hidden"
           >
-            <div className="container-faso flex flex-col gap-2 border-t border-clay-100 bg-clay-50 pb-6 pt-3">
+            <div className="container-faso-wide flex flex-col gap-2 border-t border-clay-100 bg-clay-50 pb-6 pt-3">
               {LINKS.map((l) => (
                 <Link
                   key={l.href}

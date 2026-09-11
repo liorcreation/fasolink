@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, CornerDownLeft, Search, Store, X } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { CATEGORY_MAP } from "@/lib/constants";
@@ -49,6 +49,7 @@ function buildIndex(shops: ShopWithProducts[]): Hit[] {
 
 export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
   const router = useRouter();
+  const reduce = useReducedMotion();
   const index = useMemo(() => buildIndex(shops), [shops]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -112,7 +113,7 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
       if (results[active]) go(results[active]);
       else if (query.trim()) {
         setOpen(false);
-        router.push(`/#explorer`);
+        router.push("/boutiques");
       }
     }
   }
@@ -144,9 +145,9 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
             onClick={() => setOpen(false)}
           >
             <motion.div
-              initial={{ opacity: 0, y: -12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.98 }}
+              animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.98 }}
               transition={{ duration: 0.18 }}
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-xl overflow-hidden rounded-3xl border border-clay-100 bg-white shadow-premium-lg"
@@ -173,22 +174,35 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
 
               <div className="max-h-[60vh] overflow-y-auto p-2">
                 {query.trim().length < 2 && (
-                  <p className="px-3 py-6 text-center text-sm text-ink-muted">
-                    Aperçu instantané des produits et boutiques.
-                  </p>
+                  <div className="flex flex-col items-center gap-2 px-3 py-8 text-center">
+                    <span className="glow-dot h-10 w-10 text-white">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <p className="text-sm text-ink-muted">
+                      Aperçu instantané des produits et boutiques.
+                    </p>
+                  </div>
                 )}
 
                 {query.trim().length >= 2 && results.length === 0 && (
-                  <p className="px-3 py-6 text-center text-sm text-ink-muted">
-                    Rien pour «&nbsp;{query}&nbsp;». Essayez «&nbsp;bissap&nbsp;»,
-                    «&nbsp;pagne&nbsp;», «&nbsp;solaire&nbsp;».
-                  </p>
+                  <div className="flex flex-col items-center gap-2 px-3 py-8 text-center">
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-clay-100 text-ink-muted">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <p className="text-sm text-ink-muted">
+                      Rien pour «&nbsp;{query}&nbsp;». Essayez «&nbsp;bissap&nbsp;»,
+                      «&nbsp;pagne&nbsp;», «&nbsp;solaire&nbsp;».
+                    </p>
+                  </div>
                 )}
 
                 {results.map((hit, i) => (
-                  <button
+                  <motion.button
                     key={`${hit.type}-${hit.id}`}
                     type="button"
+                    initial={reduce ? { opacity: 1 } : { opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.15) }}
                     onMouseEnter={() => setActive(i)}
                     onClick={() => go(hit)}
                     className={cn(
@@ -230,14 +244,14 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
                     {i === active && (
                       <CornerDownLeft className="h-4 w-4 shrink-0 text-ink-muted" />
                     )}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
               {results.length > 0 && (
                 <div className="border-t border-clay-100 px-4 py-2.5">
                   <Link
-                    href="/#explorer"
+                    href="/boutiques"
                     onClick={() => setOpen(false)}
                     className="flex items-center justify-center gap-1.5 text-xs font-semibold text-faso-red hover:gap-2"
                   >

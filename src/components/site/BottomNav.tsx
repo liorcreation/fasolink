@@ -21,7 +21,7 @@ const ITEMS: NavItem[] = [
     match: (p) => p === "/",
   },
   {
-    href: "/#explorer",
+    href: "/boutiques",
     label: "Explorer",
     icon: Search,
     match: (p) => p.startsWith("/boutiques"),

@@ -169,12 +169,13 @@ export function SearchExplorer({ shops }: { shops: ShopWithProducts[] }) {
   }, [results, query]);
 
   return (
-    <section id="explorer" className="container-faso scroll-mt-24 py-16 md:py-24">
+    <section id="explorer" className="container-faso-wide section-y scroll-mt-24">
       <Reveal className="mx-auto max-w-2xl text-center">
         <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
           Explorer
         </span>
-        <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
+        <span className="accent-line mx-auto mt-2" />
+        <h2 className="mt-3 font-editorial text-display-2 font-semibold text-ink">
           Trouvez une boutique près de chez vous
         </h2>
         <p className="mt-3 text-ink-muted">
@@ -575,11 +576,11 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all",
+        "inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all",
         active
           ? tone === "green"
-            ? "border-transparent bg-faso-green text-white shadow-premium"
-            : "border-transparent bg-faso-gradient text-white shadow-premium"
+            ? "border-faso-green bg-faso-green-soft/40 text-faso-green-dark ring-1 ring-faso-green"
+            : "border-faso-gold bg-faso-gold-soft/30 text-ink ring-1 ring-faso-gold"
           : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink",
         className,
       )}
@@ -660,9 +661,9 @@ function SheetChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-all active:scale-95",
+        "inline-flex min-h-[44px] items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-all active:scale-95",
         active
-          ? "border-transparent bg-faso-gradient text-white shadow-premium"
+          ? "border-faso-gold bg-faso-gold-soft/30 text-ink ring-1 ring-faso-gold"
           : "border-clay-200 bg-white text-ink-soft",
       )}
     >

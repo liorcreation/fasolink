@@ -37,7 +37,7 @@ export function ProductCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3) }}
-      className="group card-premium flex flex-col overflow-hidden"
+      className="group card-premium flex flex-col overflow-hidden hover:-translate-y-1 hover:shadow-premium-lg"
     >
       <Link href={href} className="block">
         <div className="relative aspect-square overflow-hidden bg-clay-100">
