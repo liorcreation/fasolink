@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "L'annuaire et la marketplace des commerçants du Burkina Faso. Contact WhatsApp direct.",
     start_url: "/?utm_source=pwa",
     display: "standalone",
-    orientation: "portrait",
+    orientation: "any",
     background_color: "#FBF6EF",
     theme_color: "#D62828",
     lang: "fr",

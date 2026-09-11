@@ -173,7 +173,7 @@ export function ReviewsSection({
             <p className="text-sm font-bold text-ink">
               Partagez votre expérience avec {shopName}
             </p>
-            <div className="flex gap-1">
+            <div className="-m-1.5 flex">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
@@ -181,6 +181,7 @@ export function ReviewsSection({
                   onClick={() => setRating(n)}
                   onMouseEnter={() => setHover(n)}
                   onMouseLeave={() => setHover(0)}
+                  className="p-1.5"
                   aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
                 >
                   <Star

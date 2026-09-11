@@ -339,7 +339,7 @@ export function ShopRegistrationForm() {
                     onClick={() =>
                       setGallery((g) => g.filter((_, idx) => idx !== i))
                     }
-                    className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-lg bg-ink/70 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-lg bg-ink/70 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                     aria-label="Supprimer la photo"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

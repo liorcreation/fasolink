@@ -17,6 +17,10 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Le site n'a qu'un thème clair : évite que les contrôles natifs du
+       navigateur (select, scrollbar, input file…) passent en sombre sur un
+       appareil réglé en mode sombre système, ce qui jurerait avec le design. */
+    color-scheme: light;
   }
 
   body {
