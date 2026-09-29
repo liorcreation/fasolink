@@ -41,6 +41,7 @@ export function ShopGallery({ images }: { images: string[] }) {
           >
             <button
               type="button"
+              onClick={() => setActive(null)}
               className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white"
               aria-label="Fermer"
             >
