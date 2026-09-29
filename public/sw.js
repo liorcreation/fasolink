@@ -1,7 +1,7 @@
 /* FasoLink — service worker minimal (PWA offline-friendly) */
 // Change this value on releases that alter app code so installed PWAs discard
 // their cached JavaScript chunks and fetch the current admin permissions/UI.
-const VERSION = "fasolink-v5";
+const VERSION = "fasolink-v6";
 const APP_SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 const OFFLINE_URL = "/offline";

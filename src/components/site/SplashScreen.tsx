@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 /**
@@ -15,44 +15,42 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 const EASE = [0.22, 1, 0.36, 1] as const;
 // Versionné pour que la nouvelle ouverture de marque soit rejouée une fois
 // après cette mise à jour, puis reste absente pendant les navigations internes.
-const SPLASH_SESSION_KEY = "fasolink:splash-seen:v2";
+const SPLASH_SESSION_KEY = "fasolink:splash-seen:v3";
+const SPLASH_COOKIE_KEY = "fasolink_splash_seen";
+let splashBootChecked = false;
 
 export function SplashScreen() {
-  const [visible, setVisible] = useState(true);
+  // SSR must never place the full-screen splash over every freshly loaded route.
+  // We only reveal it after the browser confirms this is a new app session.
+  const [visible, setVisible] = useState(false);
   const reduced = useReducedMotion() === true;
-  const initialized = useRef(false);
 
   useEffect(() => {
-    // Le layout racine doit rester stable pendant les navigations. Ce garde-fou
-    // évite qu'un changement tardif de la préférence de mouvement relance ou
-    // coupe l'animation en plein affichage.
-    if (initialized.current) return;
-    initialized.current = true;
+    // Le latch module protège aussi des remontages du layout pendant la même
+    // vie JavaScript, notamment en PWA et sous React Strict Mode.
+    if (splashBootChecked) return;
+    splashBootChecked = true;
 
-    const previousOverflow = document.body.style.overflow;
-
-    // Le splash doit vivre une seule fois par session. Sans ce garde-fou,
-    // certains navigateurs mobiles peuvent remonter le layout racine lors
-    // d'une navigation et rejouer l'ouverture à chaque clic.
+    let alreadySeen = false;
     try {
-      if (window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "1") {
-        setVisible(false);
-        document.body.style.overflow = previousOverflow;
-        return;
-      }
-      window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+      alreadySeen = window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "1";
+      if (!alreadySeen) window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
     } catch {
-      // Safari privé peut refuser sessionStorage : l'animation reste alors
-      // fonctionnelle sans bloquer l'application.
+      // Safari privé / webviews : utiliser un cookie de session comme second
+      // garde-fou, pour qu'un rechargement de route ne rejoue pas le splash.
+      alreadySeen = document.cookie.split(";").some((part) => part.trim() === `${SPLASH_COOKIE_KEY}=1`);
+      if (!alreadySeen) document.cookie = `${SPLASH_COOKIE_KEY}=1; Path=/; SameSite=Lax`;
     }
 
+    if (alreadySeen) return;
+
     document.body.style.overflow = "hidden";
+    setVisible(true);
     const holdMs = reduced ? 900 : 2000;
-    const timer = window.setTimeout(() => setVisible(false), holdMs);
-    return () => {
-      window.clearTimeout(timer);
-      document.body.style.overflow = previousOverflow;
-    };
+    // Do not cancel on Strict Mode's simulated effect cleanup: the root layout
+    // remains mounted during app navigation and this timer owns the first-run
+    // dismissal for this document.
+    window.setTimeout(() => setVisible(false), holdMs);
   }, [reduced]);
 
   const timing = reduced
