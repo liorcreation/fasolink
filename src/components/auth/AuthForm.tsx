@@ -1,77 +1,124 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LoaderCircle,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
+import {
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore/lite";
-import { ArrowRight, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { auth, COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
 import { Button } from "@/components/ui/Button";
 
-type Mode = "login" | "signup";
+type AuthMode = "login" | "signup";
 
-export function AuthForm() {
-  const [mode, setMode] = useState<Mode>("login");
+interface AuthFormProps {
+  initialMode: AuthMode;
+}
+
+function getErrorMessage(cause: unknown) {
+  const code =
+    cause && typeof cause === "object" && "code" in cause
+      ? String((cause as { code?: unknown }).code)
+      : "";
+
+  if (code.includes("operation-not-allowed")) return "La connexion par email n’est pas activée dans Firebase.";
+  if (code.includes("unauthorized-domain")) return "Ce domaine n’est pas autorisé dans Firebase Authentication.";
+  if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) return "Email ou mot de passe incorrect. Vérifiez vos identifiants.";
+  if (code.includes("email-already-in-use")) return "Cette adresse possède déjà un compte. Connectez-vous plutôt.";
+  if (code.includes("network-request-failed")) return "Connexion internet indisponible. Vérifiez votre réseau puis réessayez.";
+  if (code.includes("too-many-requests")) return "Trop de tentatives. Patientez quelques minutes avant de réessayer.";
+  if (code.includes("weak-password")) return "Choisissez un mot de passe plus robuste (8 caractères minimum).";
+  if (code.includes("invalid-email")) return "Cette adresse email ne semble pas valide.";
+  return "L’opération n’a pas abouti. Réessayez dans un instant.";
+}
+
+export function AuthForm({ initialMode }: AuthFormProps) {
+  const reduceMotion = useReducedMotion();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const isSignup = initialMode === "signup";
 
-  async function submit(event: React.FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isFirebaseConfigured || busy) return;
-    setBusy(true);
     setError(null);
-    try {
-      const credential =
-        mode === "login"
-          ? await signInWithEmailAndPassword(auth, email.trim(), password)
-          : await createUserWithEmailAndPassword(auth, email.trim(), password);
+    setNotice(null);
 
-      if (mode === "signup") {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (isSignup && password !== confirmPassword) {
+      setError("Les deux mots de passe ne correspondent pas.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      if (isSignup) {
+        const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
         const now = new Date().toISOString();
-        await setDoc(
-          doc(db, COLLECTIONS.profiles, credential.user.uid),
-          {
+        try {
+          await setDoc(doc(db, COLLECTIONS.profiles, credential.user.uid), {
             id: credential.user.uid,
             role: "buyer",
-            full_name: name.trim() || email.trim().split("@")[0],
+            full_name: name.trim(),
             phone: null,
             city: null,
             avatar_url: null,
             created_at: now,
             updated_at: now,
-          },
-          { merge: true },
-        );
+          }, { merge: true });
+        } catch {
+          // Firebase Auth has already created a valid account; the profile can be
+          // completed later from the signed-in profile page.
+          setNotice("Votre compte est créé. Complétez les informations de votre profil après connexion.");
+        }
+      } else {
+        await signInWithEmailAndPassword(auth, normalizedEmail, password);
       }
       setDone(true);
     } catch (cause) {
-      const code =
-        cause && typeof cause === "object" && "code" in cause
-          ? String((cause as { code?: unknown }).code)
-          : cause instanceof Error
-            ? cause.message
-            : "";
-      setError(
-        code.includes("operation-not-allowed")
-          ? "La connexion par email n’est pas encore activée dans Firebase."
-          : code.includes("unauthorized-domain")
-            ? "Ce domaine Cloudflare n’est pas autorisé dans Firebase Authentication."
-            : code.includes("invalid-credential") || code.includes("wrong-password")
-              ? "Email ou mot de passe incorrect."
-              : code.includes("email-already-in-use")
-                ? "Cette adresse email est déjà utilisée. Cliquez sur « J’ai déjà un compte » pour vous connecter."
-                : code.includes("network-request-failed")
-                  ? "Firebase est momentanément inaccessible. Vérifiez votre connexion internet."
-                  : code.includes("too-many-requests")
-                    ? "Trop de tentatives. Attendez quelques minutes avant de réessayer."
-                    : code.includes("weak-password")
-                      ? "Le mot de passe doit contenir au moins 6 caractères."
-                      : "Impossible de terminer l’opération. Vérifiez la configuration Firebase et votre connexion.",
-      );
+      setError(getErrorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resetPassword() {
+    setError(null);
+    setNotice(null);
+    if (!email.trim()) {
+      setError("Saisissez votre adresse email pour recevoir le lien de réinitialisation.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await sendPasswordResetEmail(auth, email.trim().toLowerCase());
+      setNotice("Si un compte existe pour cette adresse, un lien de réinitialisation vient d’être envoyé.");
+    } catch (cause) {
+      setError(getErrorMessage(cause));
     } finally {
       setBusy(false);
     }
@@ -79,145 +126,103 @@ export function AuthForm() {
 
   if (!isFirebaseConfigured) {
     return (
-      <div className="card-premium mx-auto max-w-lg p-7 text-center">
-        <ShieldCheck className="mx-auto h-8 w-8 text-faso-gold" />
-        <h2 className="mt-4 text-xl font-bold text-ink">Mode démonstration</h2>
-        <p className="mt-2 text-sm text-ink-soft">
-          Configurez Firebase pour activer les comptes réels et la synchronisation entre appareils.
-        </p>
+      <div className="auth-form-card" role="status">
+        <span className="auth-icon-badge"><ShieldCheck aria-hidden="true" /></span>
+        <h2 className="mt-5 text-2xl font-bold text-ink">Espace sécurisé</h2>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-ink-muted">L’authentification est momentanément indisponible. Réessayez plus tard.</p>
+        <Link href="/" className="btn-base mt-7 bg-ink px-6 text-sm text-white">Retour à l’accueil <ArrowLeft className="h-4 w-4" /></Link>
       </div>
     );
   }
 
   if (done) {
     return (
-      <div className="card-premium mx-auto max-w-lg p-8 text-center">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-faso-green text-white">
-          <ShieldCheck className="h-7 w-7" />
-        </div>
-        <h2 className="mt-4 text-2xl font-bold text-ink">
-          {mode === "login" ? "Connexion réussie" : "Compte créé"}
-        </h2>
-        <p className="mt-2 text-sm text-ink-soft">
-          Votre session est active. Vous pouvez maintenant gérer votre espace FasoLink.
-        </p>
-        <Link
-          href="/profil"
-          className="btn-base mt-6 inline-flex bg-faso-red px-5 text-sm text-white"
-        >
-          Ouvrir mon profil
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
+      <motion.section
+        initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="auth-form-card text-center"
+        aria-live="polite"
+      >
+        <span className="auth-icon-badge auth-icon-success"><Check aria-hidden="true" /></span>
+        <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-faso-green">Tout est prêt</p>
+        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink">{isSignup ? "Bienvenue chez FasoLink" : "Heureux de vous revoir"}</h2>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-ink-muted">{notice || (isSignup ? "Votre compte acheteur est créé. Découvrez les commerces qui font vivre le Burkina." : "Votre session est ouverte. Retrouvez vos favoris et votre espace personnel.")}</p>
+        <Link href="/profil" className="btn-base mt-8 min-h-12 bg-faso-red px-6 text-sm text-white shadow-premium transition hover:-translate-y-0.5">Ouvrir mon espace <ArrowRight className="h-4 w-4" /></Link>
+      </motion.section>
     );
   }
 
   return (
-    <div className="card-premium mx-auto grid max-w-4xl overflow-hidden p-0 md:grid-cols-[0.82fr_1.18fr]">
-      <div className="relative hidden overflow-hidden bg-ink p-9 text-white md:flex md:min-h-[500px] md:flex-col md:justify-between">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-faso-red/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-faso-green/30 blur-3xl" />
-        <div className="relative">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-faso-gold">
-            FasoLink
-          </span>
-          <h3 className="mt-8 max-w-xs text-3xl font-extrabold leading-tight tracking-tight">
-            Votre commerce local, toujours à portée de main.
-          </h3>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-white/65">
-            Une expérience pensée pour découvrir, faire confiance et soutenir les talents du Burkina Faso.
-          </p>
-        </div>
-        <div className="relative grid grid-cols-2 gap-3 text-xs text-white/70">
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-3 backdrop-blur-sm">
-            <strong className="block text-xl text-white">500+</strong>
-            boutiques locales
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-3 backdrop-blur-sm">
-            <strong className="block text-xl text-white">100%</strong>
-            made in Burkina
-          </div>
+    <section className="auth-form-card" aria-labelledby="auth-form-title">
+      <div className="flex items-start gap-4">
+        <span className="auth-icon-badge"><LockKeyhole aria-hidden="true" /></span>
+        <div className="min-w-0 pt-0.5">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-faso-gold-dark">{isSignup ? "Un compte. Tout FasoLink." : "Votre espace, en toute confiance"}</p>
+          <h2 id="auth-form-title" className="mt-1.5 text-2xl font-extrabold tracking-tight text-ink">{isSignup ? "Créer mon compte" : "Content de vous revoir"}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{isSignup ? "Quelques secondes suffisent pour commencer." : "Connectez-vous pour retrouver votre univers."}</p>
         </div>
       </div>
 
-      <div className="p-6 md:p-10">
-      <div className="mb-5 flex items-center gap-3 rounded-2xl bg-clay-50/70 p-3 md:hidden">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-faso-gradient text-white">
-          <LockKeyhole className="h-4 w-4" />
-        </span>
-        <span className="text-sm font-bold text-ink">Un espace pensé pour vous</span>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-faso-gradient text-white shadow-glow">
-          <LockKeyhole className="h-5 w-5" />
-        </span>
-        <div>
-          <h2 className="text-xl font-bold text-ink">
-            {mode === "login" ? "Se connecter" : "Créer mon compte"}
-          </h2>
-          <p className="text-sm text-ink-muted">Un accès sécurisé à votre espace.</p>
-        </div>
-      </div>
+      <form onSubmit={submit} className="mt-8 space-y-[1.15rem]" noValidate>
+        <AnimatePresence initial={false}>
+          {isSignup && (
+            <motion.label
+              key="full-name"
+              initial={reduceMotion ? false : { opacity: 0, height: 0, y: -6 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, height: 0, y: -6 }}
+              className="auth-field"
+            >
+              <span>Nom complet</span>
+              <span className="auth-input-wrap"><UserRound aria-hidden="true" /><input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Ex. Awa Traoré" required minLength={2} /></span>
+            </motion.label>
+          )}
+        </AnimatePresence>
 
-      <form onSubmit={submit} className="mt-7 space-y-5">
-        {mode === "signup" && (
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold text-ink">Nom complet</span>
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="input-premium"
-              placeholder="Prénom NOM"
-              required
-            />
-          </label>
-        )}
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-ink">Adresse email</span>
-          <div className="flex items-center gap-2 rounded-2xl border border-clay-200 bg-white px-4 transition-all focus-within:border-faso-gold focus-within:shadow-[0_0_0_4px_rgba(244,169,60,0.14)]">
-            <Mail className="h-4 w-4 text-ink-muted" />
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="h-12 w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
-              placeholder="vous@exemple.com"
-              required
-            />
-          </div>
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-ink">Mot de passe</span>
-          <input
-            type="password"
-            minLength={6}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="input-premium"
-            placeholder="6 caractères minimum"
-            required
-          />
+        <label className="auth-field">
+          <span>Adresse email</span>
+          <span className="auth-input-wrap"><Mail aria-hidden="true" /><input type="email" autoComplete="email" inputMode="email" autoCapitalize="none" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="vous@exemple.com" required /></span>
         </label>
 
-        {error && <p role="alert" className="rounded-2xl border border-faso-red/15 bg-faso-red-soft/30 px-4 py-3 text-sm leading-6 text-faso-red-dark">{error}</p>}
+        <label className="auth-field">
+          <span>Mot de passe</span>
+          <span className="auth-input-wrap"><KeyRound aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? "8 caractères minimum" : "Votre mot de passe"} required /><button type="button" className="auth-password-toggle" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</button></span>
+        </label>
 
-        <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-5 w-5" />}
-          {mode === "login" ? "Se connecter" : "Créer mon compte"}
+        <AnimatePresence initial={false}>
+          {isSignup && (
+            <motion.label
+              key="confirm-password"
+              initial={reduceMotion ? false : { opacity: 0, height: 0, y: -6 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, height: 0, y: -6 }}
+              className="auth-field"
+            >
+              <span>Confirmer le mot de passe</span>
+              <span className="auth-input-wrap"><ShieldCheck aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Saisissez-le à nouveau" required /></span>
+            </motion.label>
+          )}
+        </AnimatePresence>
+
+        {!isSignup && <div className="flex justify-end"><button type="button" onClick={resetPassword} disabled={busy} className="text-sm font-bold text-faso-red transition hover:text-faso-red-dark hover:underline disabled:opacity-50">Mot de passe oublié ?</button></div>}
+
+        <AnimatePresence mode="wait" initial={false}>
+          {error && <motion.p key="error" initial={reduceMotion ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="alert" className="auth-message auth-message-error">{error}</motion.p>}
+          {!error && notice && <motion.p key="notice" initial={reduceMotion ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} role="status" className="auth-message auth-message-success">{notice}</motion.p>}
+        </AnimatePresence>
+
+        <Button type="submit" size="lg" disabled={busy} className="auth-submit">
+          {busy ? <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> : isSignup ? <Sparkles className="h-5 w-5" aria-hidden="true" /> : <ArrowRight className="h-5 w-5" aria-hidden="true" />}
+          {busy ? "Un instant…" : isSignup ? "Créer mon compte" : "Me connecter"}
+          {!busy && <ArrowRight className="ml-auto h-4 w-4 opacity-70" aria-hidden="true" />}
         </Button>
       </form>
 
-      <button
-        type="button"
-        onClick={() => {
-          setMode((current) => (current === "login" ? "signup" : "login"));
-          setError(null);
-        }}
-        className="mt-5 w-full text-center text-sm font-semibold text-faso-red hover:underline"
-      >
-        {mode === "login" ? "Je n’ai pas encore de compte" : "J’ai déjà un compte"}
-      </button>
+      <div className="auth-switch">
+        <span>{isSignup ? "Déjà membre ?" : "Pas encore de compte ?"}</span>
+        <Link href={isSignup ? "/connexion" : "/inscription"}>{isSignup ? "Se connecter" : "Créer un compte"}<ArrowRight aria-hidden="true" /></Link>
       </div>
-    </div>
+      <p className="auth-privacy"><ShieldCheck aria-hidden="true" /> Vos informations restent protégées et ne sont jamais affichées publiquement.</p>
+    </section>
   );
 }
