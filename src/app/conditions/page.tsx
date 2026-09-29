@@ -1,9 +1,48 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { FileText } from "lucide-react";
+import { LegalPageLayout, LegalSection } from "@/components/legal/LegalPageLayout";
 
-export const metadata: Metadata = { title: "Conditions d’utilisation", description: "Règles d’utilisation de la plateforme FasoLink." };
+export const metadata: Metadata = {
+  title: "Conditions d’utilisation",
+  description: "Règles d’utilisation de la plateforme FasoLink.",
+};
+
+const sections = [
+  { id: "role-fasolink", label: "Rôle de FasoLink" },
+  { id: "comptes-boutiques", label: "Comptes et boutiques" },
+  { id: "paiements", label: "Paiements" },
+  { id: "contact-litiges", label: "Contact et litiges" },
+  { id: "complement", label: "À compléter avant exploitation" },
+];
 
 export default function ConditionsPage() {
-  return <div className="container-faso py-14 md:py-20"><div className="mx-auto max-w-3xl"><span className="inline-flex items-center gap-2 rounded-full bg-faso-red-soft/40 px-3 py-1 text-xs font-bold text-faso-red-dark"><FileText className="h-3.5 w-3.5" /> Cadre d’utilisation</span><h1 className="mt-5 text-4xl font-extrabold tracking-tight text-ink md:text-5xl">Conditions d’utilisation</h1><p className="mt-4 text-lg text-ink-soft">FasoLink met en relation les acteurs locaux ; chaque utilisateur s’engage à fournir des informations exactes et respectueuses.</p><div className="mt-10 space-y-8 text-sm leading-7 text-ink-soft"><section><h2 className="text-xl font-bold text-ink">Rôle de FasoLink</h2><p className="mt-3">FasoLink fournit une vitrine numérique, un annuaire et des outils de contact. Les vendeurs restent responsables de leurs produits, prix, disponibilités, délais, garanties et obligations fiscales.</p></section><section><h2 className="text-xl font-bold text-ink">Comptes et boutiques</h2><p className="mt-3">Un compte ne doit pas être partagé. Les contenus frauduleux, trompeurs, illicites ou portant atteinte aux droits d’autrui peuvent être retirés. Une boutique peut être suspendue par l’administration en cas d’abus ou de non-conformité.</p></section><section><h2 className="text-xl font-bold text-ink">Paiements</h2><p className="mt-3">Les abonnements vendeurs sont activés uniquement après confirmation de la passerelle de paiement configurée. Les frais, renouvellements et conditions commerciales doivent être validés dans l’offre remise au client.</p></section><section><h2 className="text-xl font-bold text-ink">Contact et litiges</h2><p className="mt-3">Les échanges commerciaux se font directement entre acheteur et vendeur. FasoLink peut aider à signaler un abus, sans se substituer aux parties ni aux autorités compétentes.</p></section></div><p className="mt-8 rounded-2xl bg-faso-gold-soft/30 p-4 text-sm text-ink-soft">Document de base à compléter avec l’identité juridique, l’adresse et les coordonnées officielles du propriétaire de FasoLink.</p><Link href="/" className="mt-10 inline-flex text-sm font-bold text-faso-red hover:underline">← Retour à l’accueil</Link></div></div>;
+  return (
+    <LegalPageLayout
+      eyebrow="Cadre d’utilisation"
+      title="Conditions d’utilisation"
+      intro="FasoLink met en relation les acteurs locaux ; chaque utilisateur s’engage à fournir des informations exactes et respectueuses."
+      icon={FileText}
+      accent="red"
+      activePage="/conditions"
+      sections={sections}
+    >
+      <LegalSection id="role-fasolink" title="Rôle de FasoLink">
+        <p>FasoLink fournit une vitrine numérique, un annuaire et des outils de contact. Les vendeurs restent responsables de leurs produits, prix, disponibilités, délais, garanties et obligations fiscales.</p>
+      </LegalSection>
+      <LegalSection id="comptes-boutiques" title="Comptes et boutiques">
+        <p>Un compte ne doit pas être partagé. Les contenus frauduleux, trompeurs, illicites ou portant atteinte aux droits d’autrui peuvent être retirés. Une boutique peut être suspendue par l’administration en cas d’abus ou de non-conformité.</p>
+      </LegalSection>
+      <LegalSection id="paiements" title="Paiements">
+        <p>Les abonnements vendeurs sont activés uniquement après confirmation de la passerelle de paiement configurée. Les frais, renouvellements et conditions commerciales doivent être validés dans l’offre remise au client.</p>
+      </LegalSection>
+      <LegalSection id="contact-litiges" title="Contact et litiges">
+        <p>Les échanges commerciaux se font directement entre acheteur et vendeur. FasoLink peut aider à signaler un abus, sans se substituer aux parties ni aux autorités compétentes.</p>
+      </LegalSection>
+      <LegalSection id="complement" title="Informations à compléter">
+        <div className="rounded-2xl border border-faso-gold/20 bg-faso-gold-soft/25 p-4 text-sm leading-6 text-ink-soft">
+          Document de base à compléter avec l’identité juridique, l’adresse et les coordonnées officielles du propriétaire de FasoLink.
+        </div>
+      </LegalSection>
+    </LegalPageLayout>
+  );
 }
