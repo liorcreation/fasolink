@@ -13,7 +13,6 @@ import {
   PauseCircle,
   Plus,
   Search,
-  ShieldCheck,
   Store,
   X,
 } from "lucide-react";
@@ -156,20 +155,10 @@ export function SuperAdminLicenses({ shops, onChanged }: { shops: Shop[]; onChan
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl bg-[#17120E] p-6 text-white shadow-premium-lg md:p-8">
-        <div className="pointer-events-none absolute -right-12 -top-20 h-72 w-72 rounded-full bg-faso-gold/20 blur-3xl" />
-        <div className="relative flex flex-wrap items-start justify-between gap-5">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-faso-gold"><ShieldCheck className="h-3.5 w-3.5" /> Super Admin Control</span>
-            <h2 className="mt-4 text-2xl font-extrabold md:text-3xl">Licences & accès boutiques</h2>
-            <p className="mt-2 text-sm leading-6 text-white/70">Accordez une période d’accès, offrez une licence, prolongez une échéance ou révoquez un accès. Chaque décision est historisée.</p>
-          </div>
-          <div className="grid min-w-[220px] grid-cols-2 gap-3">
-            <Summary icon={<Store className="h-4 w-4" />} value={String(shops.length)} label="Boutiques" />
-            <Summary icon={<KeyRound className="h-4 w-4" />} value={String(activeCount)} label="Licences actives" />
-          </div>
-        </div>
-      </section>
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-clay-200 pb-4">
+        <div><p className="text-[10px] font-extrabold uppercase tracking-[0.19em] text-faso-red">Accès & facturation</p><h2 className="mt-1 text-xl font-extrabold tracking-tight text-ink sm:text-2xl">Licences boutiques</h2><p className="mt-1 max-w-2xl text-sm text-ink-muted">Attribuez, prolongez ou révoquez les accès. Chaque décision reste inscrite au journal de contrôle.</p></div>
+        <div className="flex gap-2"><Summary icon={<Store className="h-4 w-4" />} value={String(shops.length)} label="Boutiques" /><Summary icon={<KeyRound className="h-4 w-4" />} value={String(activeCount)} label="Licences actives" /></div>
+      </div>
 
       {error && <p role="alert" className="rounded-2xl border border-faso-red/15 bg-faso-red-soft/40 px-4 py-3 text-sm text-faso-red-dark">{error}</p>}
       {success && <p role="status" className="flex items-center gap-2 rounded-2xl border border-faso-green/15 bg-faso-green-soft/30 px-4 py-3 text-sm font-semibold text-faso-green-dark"><Check className="h-4 w-4" />{success}</p>}
@@ -264,5 +253,5 @@ export function SuperAdminLicenses({ shops, onChanged }: { shops: Shop[]; onChan
 }
 
 function Summary({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-  return <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-3"><div className="flex items-center gap-2 text-faso-gold">{icon}<span className="text-xl font-extrabold text-white">{value}</span></div><p className="mt-1 text-[11px] text-white/65">{label}</p></div>;
+  return <div className="min-w-[108px] rounded-2xl border border-clay-200/80 bg-white px-3 py-2.5 shadow-[0_4px_14px_rgba(51,37,23,.035)]"><div className="flex items-center gap-2 text-faso-gold-dark">{icon}<span className="text-lg font-extrabold text-ink">{value}</span></div><p className="mt-0.5 text-[10px] font-semibold text-ink-muted">{label}</p></div>;
 }
