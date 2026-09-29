@@ -10,15 +10,16 @@ export const metadata: Metadata = {
 
 export default function VendeurInscriptionPage() {
   return (
-    <div className="container-faso py-14 md:py-20">
+    <div className="container-faso py-8 md:py-12">
       <PageHeader
+        align="left"
         eyebrow="Étape 1 / 2 · Boutique"
-        title="Présentez votre boutique"
-        description="Ces informations composeront votre vitrine publique sur FasoLink."
+        title="Votre vitrine commence ici."
+        description="Racontez votre activité, indiquez où vous trouver et comment vous contacter. Vous pourrez vérifier votre aperçu avant de passer à l’abonnement."
         icon="store"
       />
 
-      <div className="mt-12">
+      <div className="mt-7 md:mt-9">
         <ShopRegistrationForm />
       </div>
     </div>

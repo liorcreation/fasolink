@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Building2,
+  ArrowRight,
   Check,
+  CircleCheck,
   ImagePlus,
   Loader2,
   MapPin,
@@ -61,6 +63,11 @@ export function ShopRegistrationForm() {
     [gallery],
   );
 
+  useEffect(() => () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    galleryPreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
+  }, [galleryPreviews, logoPreview]);
+
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
@@ -70,6 +77,15 @@ export function ShopRegistrationForm() {
     form.city !== "" &&
     /\d{6,}/.test(form.whatsapp) &&
     form.description.trim().length > 20;
+  const category = CATEGORIES.find((item) => item.id === form.category);
+  const completedFields = [
+    form.name.trim().length > 1,
+    Boolean(form.category),
+    Boolean(form.city),
+    /\d{6,}/.test(form.whatsapp),
+    form.description.trim().length > 20,
+  ].filter(Boolean).length;
+  const completion = Math.round((completedFields / 5) * 100);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -137,9 +153,30 @@ export function ShopRegistrationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-8">
+    <form onSubmit={handleSubmit} className="mx-auto max-w-6xl space-y-6">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-7">
+      <aside className="order-first space-y-4 lg:sticky lg:top-24 lg:order-last lg:col-start-2 lg:row-start-1">
+        <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#17120E] p-5 text-white shadow-premium-lg sm:p-6">
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_100%_0,rgba(220,166,55,.24),transparent_44%)]" />
+          <div className="flex items-center justify-between gap-3"><span className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[.18em] text-[#F3D88E]"><Building2 className="h-3.5 w-3.5" /> Votre progression</span><span className="text-xs font-black text-white">{completion}%</span></div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><motion.div initial={{ width: 0 }} animate={{ width: `${completion}%` }} transition={{ duration: .45, ease: "easeOut" }} className="h-full rounded-full bg-faso-gold" /></div>
+          <div className="mt-5 flex items-center gap-3"><span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-white/10 text-faso-gold">{logoPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- Local object URL preview.
+            <img src={logoPreview} alt="" className="h-full w-full object-cover" />
+          ) : <Building2 className="h-4 w-4" />}</span><span className="min-w-0"><span className="block text-[9px] font-extrabold uppercase tracking-[.16em] text-white/45">Aperçu de la vitrine</span><span className="mt-0.5 block truncate text-sm font-extrabold text-white">{form.name.trim() || "Nom de votre boutique"}</span></span></div>
+          <div className="mt-4 flex flex-wrap gap-2"><span className="rounded-full border border-white/10 bg-white/[.06] px-2.5 py-1 text-[10px] font-bold text-white/75">{category?.label ?? "Catégorie"}</span><span className="rounded-full border border-white/10 bg-white/[.06] px-2.5 py-1 text-[10px] font-bold text-white/75">{form.city || "Votre ville"}</span></div>
+          <p className="mt-4 line-clamp-3 min-h-[3.75rem] text-xs leading-5 text-white/55">{form.description.trim() || "Votre description donnera aux clients un premier aperçu de votre activité et de votre savoir-faire."}</p>
+          <div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4"><span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 text-white/65"><Phone className="h-3.5 w-3.5" /></span><span className="truncate text-[11px] font-semibold text-white/75">{form.whatsapp || "Votre contact WhatsApp"}</span></div>
+        </section>
+        <section className="rounded-[1.5rem] border border-clay-200/80 bg-white p-5 shadow-[0_7px_25px_rgba(51,37,23,.04)]">
+          <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-faso-red">Votre parcours</p>
+          <div className="mt-4 space-y-4"><StepLine number="01" title="Créer la vitrine" detail="Informations & identité" active /><StepLine number="02" title="Choisir un abonnement" detail="Activation de la boutique" /></div>
+          <p className="mt-4 rounded-xl bg-faso-green-soft/25 px-3 py-2.5 text-[10px] leading-4 text-faso-green-dark">Vous pourrez compléter les photos de votre boutique après cette étape.</p>
+        </section>
+      </aside>
+      <div className="order-2 space-y-5 lg:col-start-1 lg:row-start-1">
       {/* Identité */}
-      <fieldset className="card-premium space-y-5 p-6 md:p-8">
+      <fieldset className="card-premium space-y-5 rounded-[1.75rem] p-5 sm:p-7">
         <legend className="flex items-center gap-2 px-2 text-sm font-bold text-ink">
           <Building2 className="h-4 w-4 text-faso-red" />
           Identité de la boutique
@@ -157,17 +194,17 @@ export function ShopRegistrationForm() {
         </Field>
 
         <Field label="Catégorie" required>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {CATEGORIES.map((c) => (
               <button
                 type="button"
                 key={c.id}
                 onClick={() => update("category", c.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all",
+                "inline-flex min-h-11 items-center justify-start gap-2 rounded-2xl border px-3 py-2.5 text-left text-xs font-bold transition-all sm:px-3.5 sm:text-sm",
                   form.category === c.id
                     ? "border-transparent bg-faso-gradient text-white shadow-premium"
-                    : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold",
+                    : "border-clay-200/80 bg-white text-ink-soft hover:border-faso-gold hover:bg-faso-gold-soft/15",
                 )}
               >
                 <c.icon className="h-4 w-4" />
@@ -190,7 +227,7 @@ export function ShopRegistrationForm() {
       </fieldset>
 
       {/* Localisation & contact */}
-      <fieldset className="card-premium space-y-5 p-6 md:p-8">
+      <fieldset className="card-premium space-y-5 rounded-[1.75rem] p-5 sm:p-7">
         <legend className="flex items-center gap-2 px-2 text-sm font-bold text-ink">
           <MapPin className="h-4 w-4 text-faso-green" />
           Localisation & contact
@@ -244,14 +281,14 @@ export function ShopRegistrationForm() {
       </fieldset>
 
       {/* Médias */}
-      <fieldset className="card-premium space-y-5 p-6 md:p-8">
+      <fieldset className="card-premium space-y-5 rounded-[1.75rem] p-5 sm:p-7">
         <legend className="flex items-center gap-2 px-2 text-sm font-bold text-ink">
           <ImagePlus className="h-4 w-4 text-faso-gold-dark" />
           Logo & photos
         </legend>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-dashed border-clay-300 bg-clay-50">
+        <div className="flex flex-col gap-4 rounded-2xl border border-clay-200/75 bg-[#FCFAF6] p-4 sm:flex-row sm:items-center sm:p-5">
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-dashed border-clay-300 bg-white shadow-sm">
             {logoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -265,13 +302,13 @@ export function ShopRegistrationForm() {
               </span>
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             <input
               ref={logoInput}
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => setLogo(e.target.files?.[0] ?? null)}
+              onChange={(e) => { setLogo(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
             />
             <Button
               type="button"
@@ -279,7 +316,7 @@ export function ShopRegistrationForm() {
               size="sm"
               onClick={() => logoInput.current?.click()}
             >
-              {logo ? "Changer le logo" : "Téléverser un logo"}
+              {logo ? "Changer le logo" : "Ajouter le logo"}
             </Button>
             {logo && (
               <button
@@ -290,24 +327,26 @@ export function ShopRegistrationForm() {
                 Retirer
               </button>
             )}
+            <p className="mt-2 text-[10px] leading-4 text-ink-muted">Carré de préférence · JPG ou PNG</p>
+            {logo && <p className="mt-1 max-w-xs truncate text-[10px] font-semibold text-faso-green-dark">{logo.name}</p>}
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-ink">
-              Galerie produits{" "}
+            <div><p className="text-sm font-bold text-ink">
+              Photos de la boutique{" "}
               <span className="text-ink-muted">
                 ({gallery.length}/{MAX_GALLERY})
               </span>
-            </p>
+            </p><p className="mt-1 text-[10px] text-ink-muted">Ajoutez jusqu’à {MAX_GALLERY} images à votre vitrine.</p></div>
             <input
               ref={galleryInput}
               type="file"
               accept="image/*"
               multiple
               className="hidden"
-              onChange={(e) => onGalleryPick(e.target.files)}
+              onChange={(e) => { onGalleryPick(e.target.files); e.currentTarget.value = ""; }}
             />
             <Button
               type="button"
@@ -348,8 +387,11 @@ export function ShopRegistrationForm() {
               ))}
             </div>
           )}
+          {galleryPreviews.length === 0 && <div className="mt-3 flex min-h-20 items-center justify-center gap-2 rounded-2xl border border-dashed border-clay-300 bg-[#FCFAF6] px-4 py-5 text-center text-[11px] font-medium text-ink-muted"><ImagePlus className="h-4 w-4 text-faso-gold-dark" />Vos photos apparaîtront ici après sélection.</div>}
         </div>
       </fieldset>
+      </div>
+      </div>
 
       {error && (
         <p className="rounded-xl bg-faso-red-soft/40 px-4 py-3 text-sm font-medium text-faso-red-dark">
@@ -357,7 +399,8 @@ export function ShopRegistrationForm() {
         </p>
       )}
 
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-3 rounded-[1.5rem] border border-clay-200/70 bg-white/80 p-5 shadow-sm sm:flex-row sm:justify-between sm:px-6">
+        <p className="text-center text-[10px] leading-5 text-ink-muted sm:text-left"><strong className="text-ink-soft">{completedFields}/5 informations essentielles</strong><br />L’abonnement se choisit à l’étape suivante.</p>
         <Button
           type="submit"
           size="lg"
@@ -370,7 +413,7 @@ export function ShopRegistrationForm() {
               Enregistrement…
             </>
           ) : (
-            "Continuer vers l'abonnement"
+            <>Continuer vers l’abonnement <ArrowRight className="h-4 w-4" /></>
           )}
         </Button>
         <p className="text-center text-xs text-ink-muted">
@@ -405,4 +448,8 @@ function Field({
       {hint && <span className="mt-1 block text-xs text-ink-muted">{hint}</span>}
     </label>
   );
+}
+
+function StepLine({ number, title, detail, active = false }: { number: string; title: string; detail: string; active?: boolean }) {
+  return <div className="flex items-start gap-3"><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-black ${active ? "bg-faso-red text-white" : "bg-clay-100 text-ink-muted"}`}>{active ? <CircleCheck className="h-4 w-4" /> : number}</span><span><span className={`block text-xs font-extrabold ${active ? "text-ink" : "text-ink-muted"}`}>{title}</span><span className="mt-0.5 block text-[10px] text-ink-muted">{detail}</span></span></div>;
 }
