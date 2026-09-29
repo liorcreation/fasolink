@@ -5,20 +5,21 @@ import { VerificationLoader } from "@/components/vendeur/VerificationLoader";
 export const metadata: Metadata = {
   title: "Vérification vendeur",
   description:
-    "Obtenez le badge doré « Vendeur Vérifié FasoLink » en confirmant votre identité (CNIB / NIF) et votre localisation.",
+    "Confirmez l’identité du responsable et l’emplacement de votre boutique pour demander le badge vendeur vérifié FasoLink.",
 };
 
 export default function VerificationPage() {
   return (
     <div className="container-faso py-14 md:py-20">
       <PageHeader
-        eyebrow="Trust Engine FasoLink"
-        title="Devenez Vendeur Vérifié"
-        description="Le badge doré multiplie la confiance des acheteurs et votre taux de contact. Vérification CNIB / NIF + localisation physique."
+        eyebrow="Confiance & transparence"
+        title="Faites vérifier votre boutique"
+        description="Transmettez un justificatif d’identité et confirmez l’emplacement de votre boutique. Après examen de votre dossier, vous pourrez afficher le badge Vendeur vérifié sur FasoLink."
         icon="shield"
+        align="left"
       />
 
-      <div className="mt-12">
+      <div className="mt-8 md:mt-10">
         <VerificationLoader />
       </div>
     </div>
