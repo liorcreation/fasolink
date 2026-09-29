@@ -31,9 +31,15 @@ import { Reveal } from "@/components/ui/Reveal";
 type GeoState = "off" | "loading" | "on" | "denied";
 const RADII = [3, 5, 10, 25];
 
-export function SearchExplorer({ shops }: { shops: ShopWithProducts[] }) {
+export function SearchExplorer({
+  shops,
+  initialCategory = "all",
+}: {
+  shops: ShopWithProducts[];
+  initialCategory?: ShopCategory | "all";
+}) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<ShopCategory | "all">("all");
+  const [category, setCategory] = useState<ShopCategory | "all">(initialCategory);
   const [city, setCity] = useState<string>("all");
   const [neighborhood, setNeighborhood] = useState<string>("all");
   const [openOnly, setOpenOnly] = useState(false);
@@ -185,13 +191,13 @@ export function SearchExplorer({ shops }: { shops: ShopWithProducts[] }) {
       {/* Barre de recherche + géo */}
       <div className="mx-auto mt-10 max-w-3xl space-y-3">
         <div className="card-premium flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
-          <div className="flex flex-1 items-center gap-3 rounded-2xl bg-clay-50 px-4 py-3">
+          <div className="flex flex-1 items-center gap-3 rounded-2xl border border-clay-100 bg-clay-50/80 px-4 py-3 transition-all focus-within:border-faso-gold focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(244,169,60,0.12)]">
             <Search className="h-5 w-5 shrink-0 text-ink-muted" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Bissap, pagne tissé, climatiseur…"
-              className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted"
+            className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
               aria-label="Rechercher une boutique ou un produit"
             />
           </div>
@@ -199,7 +205,7 @@ export function SearchExplorer({ shops }: { shops: ShopWithProducts[] }) {
             type="button"
             onClick={useMyLocation}
             className={cn(
-              "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors",
+              "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all active:scale-[0.98]",
               geo === "on"
                 ? "bg-faso-green text-white"
                 : "bg-clay-50 text-ink-soft hover:bg-clay-100",

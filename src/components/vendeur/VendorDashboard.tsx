@@ -13,31 +13,75 @@ import {
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";
-import type { ShopWithProducts } from "@/lib/database.types";
+import type { ShopWithProducts, Subscription } from "@/lib/database.types";
 import { TRIAL_DAYS } from "@/lib/constants";
 import { cn, formatCFA } from "@/lib/utils";
 import {
+  fetchContactStats,
   getLocalContactStats,
   seedDemoContactEvents,
   type ContactStats,
 } from "@/lib/tracking";
 import { QRCodeCard } from "@/components/vendeur/QRCodeCard";
 import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
+import { ProductManager } from "@/components/vendeur/ProductManager";
 
-export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
+export function VendorDashboard({
+  shop,
+  subscription = null,
+  demo = false,
+}: {
+  shop: ShopWithProducts;
+  subscription?: Subscription | null;
+  demo?: boolean;
+}) {
   const [stats, setStats] = useState<ContactStats | null>(null);
 
   useEffect(() => {
-    seedDemoContactEvents(shop.id);
-    setStats(getLocalContactStats(shop.id));
-    const id = setInterval(
-      () => setStats(getLocalContactStats(shop.id)),
-      5000,
-    );
-    return () => clearInterval(id);
-  }, [shop.id]);
+    let mounted = true;
+    const load = async () => {
+      if (demo) {
+        seedDemoContactEvents(shop.id);
+        if (mounted) setStats(getLocalContactStats(shop.id));
+        return;
+      }
+      try {
+        const next = await fetchContactStats(shop.id);
+        if (mounted) setStats(next);
+      } catch (error) {
+        console.warn("[FasoLink] dashboard stats:", error);
+        if (mounted) setStats({ ...getLocalContactStats(shop.id), total: shop.whatsapp_clicks });
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), 15000);
+    return () => {
+      mounted = false;
+      window.clearInterval(id);
+    };
+  }, [demo, shop.id, shop.whatsapp_clicks]);
 
-  const trialLeft = 9; // démo : jour 5/14
+  const trialLeft = subscription?.expires_at
+    ? Math.max(0, Math.ceil((Date.parse(subscription.expires_at) - Date.now()) / 864e5))
+    : 0;
+  const subscriptionLabel = demo
+    ? `Essai gratuit — ${TRIAL_DAYS} jours de démonstration`
+    : shop.status === "suspended"
+      ? "Boutique suspendue — abonnement à régulariser"
+    : subscription?.status === "trialing"
+      ? `Essai gratuit — ${trialLeft} jours restants`
+      : subscription?.status === "active"
+        ? "Abonnement actif"
+        : "Abonnement à activer";
+  const subscriptionCopy = demo
+    ? "Mode démonstration : configurez Firebase pour activer les données réelles."
+    : shop.status === "suspended"
+      ? "Votre vitrine est masquée aux clients jusqu’à l’activation d’une licence valide."
+    : subscription?.status === "trialing"
+      ? `Aucun paiement requis avant la fin de la période de ${TRIAL_DAYS} jours.`
+      : subscription?.status === "active"
+        ? `Votre formule ${subscription.plan} est active jusqu’au ${new Date(subscription.expires_at ?? Date.now()).toLocaleDateString("fr-FR")}.`
+        : "Activez votre abonnement pour conserver votre vitrine publiée.";
   const maxDay = useMemo(
     () => Math.max(1, ...(stats?.byDay.map((d) => d.count) ?? [1])),
     [stats],
@@ -70,25 +114,25 @@ export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-3 rounded-3xl border border-faso-gold/40 bg-faso-gold-soft/20 p-5 sm:flex-row sm:items-center sm:justify-between"
+        className="relative flex flex-col gap-3 overflow-hidden rounded-[2rem] border border-white/10 bg-ink p-5 text-white shadow-premium-lg sm:flex-row sm:items-center sm:justify-between"
       >
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-faso-gold/20 blur-3xl" />
         <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-faso-gold text-white">
+          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-faso-gold text-white shadow-glow">
             <CalendarClock className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-bold text-ink">
-              Essai gratuit — {trialLeft} jours restants
+            <p className="text-sm font-bold text-white">
+              {subscriptionLabel}
             </p>
-            <p className="text-xs text-ink-muted">
-              Votre boutique est en ligne. Aucun paiement requis avant la fin de
-              la période de {TRIAL_DAYS} jours.
+            <p className="text-xs text-white/60">
+              {subscriptionCopy}
             </p>
           </div>
         </div>
         <Link
           href="/vendeur/paiement"
-          className="btn-base h-10 shrink-0 bg-faso-red px-5 text-sm text-white"
+          className="btn-base relative h-10 shrink-0 bg-faso-gold px-5 text-sm text-ink hover:bg-white"
         >
           Activer mon abonnement
         </Link>
@@ -125,6 +169,8 @@ export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
           <ExternalLink className="h-4 w-4" />
         </Link>
       </div>
+
+      <ProductManager shopId={shop.id} initialProducts={shop.products} demo={demo} />
 
       {/* KPIs contacts */}
       <div className="grid gap-4 sm:grid-cols-3">
@@ -244,14 +290,10 @@ export function VendorDashboard({ shop }: { shop: ShopWithProducts }) {
         <QRCodeCard shopId={shop.id} shopName={shop.name} />
       </div>
 
-      <p
-        className={cn(
-          "rounded-xl bg-clay-50 px-4 py-3 text-center text-xs text-ink-muted",
-        )}
-      >
-        Démo — les contacts sont simulés localement. Connecté à Firebase, ces
-        chiffres proviennent de <code>shops/&lt;id&gt;.whatsapp_clicks</code> et de
-        la collection <code>contact_events</code>.
+      <p className={cn("rounded-xl bg-clay-50 px-4 py-3 text-center text-xs text-ink-muted")}>
+        {demo
+          ? "Mode démonstration — les contacts sont simulés localement."
+          : "Les indicateurs sont alimentés par les événements de contact de votre vitrine."}
       </p>
     </div>
   );

@@ -229,14 +229,14 @@ export function ShopRegistrationForm() {
           required
           hint="Format local (70 00 00 00) ou international (+226…)"
         >
-          <div className="flex items-center gap-2 rounded-xl border border-clay-200 bg-white px-3 focus-within:border-faso-gold">
+          <div className="flex items-center gap-2 rounded-2xl border border-clay-200 bg-white px-4 transition-all focus-within:border-faso-gold focus-within:shadow-[0_0_0_4px_rgba(244,169,60,0.14)]">
             <Phone className="h-4 w-4 text-ink-muted" />
             <input
               type="tel"
               value={form.whatsapp}
               onChange={(e) => update("whatsapp", e.target.value)}
               placeholder="70 12 34 56"
-              className="h-11 w-full bg-transparent text-sm outline-none"
+              className="h-12 w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
               required
             />
           </div>
@@ -382,7 +382,7 @@ export function ShopRegistrationForm() {
 }
 
 const inputCls =
-  "h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-faso-gold";
+  "input-premium";
 
 function Field({
   label,

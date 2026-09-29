@@ -11,6 +11,7 @@ import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
 import { OpenStatus } from "@/components/shops/OpenStatus";
 import { WhatsAppButton } from "@/components/shops/WhatsAppButton";
 import { StickyContactBar } from "@/components/shops/StickyContactBar";
+import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
 
 export const runtime = "edge";
@@ -49,6 +50,7 @@ export default async function ProduitPage({
 
   return (
     <div className="container-faso py-6 pb-[calc(4rem+env(safe-area-inset-bottom)+6rem)] md:py-10 md:pb-16">
+      <ShopStatusWatcher shopId={shop.id} />
       {/* Fil d'Ariane */}
       <nav className="flex items-center gap-1.5 text-xs text-ink-muted">
         <Link href="/#explorer" className="hover:text-ink">

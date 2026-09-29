@@ -29,6 +29,9 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(244, 169, 60, 0.08), transparent 28rem),
+      radial-gradient(circle at 100% 18%, rgba(31, 146, 84, 0.06), transparent 30rem);
   }
 
   ::selection {
@@ -55,11 +58,43 @@
   }
 
   .card-premium {
-    @apply rounded-3xl border border-clay-100 bg-white/90 shadow-premium backdrop-blur-sm transition-all duration-300;
+    @apply rounded-3xl border border-clay-100/90 bg-white/90 shadow-premium backdrop-blur-sm transition-all duration-300;
+    box-shadow: 0 1px 2px rgba(26, 17, 9, 0.03), 0 16px 42px -24px rgba(26, 17, 9, 0.24);
+  }
+
+  .card-premium:hover {
+    border-color: rgba(201, 127, 22, 0.24);
+    box-shadow: 0 2px 4px rgba(26, 17, 9, 0.04), 0 24px 52px -28px rgba(26, 17, 9, 0.28);
+  }
+
+  .surface-soft {
+    @apply rounded-3xl border border-clay-100/80 bg-clay-50/70;
+  }
+
+  .input-premium {
+    @apply h-12 w-full rounded-2xl border border-clay-200 bg-white px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-ink-muted/70;
+  }
+
+  .input-premium:hover {
+    @apply border-clay-300;
+  }
+
+  .input-premium:focus {
+    border-color: #f4a93c;
+    box-shadow: 0 0 0 4px rgba(244, 169, 60, 0.14), 0 8px 24px -16px rgba(26, 17, 9, 0.28);
+  }
+
+  .section-kicker {
+    @apply inline-flex items-center gap-2 rounded-full border border-clay-200/80 bg-white/70 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-faso-red backdrop-blur;
+  }
+
+  .page-ambient {
+    @apply pointer-events-none absolute -top-24 left-1/2 h-72 w-[min(90vw,48rem)] -translate-x-1/2 rounded-full blur-3xl;
+    background: radial-gradient(circle, rgba(244, 169, 60, 0.14), transparent 68%);
   }
 
   .btn-base {
-    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
 }
 

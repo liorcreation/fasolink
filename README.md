@@ -30,8 +30,9 @@ npm run dev
 
 1. Créez un projet sur [console.firebase.google.com](https://console.firebase.google.com).
 2. **Firestore Database** → *Create database* (mode production).
-3. **Authentication → Sign-in method → Anonymous → Enable**. Le formulaire
-   vendeur ouvre une session anonyme (`owner_id`, écriture Firestore/Storage).
+3. **Authentication → Sign-in method** : activez **Email/Password** pour les
+   comptes et **Anonymous** pour l'onboarding vendeur sans compte préalable
+   (`owner_id`, écriture Firestore/Storage).
 4. **Storage → Get started** (bucket par défaut `…​.appspot.com`).
 5. **Project settings → General → Your apps → Web app** : copiez la config
    (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`,
@@ -48,12 +49,12 @@ Cloudflare Pages, pas de listeners temps réel (non nécessaires ici).
 | Étape | Action Firebase |
 | ----- | --------------- |
 | `/vendeur/inscription` — soumission | `signInAnonymously()` → `setDoc` `shops/<slug>` (statut `pending`) → `uploadBytes` logo + photos vers `shops/<id>/…` → `getDownloadURL` → `updateDoc` `shops/<id>` (`logo_url` / `cover_url` / `gallery`) → redirection `/vendeur/paiement?shop=<id>` |
-| `/vendeur/paiement` — paiement validé | `addDoc` `subscriptions` (`started_at`, `expires_at` = +30 j × durée, `status` `active`) → `updateDoc` `shops/<id>.status` = `active` → redirection `/boutiques/<id>?published=1` + toast « Félicitations, votre boutique est en ligne ! » |
+| `/vendeur/paiement` — demande de paiement | `addDoc` `subscriptions` (`status` `pending`) → publication après webhook signé |
 | Essai 14 j | même flux, `status` = `trialing`, `trial_ends_at` = +14 j, montant 0 |
 
-> Le webhook `/api/webhooks/payment` écrit via `firestore/lite` (Edge). En
-> production, préférez une **Firebase Cloud Function** (accès Admin privilégié)
-> déclenchée par l'agrégateur.
+> Le webhook `/api/webhooks/payment` reste compatible Cloudflare Edge : il
+> utilise Firestore REST avec un JWT signé par `FIREBASE_SERVICE_ACCOUNT` et ne
+> publie qu'après vérification HMAC, référence et montant.
 
 ## Structure
 
@@ -65,8 +66,8 @@ src/
 │   ├── profil/                     # Espace compte (cible « Mon Profil »)
 │   ├── vendeur/
 │   │   ├── inscription/            # Formulaire boutique (+ upload logo/photos)
-│   │   ├── paiement/               # Essai 14 j + Orange / Moov / Wave (simulation)
-│   │   ├── dashboard/              # Stats contacts, essai, vérif, QR Code
+│   │   ├── paiement/               # Essai 14 j + demande Mobile Money sécurisée
+│   │   ├── dashboard/              # Boutique du compte, catalogue, stats, QR Code
 │   │   └── verification/           # Dossier CNIB / NIF + géoloc
 │   ├── boutiques/[id]/             # Fiche vitrine + galerie + avis + CTA collant
 │   │   └── produits/[produit]/     # Fiche produit dédiée
@@ -81,14 +82,18 @@ src/
 │   │                               #   StickyContactBar, AvailabilityBadge, OpenStatus,
 │   │                               #   VerifiedBadge, ReviewsSection
 │   ├── vendeur/                    # ShopRegistrationForm, PaymentSimulator,
-│   │                               #   VendorDashboard, VerificationForm, QRCodeCard
+│   │                               #   VendorDashboard, ProductManager, VerificationForm,
+│   │                               #   loaders authentifiés, QRCodeCard
+│   ├── admin/                      # Back-office de modération
 │   ├── pwa/                        # ServiceWorkerRegister, InstallPrompt
 │   └── ui/                         # Button, Badge, Reveal, Skeletons, BottomSheet
 ├── lib/
 │   ├── firebase.ts                 # App + Firestore lite (db) + Auth + Storage + isFirebaseConfigured
 │   ├── database.types.ts           # Types de données (collections Firestore)
 │   ├── shops.ts                    # Lecture Firestore → fallback mock-data + estimateLocalImpact
-│   ├── vendor.ts                   # Écriture vendeur : createShopWithAssets(), activateSubscription()
+│   ├── vendor.ts                   # Boutiques, catalogue, vérification, abonnements
+│   ├── vendor-data.ts              # Boutiques/abonnements du propriétaire connecté
+│   ├── admin-data.ts               # Contrôle custom claim admin + modération
 │   ├── geo.ts                      # haversine, géolocalisation, distance
 │   ├── hours.ts                    # getOpenState() — « Ouvert actuellement »
 │   ├── tracking.ts                 # trackContact() (contact_events + increment) + stats locales
@@ -105,15 +110,18 @@ src/
 | ---------------------- | ---------------------------------------------------------------------------- |
 | `/`                    | Hero + recherche prédictive (Ctrl K), explorateur géolocalisé, compteur d'impact |
 | `/inscription`         | Acheteur (gratuit) vs Vendeur (essai 14 j puis 5 000 F/mois)                 |
+| `/connexion`           | Création de compte et connexion Email/Password                              |
+| `/admin`               | Back-office protégé par le custom claim Firebase `admin`                    |
 | `/vendeur/inscription` | Formulaire complet de boutique + téléversement médias                        |
-| `/vendeur/paiement`    | Formules + essai 14 j gratuit + paiement Orange/Moov/Wave (simulation)       |
-| `/vendeur/dashboard`   | Contacts WhatsApp trackés, période d'essai, vérification, QR Code            |
-| `/vendeur/verification`| Dossier CNIB / NIF + localisation → badge « Vendeur Vérifié »                |
+| `/vendeur/paiement`    | Formules + essai 14 j + demande de paiement, publication via webhook signé   |
+| `/vendeur/dashboard`   | Boutique du propriétaire, catalogue CRUD, contacts, abonnement et QR Code    |
+| `/vendeur/verification`| Dossier CNIB / NIF + géoloc privé → décision admin                           |
 | `/boutiques/[id]`      | Vitrine, dispo produits, horaires, avis vérifiés, CTA WhatsApp collant        |
 | `/boutiques/[id]/produits/[produit]` | Fiche produit dédiée + barre WhatsApp collante (mobile)         |
 | `/profil`             | Espace compte (favoris, vendeur, vérification) — cible « Mon Profil »        |
 | `/offline`             | Page de secours PWA (service worker)                                         |
 | `/api/webhooks/payment`| Webhook agrégateur Mobile Money → activation auto de l'abonnement            |
+| `/api/cron/expire`     | Expire les abonnements échus et suspend les boutiques concernées            |
 
 ### Améliorations « classe mondiale »
 
@@ -128,8 +136,8 @@ src/
 - **Onboarding vendeur** : essai gratuit 14 jours sans carte, multi-opérateurs
   (Orange Money / Moov Money / Wave via CinetPay-PayDunya + webhook), générateur
   de QR Code boutique téléchargeable (affiche PNG brandée).
-- **Trust Engine** : badge doré « Vendeur Vérifié » (CNIB/NIF + géoloc), avis
-  authentifiés (dépôt réservé après contact vérifié — RLS), widget d'impact local animé.
+- **Trust Engine** : badge doré « Vendeur Vérifié » (CNIB/NIF + géoloc), dossiers
+  privés Storage, décision admin et avis rattachés à une session.
 - **Performance / PWA** : installable (`manifest.webmanifest` + `sw.js` offline-first),
   images AVIF/WebP via `next/image`, skeleton loaders (`components/ui/Skeletons`,
   utilisés pendant le chargement de l'explorateur).
@@ -163,9 +171,46 @@ npm run build        # build production Next.js
 npm run start        # serveur production
 npm run lint         # ESLint
 npm run seed         # injecte mock-data dans Firestore (firebase-admin)
+npm run admin:set -- admin@client.bf  # ajoute le custom claim admin
 npm run pages:build  # build Cloudflare Pages (.vercel/output/static)
 npm run pages:deploy # build + wrangler pages deploy
 ```
+
+## Administrateur et production
+
+Le back-office `/admin` vérifie le custom claim Firebase `admin` dans le token.
+Après création du compte administrateur, exécutez `npm run admin:set --
+admin@client.bf` avec `FIREBASE_SERVICE_ACCOUNT` configuré, puis reconnectez-vous
+pour renouveler le token.
+
+### Super administrateur et licences
+
+Le rôle super administrateur est distinct du rôle administrateur de modération.
+Il donne accès au panneau **Licences & accès boutiques** de `/admin` pour
+accorder une durée d'accès, enregistrer une validation manuelle, offrir ou
+révoquer une licence. Chaque décision crée une entrée immuable dans
+`admin_audit_logs`. Les règles Firestore exigent le claim `superAdmin` pour ces
+écritures.
+
+Après création du compte du propriétaire, attribuez le rôle avec la clé Firebase
+Admin uniquement sur un poste de confiance :
+
+```bash
+npm run superadmin:set -- proprietaire@domaine.bf
+```
+
+La commande conserve les claims existants et active `admin` + `superAdmin`.
+Elle lit `FIREBASE_SERVICE_ACCOUNT` dans `.env.local` ou le fichier local ignoré
+`firebase-service-account.json`. Le propriétaire doit ensuite se déconnecter et
+se reconnecter. Ne publiez pas la clé de service dans le dépôt ou dans un
+document client. Toute modification des règles Firestore doit être déployée avec
+`firebase deploy --only firestore:rules`.
+
+Le webhook de paiement est compatible Cloudflare Edge. Ajoutez
+`FIREBASE_SERVICE_ACCOUNT` comme secret Pages avec le JSON du compte de service
+et `PAYMENT_WEBHOOK_SECRET` comme secret partagé avec l'agrégateur. Ajoutez
+également `CRON_SECRET` et appelez `/api/cron/expire` une fois par jour depuis
+un planificateur sécurisé.
 
 ## Déploiement
 

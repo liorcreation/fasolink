@@ -13,7 +13,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type ProfileRole = "buyer" | "seller";
+export type ProfileRole = "buyer" | "seller" | "admin" | "superadmin";
 export type ShopCategory =
   | "alimentation"
   | "habillement"
@@ -31,6 +31,8 @@ export type SubscriptionStatus =
   | "expired"
   | "cancelled";
 export type PaymentProvider = "orange_money" | "moov_money" | "wave";
+export type VerificationDocumentType = "cnib" | "passeport" | "nif";
+export type VerificationRequestStatus = "pending" | "approved" | "rejected";
 
 /** Horaires d'ouverture : "0" = dimanche … "6" = samedi. `null` = fermé ce jour. */
 export type OpeningHours = Record<
@@ -103,6 +105,23 @@ export interface Subscription {
   expires_at: string | null;
   created_at: string;
   updated_at: string;
+  license_type?: "gateway" | "complimentary" | "manual_paid";
+  granted_by?: string | null;
+  grant_reason?: string | null;
+  cancelled_at?: string | null;
+  cancelled_by?: string | null;
+  cancellation_reason?: string | null;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  action: "license_granted" | "license_revoked";
+  actor_uid: string;
+  shop_id: string;
+  subscription_id: string;
+  reason: string;
+  details: string;
+  created_at: string;
 }
 
 export interface Review {
@@ -122,6 +141,23 @@ export interface ContactEvent {
   product_id: string | null;
   channel: string;
   created_at: string;
+}
+
+export interface VerificationRequest {
+  id: string;
+  shop_id: string;
+  owner_id: string;
+  document_type: VerificationDocumentType;
+  document_number: string;
+  full_name: string;
+  recto_path: string;
+  verso_path: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  status: VerificationRequestStatus;
+  rejection_reason: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export type ShopWithProducts = Shop & {

@@ -2,6 +2,7 @@ import { signInAnonymously } from "firebase/auth";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   setDoc,
   updateDoc,
@@ -16,8 +17,11 @@ import {
 } from "@/lib/firebase";
 import type {
   PaymentProvider,
+  ProductAvailability,
+  Product,
   ShopCategory,
   SubscriptionPlan,
+  VerificationDocumentType,
 } from "@/lib/database.types";
 import { PAYMENT_GATEWAY, TRIAL_DAYS } from "@/lib/constants";
 import { STANDARD_HOURS } from "@/lib/hours";
@@ -182,6 +186,157 @@ export async function createShopWithAssets(
   return { id, slug };
 }
 
+export interface ProductDraft {
+  name: string;
+  description: string;
+  price: number;
+  availability: ProductAvailability;
+  image_url?: string | null;
+}
+
+export async function createProduct(
+  shopId: string,
+  input: ProductDraft,
+): Promise<Product> {
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
+  }
+  await ensureSession();
+  const now = new Date().toISOString();
+  const reference = await addDoc(collection(db, COLLECTIONS.products), {
+    shop_id: shopId,
+    name: input.name.trim(),
+    description: input.description.trim() || null,
+    price: Math.max(0, Number(input.price)),
+    currency: "FCFA",
+    image_url: input.image_url ?? null,
+    availability: input.availability,
+    created_at: now,
+    updated_at: now,
+  });
+  return {
+    id: reference.id,
+    shop_id: shopId,
+    name: input.name.trim(),
+    description: input.description.trim() || null,
+    price: Math.max(0, Number(input.price)),
+    currency: "FCFA",
+    image_url: input.image_url ?? null,
+    availability: input.availability,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+export async function updateProduct(
+  productId: string,
+  input: ProductDraft,
+): Promise<void> {
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
+  }
+  await ensureSession();
+  await updateDoc(doc(db, COLLECTIONS.products, productId), {
+    name: input.name.trim(),
+    description: input.description.trim() || null,
+    price: Math.max(0, Number(input.price)),
+    availability: input.availability,
+    image_url: input.image_url ?? null,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+export async function deleteProduct(productId: string): Promise<void> {
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
+  }
+  await ensureSession();
+  await deleteDoc(doc(db, COLLECTIONS.products, productId));
+}
+
+export interface VerificationInput {
+  shopId: string;
+  documentType: VerificationDocumentType;
+  documentNumber: string;
+  fullName: string;
+  recto: File;
+  verso?: File | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+function validateVerificationFile(file: File | null | undefined) {
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    throw new VendorError("insert", "Les justificatifs doivent être des images.");
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new VendorError("insert", "Chaque justificatif doit peser moins de 5 Mo.");
+  }
+}
+
+async function uploadVerificationFile(
+  ownerId: string,
+  requestId: string,
+  side: "recto" | "verso",
+  file: File,
+) {
+  const ext = (file.name.split(".").pop() || "jpg")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  const path = `verification_requests/${ownerId}/${requestId}/${side}.${ext}`;
+  await uploadBytes(ref(storage, path), file, {
+    contentType: file.type,
+    cacheControl: "private,max-age=0",
+  });
+  return path;
+}
+
+export async function submitVerificationRequest(
+  input: VerificationInput,
+): Promise<void> {
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
+  }
+  validateVerificationFile(input.recto);
+  validateVerificationFile(input.verso);
+  const ownerId = await ensureSession();
+  const requestRef = doc(collection(db, COLLECTIONS.verifications));
+  const now = new Date().toISOString();
+  const rectoPath = await uploadVerificationFile(
+    ownerId,
+    requestRef.id,
+    "recto",
+    input.recto,
+  );
+  const versoPath = input.verso
+    ? await uploadVerificationFile(ownerId, requestRef.id, "verso", input.verso)
+    : null;
+
+  await setDoc(requestRef, {
+    shop_id: input.shopId,
+    owner_id: ownerId,
+    document_type: input.documentType,
+    document_number: input.documentNumber.trim(),
+    full_name: input.fullName.trim(),
+    recto_path: rectoPath,
+    verso_path: versoPath,
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
+    status: "pending",
+    rejection_reason: null,
+    created_at: now,
+    updated_at: now,
+  });
+
+  await updateDoc(doc(db, COLLECTIONS.shops, input.shopId), {
+    verification_status: "pending",
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
+    updated_at: now,
+  });
+}
+
 export interface ActivationInput {
   shopId: string;
   plan: SubscriptionPlan;
@@ -198,12 +353,14 @@ export interface ActivationResult {
   startedAt: string;
   expiresAt: string;
   trial: boolean;
+  status: "trialing" | "pending";
 }
 
 /**
  * Après validation du paiement Mobile Money :
- * 1) crée un document dans `subscriptions` (started_at, expires_at, statut `active`)
- * 2) passe la boutique en statut `active` (= « publiée »)
+ * Essai : publie immédiatement la boutique.
+ * Paiement réel : crée uniquement une demande `pending`; la publication est
+ * effectuée par le webhook signé de la passerelle après confirmation.
  */
 export async function activateSubscription(
   input: ActivationInput,
@@ -230,7 +387,7 @@ export async function activateSubscription(
     await addDoc(collection(db, COLLECTIONS.subscriptions), {
       shop_id: input.shopId,
       plan: input.plan,
-      status: input.trial ? "trialing" : "active",
+      status: input.trial ? "trialing" : "pending",
       provider: input.provider,
       gateway: PAYMENT_GATEWAY.name,
       amount: input.trial ? 0 : input.amount,
@@ -243,10 +400,12 @@ export async function activateSubscription(
       updated_at: now.toISOString(),
     });
 
-    await updateDoc(doc(db, COLLECTIONS.shops, input.shopId), {
-      status: "active",
-      updated_at: now.toISOString(),
-    });
+    if (input.trial) {
+      await updateDoc(doc(db, COLLECTIONS.shops, input.shopId), {
+        status: "active",
+        updated_at: now.toISOString(),
+      });
+    }
   } catch (error) {
     throw new VendorError(
       "insert",
@@ -259,5 +418,6 @@ export async function activateSubscription(
     startedAt: now.toISOString(),
     expiresAt: expires.toISOString(),
     trial: Boolean(input.trial),
+    status: input.trial ? "trialing" : "pending",
   };
 }

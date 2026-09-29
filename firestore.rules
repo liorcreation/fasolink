@@ -11,6 +11,15 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isSuperAdmin() {
+      return isSignedIn() && request.auth.token.superAdmin == true;
+    }
+
+    function isAdmin() {
+      // Toute l’administration de la plateforme est désormais réservée au Super Admin.
+      return isSuperAdmin();
+    }
+
     // Le document shops/<shopId> existe-t-il et appartient-il à l'appelant ?
     function ownsShop(shopId) {
       return isSignedIn()
@@ -25,25 +34,58 @@ service cloud.firestore {
         && request.resource.data.owner_id == request.auth.uid;
       // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
       // de contacts WhatsApp (increment).
-      allow update: if (isSignedIn() && resource.data.owner_id == request.auth.uid)
-        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['whatsapp_clicks']);
-      allow delete: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow update: if isAdmin()
+        || (isSignedIn() && resource.data.owner_id == request.auth.uid)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['whatsapp_clicks'])
+          && request.resource.data.whatsapp_clicks == resource.data.whatsapp_clicks + 1);
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.owner_id == request.auth.uid);
     }
 
     // ── products : lecture publique, écriture par le propriétaire de la boutique ──
     match /products/{productId} {
       allow read: if true;
       allow create: if ownsShop(request.resource.data.shop_id);
-      allow update, delete: if ownsShop(resource.data.shop_id);
+      allow update, delete: if isAdmin() || ownsShop(resource.data.shop_id);
     }
 
     // ── subscriptions : gérées par le propriétaire de la boutique ──
     // (le webhook de paiement doit passer par une Cloud Function / Admin SDK
     //  pour écrire ici en production)
     match /subscriptions/{subId} {
-      allow read: if ownsShop(resource.data.shop_id);
-      allow create: if ownsShop(request.resource.data.shop_id);
-      allow update, delete: if ownsShop(resource.data.shop_id);
+      allow read: if isAdmin() || ownsShop(resource.data.shop_id);
+      allow create: if ownsShop(request.resource.data.shop_id)
+        && request.resource.data.status in ['pending', 'trialing']
+        || (isSuperAdmin()
+          && request.resource.data.status == 'active'
+          && request.resource.data.gateway == 'manual_superadmin'
+          && request.resource.data.granted_by == request.auth.uid
+          && request.resource.data.amount is number
+          && request.resource.data.amount >= 0
+          && request.resource.data.expires_at is string
+          && request.resource.data.grant_reason is string
+          && request.resource.data.grant_reason.size() >= 8);
+      allow update: if isSuperAdmin()
+        && request.resource.data.shop_id == resource.data.shop_id
+        && request.resource.data.status in ['active', 'trialing', 'expired', 'cancelled']
+        && request.resource.data.updated_at is string;
+      // Les licences ne sont jamais supprimées : leur cycle se termine par
+      // une révocation historisée afin de préserver la piste d'audit.
+      allow delete: if ownsShop(resource.data.shop_id)
+        && resource.data.status == 'pending';
+    }
+
+    match /admin_audit_logs/{logId} {
+      allow read: if isSuperAdmin();
+      allow create: if isSuperAdmin()
+        && request.resource.data.actor_uid == request.auth.uid
+        && request.resource.data.action in ['license_granted', 'license_revoked']
+        && request.resource.data.shop_id is string
+        && request.resource.data.subscription_id is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 8
+        && request.resource.data.created_at is string;
+      allow update, delete: if false;
     }
 
     // ── reviews : lecture publique, dépôt par un utilisateur connecté ──
@@ -51,22 +93,51 @@ service cloud.firestore {
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if isSignedIn()
+        && request.resource.data.author_id == request.auth.uid
+        && request.resource.data.is_verified == false
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && request.resource.data.comment is string
         && request.resource.data.comment.size() >= 5;
+      allow update, delete: if isAdmin();
     }
 
     // ── contact_events : création libre (journalisation), lecture par le vendeur ──
     match /contact_events/{eventId} {
-      allow read, delete: if ownsShop(resource.data.shop_id);
-      allow create: if request.resource.data.shop_id is string;
+      allow read, delete: if isAdmin() || ownsShop(resource.data.shop_id);
+      allow create: if request.resource.data.shop_id is string
+        && exists(/databases/$(database)/documents/shops/$(request.resource.data.shop_id))
+        && request.resource.data.channel == 'whatsapp';
     }
 
     // ── profiles : privé à chaque utilisateur ──
     match /profiles/{uid} {
-      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      allow read, write: if isAdmin()
+        || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    // ── verification_requests : dossier privé du vendeur, modération admin ──
+    match /verification_requests/{requestId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.owner_id == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.owner_id == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin();
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.owner_id == request.auth.uid);
+    }
+
+    // ── favorites : chaque utilisateur ne voit et ne gère que ses favoris ──
+    match /favorites/{favoriteId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.owner_id == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.owner_id == request.auth.uid
+        && request.resource.data.shop_id is string;
+      allow delete: if isSignedIn()
+        && resource.data.owner_id == request.auth.uid;
     }
   }
 }

@@ -58,16 +58,14 @@ export function LogoMark({
 export function Logo({
   className,
   compact = false,
+  linked = true,
 }: {
   className?: string;
   compact?: boolean;
+  linked?: boolean;
 }) {
-  return (
-    <Link
-      href="/"
-      className={cn("group inline-flex items-center gap-2.5", className)}
-      aria-label="FasoLink — accueil"
-    >
+  const content = (
+    <>
       <LogoMark className="h-9 w-9 shrink-0 text-ink transition-transform duration-300 group-hover:-translate-y-0.5" />
       {!compact && (
         <span className="font-display text-[1.15rem] leading-none tracking-[-0.03em] text-ink">
@@ -75,6 +73,24 @@ export function Logo({
           <span className="font-extrabold">Link</span>
         </span>
       )}
+    </>
+  );
+
+  if (!linked) {
+    return (
+      <div className={cn("group inline-flex items-center gap-2.5", className)} aria-label="FasoLink">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/"
+      className={cn("group inline-flex items-center gap-2.5", className)}
+      aria-label="FasoLink — accueil"
+    >
+      {content}
     </Link>
   );
 }

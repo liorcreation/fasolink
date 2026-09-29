@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 /**
@@ -13,13 +13,39 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
  * composant ne vit que le temps du montage racine (chargement complet).
  */
 const EASE = [0.22, 1, 0.36, 1] as const;
+// Versionné pour que la nouvelle ouverture de marque soit rejouée une fois
+// après cette mise à jour, puis reste absente pendant les navigations internes.
+const SPLASH_SESSION_KEY = "fasolink:splash-seen:v2";
 
 export function SplashScreen() {
   const [visible, setVisible] = useState(true);
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion() === true;
+  const initialized = useRef(false);
 
   useEffect(() => {
+    // Le layout racine doit rester stable pendant les navigations. Ce garde-fou
+    // évite qu'un changement tardif de la préférence de mouvement relance ou
+    // coupe l'animation en plein affichage.
+    if (initialized.current) return;
+    initialized.current = true;
+
     const previousOverflow = document.body.style.overflow;
+
+    // Le splash doit vivre une seule fois par session. Sans ce garde-fou,
+    // certains navigateurs mobiles peuvent remonter le layout racine lors
+    // d'une navigation et rejouer l'ouverture à chaque clic.
+    try {
+      if (window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "1") {
+        setVisible(false);
+        document.body.style.overflow = previousOverflow;
+        return;
+      }
+      window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+    } catch {
+      // Safari privé peut refuser sessionStorage : l'animation reste alors
+      // fonctionnelle sans bloquer l'application.
+    }
+
     document.body.style.overflow = "hidden";
     const holdMs = reduced ? 900 : 2000;
     const timer = window.setTimeout(() => setVisible(false), holdMs);

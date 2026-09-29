@@ -11,6 +11,7 @@ import { formatDistance } from "@/lib/geo";
 import { Badge } from "@/components/ui/Badge";
 import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
 import { OpenStatus } from "@/components/shops/OpenStatus";
+import { FavoriteButton } from "@/components/shops/FavoriteButton";
 
 export function ShopCard({
   shop,
@@ -31,10 +32,13 @@ export function ShopCard({
     <motion.article
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      whileTap={{ scale: 0.99 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: Math.min(index * 0.05, 0.3) }}
-      className="group card-premium overflow-hidden hover:-translate-y-1 hover:shadow-premium-lg"
+      className="group card-premium relative overflow-hidden"
     >
+      <FavoriteButton shopId={shop.id} className="absolute right-3 top-3 z-10" />
       <Link href={`/boutiques/${shop.id}`} className="block">
         <div className="relative aspect-[16/10] overflow-hidden bg-clay-100">
           {shop.cover_url && (

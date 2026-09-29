@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { HeartHandshake, Store, TrendingUp, Users } from "lucide-react";
+import { BadgeCheck, MapPinned, Package, Store } from "lucide-react";
 
 function useCountUp(target: number, run: boolean, duration = 1600) {
   const [value, setValue] = useState(0);
@@ -28,11 +28,15 @@ function useCountUp(target: number, run: boolean, duration = 1600) {
 }
 
 export function ImpactCounter({
-  amountCFA,
   shopCount,
+  productCount,
+  cityCount,
+  verifiedCount,
 }: {
-  amountCFA: number;
   shopCount: number;
+  productCount: number;
+  cityCount: number;
+  verifiedCount: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [run, setRun] = useState(false);
@@ -48,35 +52,34 @@ export function ImpactCounter({
     return () => io.disconnect();
   }, []);
 
-  const millions = Math.round(amountCFA / 1_000_000);
-  const money = useCountUp(millions, run);
   const shops = useCountUp(shopCount, run);
-  const contacts = useCountUp(shopCount * 38, run);
-  const buyers = useCountUp(shopCount * 120, run);
+  const products = useCountUp(productCount, run);
+  const cities = useCountUp(cityCount, run);
+  const verified = useCountUp(verifiedCount, run);
 
   const stats = [
     {
-      icon: TrendingUp,
-      value: `${money.toLocaleString("fr-FR")} M FCFA`,
-      label: "réinjectés dans l'économie locale ce mois-ci",
+      icon: Store,
+      value: shops.toLocaleString("fr-FR"),
+      label: "boutiques locales à découvrir",
       accent: "text-faso-green",
     },
     {
-      icon: Store,
-      value: shops.toLocaleString("fr-FR"),
-      label: "boutiques burkinabè référencées",
+      icon: Package,
+      value: products.toLocaleString("fr-FR"),
+      label: "produits et créations présentés",
       accent: "text-faso-red",
     },
     {
-      icon: Users,
-      value: `${contacts.toLocaleString("fr-FR")}+`,
-      label: "mises en relation via WhatsApp",
+      icon: MapPinned,
+      value: cities.toLocaleString("fr-FR"),
+      label: "villes représentées",
       accent: "text-faso-gold-dark",
     },
     {
-      icon: HeartHandshake,
-      value: `${buyers.toLocaleString("fr-FR")}+`,
-      label: "acheteurs engagés « Consommer Burkinabè »",
+      icon: BadgeCheck,
+      value: verified.toLocaleString("fr-FR"),
+      label: "vendeurs dont le profil est vérifié",
       accent: "text-clay-700",
     },
   ];
@@ -89,14 +92,14 @@ export function ImpactCounter({
       >
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-sm font-bold uppercase tracking-widest text-faso-green">
-            Impact local
+            Le Faso en vitrine
           </span>
           <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
-            Chaque achat compte pour le Faso
+            Des talents d’ici. Des découvertes sans limite.
           </h2>
           <p className="mt-3 text-ink-muted">
-            L&apos;argent dépensé sur FasoLink va directement au commerçant —
-            zéro commission sur vos ventes.
+            Explorez les boutiques, comparez les créations et échangez directement
+            avec les vendeurs. Tout l’essentiel, au même endroit.
           </p>
         </div>
 

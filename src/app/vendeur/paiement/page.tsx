@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PaymentSimulator } from "@/components/vendeur/PaymentSimulator";
-import { Reveal } from "@/components/ui/Reveal";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const runtime = "edge";
 
@@ -17,18 +17,12 @@ export default function VendeurPaiementPage({
 }) {
   return (
     <div className="container-faso py-14 md:py-20">
-      <Reveal className="mx-auto max-w-2xl text-center">
-        <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
-          Étape 2 / 2 · Abonnement
-        </span>
-        <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
-          Activez votre vitrine
-        </h1>
-        <p className="mt-4 text-lg text-ink-soft">
-          Réglez votre abonnement par Mobile Money. Simulation interactive — aucun
-          débit réel.
-        </p>
-      </Reveal>
+      <PageHeader
+        eyebrow="Étape 2 / 2 · Abonnement"
+        title="Activez votre vitrine"
+        description="Réglez votre abonnement par Mobile Money. La vitrine est activée uniquement après confirmation sécurisée de l’opérateur."
+        icon="card"
+      />
 
       <div className="mt-12">
         <PaymentSimulator shopId={searchParams.shop} />

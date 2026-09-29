@@ -12,7 +12,7 @@ const variants: Record<Variant, string> = {
     "bg-faso-green text-white shadow-premium hover:bg-faso-green-dark hover:-translate-y-0.5",
   gold: "bg-faso-gold text-ink shadow-premium hover:bg-faso-gold-dark hover:text-white hover:-translate-y-0.5",
   outline:
-    "border-2 border-ink/15 bg-white text-ink hover:border-faso-red hover:text-faso-red",
+    "border border-ink/15 bg-white/90 text-ink shadow-sm hover:border-faso-red hover:text-faso-red hover:shadow-premium",
   ghost: "text-ink hover:bg-clay-100",
 };
 

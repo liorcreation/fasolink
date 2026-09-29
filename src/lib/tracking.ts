@@ -2,8 +2,11 @@ import {
   addDoc,
   collection,
   doc,
+  getDocs,
   increment,
+  query,
   updateDoc,
+  where,
 } from "firebase/firestore/lite";
 import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
 
@@ -71,33 +74,59 @@ export interface ContactStats {
   byShop: Record<string, number>;
 }
 
-/** Agrège les événements locaux pour le tableau de bord vendeur (mode démo). */
-export function getLocalContactStats(shopId?: string): ContactStats {
+function aggregateEvents(events: LocalEvent[]): ContactStats {
   const now = Date.now();
   const d7 = now - 7 * 864e5;
   const d30 = now - 30 * 864e5;
-  const events = readLocal().filter((e) => !shopId || e.shopId === shopId);
-
   const byDayMap = new Map<string, number>();
   for (let i = 13; i >= 0; i--) {
     const key = new Date(now - i * 864e5).toISOString().slice(0, 10);
     byDayMap.set(key, 0);
   }
-  const byShop: Record<string, number> = {};
 
-  for (const e of events) {
-    byShop[e.shopId] = (byShop[e.shopId] ?? 0) + 1;
-    const key = new Date(e.at).toISOString().slice(0, 10);
-    if (byDayMap.has(key)) byDayMap.set(key, (byDayMap.get(key) ?? 0) + 1);
+  const byShop: Record<string, number> = {};
+  for (const event of events) {
+    byShop[event.shopId] = (byShop[event.shopId] ?? 0) + 1;
+    const key = new Date(event.at).toISOString().slice(0, 10);
+    if (byDayMap.has(key)) {
+      byDayMap.set(key, (byDayMap.get(key) ?? 0) + 1);
+    }
   }
 
   return {
     total: events.length,
-    last30d: events.filter((e) => e.at >= d30).length,
-    last7d: events.filter((e) => e.at >= d7).length,
+    last30d: events.filter((event) => event.at >= d30).length,
+    last7d: events.filter((event) => event.at >= d7).length,
     byDay: [...byDayMap].map(([date, count]) => ({ date, count })),
     byShop,
   };
+}
+
+/** Charge les contacts réels de la boutique pour le tableau de bord vendeur. */
+export async function fetchContactStats(shopId: string): Promise<ContactStats> {
+  if (!isFirebaseConfigured) return getLocalContactStats(shopId);
+
+  const snapshot = await getDocs(
+    query(
+      collection(db, COLLECTIONS.contactEvents),
+      where("shop_id", "==", shopId),
+    ),
+  );
+  const events = snapshot.docs.map((item) => {
+    const data = item.data();
+    return {
+      shopId: String(data.shop_id),
+      productId: data.product_id ? String(data.product_id) : null,
+      at: Date.parse(String(data.created_at)) || 0,
+    };
+  });
+  return aggregateEvents(events);
+}
+
+/** Agrège les événements locaux pour le tableau de bord vendeur (mode démo). */
+export function getLocalContactStats(shopId?: string): ContactStats {
+  const events = readLocal().filter((e) => !shopId || e.shopId === shopId);
+  return aggregateEvents(events);
 }
 
 /** Pré-remplit quelques événements de démo au premier chargement du dashboard. */

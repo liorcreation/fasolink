@@ -49,6 +49,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
   const [provider, setProvider] = useState<Provider>("orange_money");
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
+  const [trialMode, setTrialMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [reference, setReference] = useState(
     () => "FL-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
@@ -67,6 +68,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
   /** Persiste l'abonnement + publie la boutique, puis redirige. */
   async function finalize(opts: { trial: boolean }) {
     setStep("processing");
+    setTrialMode(opts.trial);
     setErrorMsg(null);
 
     // Petit délai pour laisser voir la confirmation opérateur (simulation).
@@ -87,7 +89,10 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
         setReference(res.reference);
       }
       setStep("success");
-      setTimeout(goToShop, 1800);
+      setTimeout(() => {
+        if (opts.trial) goToShop();
+        else router.push("/vendeur/dashboard");
+      }, 1800);
     } catch (err) {
       console.error(err);
       setErrorMsg(
@@ -336,9 +341,9 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                 <Button
                   size="lg"
                   className="flex-1"
-                  onClick={() => setStep("pin")}
+                  onClick={pay}
                 >
-                  Payer {formatCFA(plan.price)}
+                  Demander le paiement · {formatCFA(plan.price)}
                 </Button>
               </div>
             </Panel>
@@ -455,13 +460,14 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   <Check className="h-8 w-8" />
                 </motion.div>
                 <h2 className="mt-5 text-2xl font-bold text-ink">
-                  Boutique en ligne&nbsp;!
+                  {trialMode ? "Boutique en ligne !" : "Demande enregistrée !"}
                 </h2>
                 <p className="mt-2 max-w-sm text-sm text-ink-soft">
-                  Le webhook {PAYMENT_GATEWAY.name} a validé le transfert : votre
-                  abonnement <strong>{plan.label}</strong> est actif et votre
-                  vitrine est <strong>publiée</strong>. Redirection vers votre
-                  boutique…
+                  {trialMode ? (
+                    <>Votre essai <strong>{plan.label}</strong> est actif et votre vitrine est <strong>publiée</strong>. Redirection vers votre boutique…</>
+                  ) : (
+                    <>Votre demande de paiement <strong>{reference}</strong> est enregistrée. La vitrine sera publiée automatiquement après confirmation du webhook sécurisé {PAYMENT_GATEWAY.name}.</>
+                  )}
                 </p>
                 <dl className="mt-5 w-full max-w-xs space-y-2 rounded-2xl bg-clay-50 p-4 text-sm">
                   <Row label="Montant" value={formatCFA(plan.price)} />
@@ -469,10 +475,17 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   <Row label="Opérateur" value={providerMeta.label} />
                 </dl>
                 <div className="mt-6 flex w-full max-w-xs flex-col gap-2">
-                  <Button size="lg" onClick={goToShop}>
-                    <Store className="h-5 w-5" />
-                    Voir ma boutique
-                  </Button>
+                  {trialMode ? (
+                    <Button size="lg" onClick={goToShop}>
+                      <Store className="h-5 w-5" />
+                      Voir ma boutique
+                    </Button>
+                  ) : (
+                    <ButtonLink href="/vendeur/dashboard" size="lg">
+                      <Store className="h-5 w-5" />
+                      Voir mon tableau de bord
+                    </ButtonLink>
+                  )}
                   <ButtonLink
                     href="/vendeur/dashboard"
                     variant="ghost"
@@ -533,7 +546,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
             <Row label="Total" value={formatCFA(plan.price)} strong />
             <p className="flex items-center gap-2 pt-2 text-xs text-ink-muted">
               <ShieldCheck className="h-4 w-4 text-faso-green" />
-              Paiement simulé — aucune transaction réelle
+              Demande sécurisée — activation après confirmation opérateur
             </p>
           </div>
         </div>

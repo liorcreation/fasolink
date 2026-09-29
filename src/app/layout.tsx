@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/site/BottomNav";
 import { SplashScreen } from "@/components/site/SplashScreen";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fasolink.bf"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fasolink.pages.dev"),
   applicationName: "FasoLink",
   title: {
     default: "FasoLink — Consommer Burkinabè",
@@ -72,13 +73,15 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${sora.variable}`}>
       <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav md:pb-0">
-        <SplashScreen />
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <BottomNav />
-        <ServiceWorkerRegister />
-        <InstallPrompt />
+        <AuthProvider>
+          <SplashScreen />
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <BottomNav />
+          <ServiceWorkerRegister />
+          <InstallPrompt />
+        </AuthProvider>
       </body>
     </html>
   );

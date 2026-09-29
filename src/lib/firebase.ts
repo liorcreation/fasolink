@@ -69,4 +69,6 @@ export const COLLECTIONS = {
   subscriptions: "subscriptions",
   reviews: "reviews",
   contactEvents: "contact_events",
+  verifications: "verification_requests",
+  favorites: "favorites",
 } as const;

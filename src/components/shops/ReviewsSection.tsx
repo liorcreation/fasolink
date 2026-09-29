@@ -7,7 +7,8 @@ import type { Review } from "@/lib/database.types";
 import { cn, initials } from "@/lib/utils";
 import { getLocalContactStats } from "@/lib/tracking";
 import { addDoc, collection } from "firebase/firestore/lite";
-import { COLLECTIONS, auth, db, isFirebaseConfigured } from "@/lib/firebase";
+import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
+import { ensureSession } from "@/lib/vendor";
 
 const LS_KEY = (id: string) => `fasolink:reviews:${id}`;
 
@@ -62,19 +63,20 @@ export function ReviewsSection({
       author_name: name.trim(),
       rating,
       comment: comment.trim(),
-      is_verified: true,
+      is_verified: false,
       created_at: new Date().toISOString(),
     };
 
     if (isFirebaseConfigured) {
       try {
+        const authorId = await ensureSession();
         await addDoc(collection(db, COLLECTIONS.reviews), {
           shop_id: shopId,
-          author_id: auth.currentUser?.uid ?? null,
+          author_id: authorId,
           author_name: review.author_name,
           rating,
           comment: review.comment,
-          is_verified: true,
+          is_verified: false,
           created_at: review.created_at,
         });
       } catch (error) {

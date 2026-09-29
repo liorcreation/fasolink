@@ -1,7 +1,8 @@
 # Déploiement — Cloudflare Pages + Firebase
 
-FasoLink est prêt pour **Cloudflare Pages** (`@cloudflare/next-on-pages`, App
-Router sur runtime Edge) avec **Firebase** (Firestore · Auth · Storage).
+FasoLink est servi par **Cloudflare Pages** (`@cloudflare/next-on-pages`) avec
+**Firebase** (Firestore · Auth · Storage). Le webhook Mobile Money est Edge et
+utilise Firestore REST avec un JWT signé côté serveur.
 
 ## 1. Firebase
 
@@ -9,8 +10,8 @@ Router sur runtime Edge) avec **Firebase** (Firestore · Auth · Storage).
    [console.firebase.google.com](https://console.firebase.google.com).
 2. **Build → Firestore Database → Create database** (mode production, région
    `eur3` / `europe-west` conseillée).
-3. **Build → Authentication → Get started → Sign-in method → Anonymous →
-   Enable**. Le formulaire vendeur ouvre une session anonyme.
+3. **Build → Authentication → Get started → Sign-in method** : activez
+   **Email/Password** pour les comptes et **Anonymous** pour l'onboarding vendeur.
 4. **Build → Storage → Get started** (bucket par défaut `<projet>.appspot.com`).
 5. **⚙️ Project settings → General → Your apps → `</>` (Web)** → enregistrez
    l'app, copiez l'objet `firebaseConfig`.
@@ -50,7 +51,10 @@ Router sur runtime Edge) avec **Firebase** (Firestore · Auth · Storage).
    | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | `messagingSenderId` |
    | `NEXT_PUBLIC_FIREBASE_APP_ID` | `appId` |
    | `NODE_VERSION` | `20` |
-   | `PAYMENT_WEBHOOK_SECRET` | secret partagé avec l'agrégateur (optionnel) |
+   | `PAYMENT_WEBHOOK_SECRET` | secret partagé avec l'agrégateur |
+   | `FIREBASE_SERVICE_ACCOUNT` | JSON du compte de service Firebase, secret |
+   | `CRON_SECRET` | secret du job quotidien d'expiration |
+   | `NEXT_PUBLIC_SITE_URL` | URL publique FasoLink |
 6. **Save and Deploy**.
 7. **Firebase Console → Authentication → Settings → Authorized domains** :
    ajoutez `fasolink.pages.dev` (et votre domaine custom) pour que la connexion
@@ -80,7 +84,8 @@ Firestore y est appelé via le SDK **lite** (REST), compatible Edge/Workers.
 | `/boutiques/[id]/produits/[produit]` | fiche produit |
 | `/vendeur/dashboard` | tableau de bord vendeur |
 | `/vendeur/paiement` | simulateur (lit `?shop=`) |
-| `/api/webhooks/payment` | webhook Mobile Money (HMAC-SHA256 via Web Crypto) |
+| `/api/webhooks/payment` | webhook Mobile Money Edge (JWT Firestore + HMAC) |
+| `/api/cron/expire` | expiration quotidienne protégée par `CRON_SECRET` |
 
 Les autres pages sont **statiques** (`/inscription`, `/vendeur/inscription`,
 `/vendeur/verification`, `/profil`, `/offline`, `manifest`, `sw.js`).
@@ -95,6 +100,10 @@ Les autres pages sont **statiques** (`/inscription`, `/vendeur/inscription`,
 
 ## 4. Webhook de paiement
 
+La route utilise `FIREBASE_SERVICE_ACCOUNT` uniquement côté serveur Edge pour
+signer un JWT Google et appeler l'API Firestore REST. Configurez ce JSON comme
+secret Cloudflare Pages, ainsi que `PAYMENT_WEBHOOK_SECRET`.
+
 Configurez chez l'agrégateur (CinetPay / PayDunya) :
 
 ```
@@ -107,8 +116,57 @@ Sur `status: "ACCEPTED"`, la route cherche le document `subscriptions` par
 `reference`, passe son `status` à `active` et publie la boutique
 (`shops/<id>.status = active`).
 
-> Firebase Admin ne tourne pas sur l'Edge. Pour un webhook réellement
-> privilégié en production, déployez cette logique en **Firebase Cloud
-> Function** appelée directement par l'agrégateur, ou signez un JWT de compte
-> de service (RS256 via Web Crypto). Les règles Firestore livrées autorisent
-> l'écriture par le propriétaire de la boutique (flux client `/vendeur/paiement`).
+Le handler vérifie la signature, la référence, le montant et l'état `pending`,
+puis active l'abonnement et publie la boutique via Firestore REST. Le client ne
+peut plus publier une boutique payante par lui-même.
+
+## 5. Expiration automatique
+
+Appelez chaque jour :
+
+```text
+POST https://<domaine>/api/cron/expire
+Authorization: Bearer <CRON_SECRET>
+```
+
+Le job passe les abonnements échus à `expired` et suspend la boutique si aucun
+autre abonnement valide ne subsiste. Un planificateur Cloudflare Worker,
+GitHub Actions ou un cron de serveur peut effectuer cet appel.
+
+Le dépôt contient déjà `workers/expire-cron.js` et
+`workers/wrangler.toml` pour le planificateur Cloudflare quotidien (03:00 UTC,
+soit 03:00 au Burkina Faso). Déploiement :
+
+```bash
+npx wrangler deploy --config workers/wrangler.toml
+npx wrangler secret put CRON_SECRET --config workers/wrangler.toml
+```
+
+## 6. Rôle super administrateur
+
+Le super administrateur gère les accès aux boutiques depuis **/admin → Licences
+& accès boutiques**. Il peut offrir ou valider une licence, définir sa durée,
+prolonger l'accès en accordant une nouvelle période et révoquer un abonnement.
+Toutes les décisions effectuées depuis l'interface sont consignées dans la
+collection Firestore `admin_audit_logs`, dont la lecture est réservée au rôle
+super administrateur et dont les documents ne sont pas modifiables depuis
+l'application.
+
+Après création du compte du propriétaire, attribuez les claims à l'adresse exacte
+du client depuis un poste de confiance :
+
+```bash
+npm run superadmin:set -- proprietaire@domaine.bf
+```
+
+La commande nécessite `FIREBASE_SERVICE_ACCOUNT` dans `.env.local` ou le fichier
+local ignoré `firebase-service-account.json`, préserve les claims existants et
+ajoute `admin: true` et `superAdmin: true`. Le client doit se déconnecter puis se
+reconnecter. Déployez ensuite les règles mises à jour :
+
+```bash
+npx firebase-tools deploy --only firestore:rules --project fasolink-d6e77
+```
+
+Ne mettez jamais la clé de service dans Git ou dans un PDF. La création du rôle
+nécessite l'adresse e-mail exacte du compte Firebase du propriétaire.

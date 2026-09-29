@@ -58,6 +58,11 @@ export function Footer() {
             <li>contact@fasolink.bf</li>
             <li>+226 25 00 00 00</li>
           </ul>
+          <div className="mt-5 space-y-2 text-xs text-ink-muted">
+            <Link href="/confidentialite" className="block hover:text-faso-red">Confidentialité</Link>
+            <Link href="/conditions" className="block hover:text-faso-red">Conditions d&apos;utilisation</Link>
+            <Link href="/mentions-legales" className="block hover:text-faso-red">Mentions légales</Link>
+          </div>
         </div>
       </div>
 

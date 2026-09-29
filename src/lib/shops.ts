@@ -48,7 +48,9 @@ export async function fetchShops(): Promise<ShopWithProducts[]> {
       getDocs(collection(db, COLLECTIONS.reviews)),
     ]);
 
-    if (shopSnap.empty) return MOCK_SHOPS;
+    // En production, une base vide ne doit jamais faire réapparaître les
+    // boutiques de démonstration (notamment après suspension de toutes les boutiques).
+    if (shopSnap.empty) return [];
 
     const productsByShop = groupBy(productSnap.docs.map(fromDoc<Product>));
     const reviewsByShop = groupBy(reviewSnap.docs.map(fromDoc<Review>));
@@ -66,7 +68,7 @@ export async function fetchShops(): Promise<ShopWithProducts[]> {
       );
   } catch (error) {
     console.warn("[FasoLink] fetchShops:", error);
-    return MOCK_SHOPS;
+    return [];
   }
 }
 
@@ -88,7 +90,7 @@ export async function fetchShopById(
       if (!bySlug.empty) shop = fromDoc<Shop>(bySlug.docs[0]);
     }
 
-    if (!shop) return getMockShop(id) ?? null;
+    if (!shop || shop.status !== "active") return null;
 
     const [productSnap, reviewSnap] = await Promise.all([
       getDocs(
@@ -112,7 +114,7 @@ export async function fetchShopById(
     };
   } catch (error) {
     console.warn("[FasoLink] fetchShopById:", error);
-    return getMockShop(id) ?? null;
+    return null;
   }
 }
 

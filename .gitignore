@@ -25,6 +25,7 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+firebase-service-account.json
 
 # firebase
 serviceAccountKey.json

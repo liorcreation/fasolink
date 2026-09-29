@@ -14,7 +14,6 @@ import {
   getDocs,
   query,
   setDoc,
-  updateDoc,
   where,
 } from "firebase/firestore/lite";
 
@@ -100,12 +99,12 @@ try {
   process.exit(1);
 }
 
-// 3. Abonnement + publication (comme activateSubscription)
+// 3. Demande d'abonnement (la publication est réservée au webhook Admin)
 try {
   await setDoc(doc(db, "subscriptions", testId), {
     shop_id: testId,
     plan: "mensuel",
-    status: "active",
+    status: "pending",
     provider: "orange_money",
     gateway: "verify",
     amount: 5000,
@@ -117,8 +116,7 @@ try {
     created_at: now,
     updated_at: now,
   });
-  await updateDoc(doc(db, "shops", testId), { status: "active" });
-  ok("Abonnement créé + boutique publiée (status → active)");
+  ok("Demande d'abonnement créée (status → pending)");
 } catch (e) {
   ko(`Activation abonnement ÉCHOUÉE : ${e.code || e.message}`);
   failed = true;
@@ -127,8 +125,8 @@ try {
 // 4. Lecture (comme fetchShops / fetchShopById)
 try {
   const snap = await getDoc(doc(db, "shops", testId));
-  if (snap.exists() && snap.data().status === "active") {
-    ok("Lecture fiche boutique : status = active");
+  if (snap.exists() && snap.data().status === "pending") {
+    ok("Lecture fiche boutique : status = pending");
   } else {
     ko("Lecture fiche boutique : données inattendues");
     failed = true;

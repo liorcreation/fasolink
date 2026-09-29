@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Check,
@@ -11,6 +12,7 @@ import {
   Upload,
 } from "lucide-react";
 import { getBrowserPosition } from "@/lib/geo";
+import { submitVerificationRequest, VendorError } from "@/lib/vendor";
 import { Button } from "@/components/ui/Button";
 
 const DOC_TYPES = [
@@ -19,7 +21,14 @@ const DOC_TYPES = [
   { id: "nif", label: "NIF (entreprise)" },
 ];
 
-export function VerificationForm() {
+export function VerificationForm({
+  shopId,
+  demo = false,
+}: {
+  shopId: string;
+  demo?: boolean;
+}) {
+  const router = useRouter();
   const [docType, setDocType] = useState("cnib");
   const [docNumber, setDocNumber] = useState("");
   const [fullName, setFullName] = useState("");
@@ -27,6 +36,8 @@ export function VerificationForm() {
   const [verso, setVerso] = useState<File | null>(null);
   const [geo, setGeo] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
+  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const rectoRef = useRef<HTMLInputElement>(null);
   const versoRef = useRef<HTMLInputElement>(null);
 
@@ -39,7 +50,8 @@ export function VerificationForm() {
   async function confirmLocation() {
     setGeo("loading");
     try {
-      await getBrowserPosition();
+      const coords = await getBrowserPosition();
+      setPosition(coords);
       setGeo("ok");
     } catch {
       setGeo("error");
@@ -48,10 +60,33 @@ export function VerificationForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid) return;
+    if (!valid || !recto) return;
     setStatus("sending");
-    await new Promise((r) => setTimeout(r, 1200));
-    setStatus("done");
+    setError(null);
+    try {
+      if (demo) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      } else {
+        await submitVerificationRequest({
+          shopId,
+          documentType: docType as "cnib" | "passeport" | "nif",
+          documentNumber: docNumber,
+          fullName,
+          recto,
+          verso,
+          latitude: position?.lat ?? null,
+          longitude: position?.lng ?? null,
+        });
+      }
+      setStatus("done");
+    } catch (cause) {
+      setError(
+        cause instanceof VendorError || cause instanceof Error
+          ? cause.message
+          : "Impossible d’envoyer le dossier. Réessayez.",
+      );
+      setStatus("idle");
+    }
   }
 
   if (status === "done") {
@@ -72,7 +107,7 @@ export function VerificationForm() {
         </p>
         <Button
           className="mt-6"
-          onClick={() => (window.location.href = "/vendeur/dashboard")}
+          onClick={() => router.push("/vendeur/dashboard")}
         >
           Retour au tableau de bord
         </Button>
@@ -113,7 +148,7 @@ export function VerificationForm() {
             value={docNumber}
             onChange={(e) => setDocNumber(e.target.value)}
             placeholder="Ex. B1234567"
-            className="h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm outline-none focus:border-faso-gold"
+            className="input-premium"
           />
         </label>
 
@@ -125,7 +160,7 @@ export function VerificationForm() {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Prénom NOM"
-            className="h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm outline-none focus:border-faso-gold"
+            className="input-premium"
           />
         </label>
 
@@ -205,6 +240,11 @@ export function VerificationForm() {
       </fieldset>
 
       <div className="flex flex-col items-center gap-3">
+        {error && (
+          <p className="w-full rounded-xl bg-faso-red-soft/40 px-3 py-2 text-sm text-faso-red-dark">
+            {error}
+          </p>
+        )}
         <Button
           type="submit"
           size="lg"

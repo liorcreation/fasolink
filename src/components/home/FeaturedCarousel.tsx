@@ -47,7 +47,7 @@ export function FeaturedCarousel({ shops }: { shops: ShopWithProducts[] }) {
             >
               <Link
                 href={`/boutiques/${shop.id}`}
-                className="group relative block w-[78vw] overflow-hidden rounded-3xl border border-clay-100 bg-white shadow-premium transition-shadow hover:shadow-premium-lg sm:w-[340px]"
+                className="group relative block w-[78vw] overflow-hidden rounded-3xl border border-clay-100/80 bg-white shadow-premium transition-all hover:-translate-y-1 hover:border-faso-gold/40 hover:shadow-premium-lg sm:w-[340px]"
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-clay-100">
                   {shop.cover_url && (

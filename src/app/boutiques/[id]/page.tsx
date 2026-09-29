@@ -16,6 +16,7 @@ import { OpenStatus } from "@/components/shops/OpenStatus";
 import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
 import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { PublishedToast } from "@/components/shops/PublishedToast";
+import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
 
 // Cloudflare Pages : rendu Edge à la demande — les boutiques créées après le
@@ -54,6 +55,7 @@ export default async function BoutiquePage({
 
   return (
     <div>
+      <ShopStatusWatcher shopId={shop.id} />
       <Suspense fallback={null}>
         <PublishedToast />
       </Suspense>
