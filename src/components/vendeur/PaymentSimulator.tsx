@@ -4,8 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
   AlertTriangle,
+  BadgeCheck,
   Check,
+  CheckCircle2,
+  CircleHelp,
   Gift,
   Loader2,
   Lock,
@@ -58,6 +62,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
   const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId)!;
   const providerMeta = PAYMENT_PROVIDERS.find((p) => p.id === provider)!;
   const phoneValid = /\d{2}\s?\d{2}\s?\d{2}\s?\d{2}/.test(phone.trim());
+  const trialSelected = step === "trial" || trialMode;
 
   const targetShop = shopId ?? DEMO_SHOP_ID;
 
@@ -71,7 +76,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
     setTrialMode(opts.trial);
     setErrorMsg(null);
 
-    // Petit délai pour laisser voir la confirmation opérateur (simulation).
+    // Petit délai pour visualiser l'enregistrement de la demande.
     await new Promise((r) => setTimeout(r, opts.trial ? 700 : 2200));
 
     try {
@@ -117,67 +122,63 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-7">
       {/* Colonne principale */}
-      <div className="space-y-6">
+      <div className="order-2 space-y-5 lg:order-1">
         <Stepper step={step} />
 
         <AnimatePresence mode="wait">
           {/* 1. Choix du plan */}
           {step === "plan" && (
             <Panel key="plan">
-              <h2 className="text-xl font-bold text-ink">
-                Choisissez votre formule
-              </h2>
-              <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-faso-red">Une formule pour chaque étape</p><h2 className="mt-1 text-xl font-black tracking-tight text-ink sm:text-2xl">Choisissez votre durée</h2><p className="mt-1 text-xs text-ink-muted">Plus la durée est longue, plus le coût mensuel diminue.</p></div><span className="hidden items-center gap-1.5 rounded-full bg-faso-green-soft/35 px-3 py-1.5 text-[10px] font-bold text-faso-green-dark sm:inline-flex"><ShieldCheck className="h-3.5 w-3.5" />Sans frais cachés</span></div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {SUBSCRIPTION_PLANS.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setPlanId(p.id)}
+                    aria-pressed={planId === p.id}
                     className={cn(
-                      "relative rounded-2xl border p-4 text-left transition-all",
+                      "group relative flex min-h-[12.5rem] flex-col overflow-visible rounded-[1.35rem] border p-4 text-left transition duration-200 hover:-translate-y-0.5 sm:p-4",
                       planId === p.id
-                        ? "border-faso-gold bg-faso-gold-soft/20 shadow-premium"
-                        : "border-clay-200 bg-white hover:border-faso-gold/50",
+                        ? "border-faso-gold bg-[linear-gradient(145deg,rgba(250,243,225,.9),#fff_75%)] shadow-[0_10px_30px_rgba(194,140,34,.15)] ring-1 ring-faso-gold/40"
+                        : "border-clay-200/80 bg-white hover:border-faso-gold/50 hover:shadow-premium",
                     )}
                   >
                     {p.highlight && (
-                      <span className="absolute -top-2.5 right-3 rounded-full bg-faso-gradient px-2 py-0.5 text-[10px] font-bold text-white">
-                        POPULAIRE
+                      <span className="absolute -top-2.5 right-3 rounded-full bg-faso-gradient px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.12em] text-white shadow-sm">
+                        Préférée
                       </span>
                     )}
-                    <p className="text-sm font-bold text-ink">{p.label}</p>
-                    <p className="mt-1 text-lg font-extrabold text-ink">
-                      {formatCFA(p.price)}
-                    </p>
-                    <p className="text-xs text-ink-muted">
-                      soit {formatCFA(p.perMonth)}/mois
-                    </p>
+                    <span className="flex items-start justify-between gap-2"><span><span className="block text-[10px] font-extrabold uppercase tracking-[.16em] text-ink-muted">{p.months} mois</span><span className="mt-1 block text-sm font-black text-ink">{p.label}</span></span><span className={cn("grid h-5 w-5 place-items-center rounded-full border transition", planId === p.id ? "border-faso-gold bg-faso-gold text-white" : "border-clay-300 bg-white text-transparent")}><Check className="h-3 w-3" /></span></span>
+                    <span className="mt-4 block text-2xl font-black tracking-tight text-ink">{formatCFA(p.price)}</span>
+                    <span className="mt-0.5 block text-[11px] font-semibold text-ink-muted">{formatCFA(p.perMonth)} / mois</span>
+                    {p.months > 1 && <span className="mt-auto inline-flex w-fit items-center gap-1 pt-3 text-[10px] font-extrabold text-faso-green-dark"><CheckCircle2 className="h-3 w-3" />Économie de {formatCFA((SUBSCRIPTION_PLANS[0].perMonth - p.perMonth) * p.months)}</span>}
                   </button>
                 ))}
               </div>
 
-              <ul className="mt-5 space-y-2">
+              <div className="mt-5 rounded-2xl border border-clay-200/70 bg-[#FCFAF6] p-4 sm:p-5"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold text-ink">Inclus dans l’offre {plan.label}</p><span className="text-[10px] font-semibold text-ink-muted">{plan.months} mois</span></div><ul className="mt-3 grid gap-2 sm:grid-cols-2">
                 {plan.perks.map((perk) => (
                   <li
                     key={perk}
-                    className="flex items-center gap-2 text-sm text-ink-soft"
+                    className="flex items-start gap-2 text-xs leading-5 text-ink-soft"
                   >
-                    <Check className="h-4 w-4 text-faso-green" />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-faso-green" />
                     {perk}
                   </li>
                 ))}
-              </ul>
+              </ul></div>
 
               <div className="mt-6 flex flex-col gap-3">
-                <Button size="lg" onClick={() => setStep("method")}>
-                  Payer maintenant · {formatCFA(plan.price)}
+                <Button size="lg" onClick={() => setStep("method")} className="w-full justify-center rounded-full">
+                  Continuer · {formatCFA(plan.price)} <ArrowRight className="h-4 w-4" />
                 </Button>
                 <button
                   type="button"
                   onClick={() => setStep("trial")}
-                  className="group flex items-center justify-center gap-2 rounded-full border-2 border-dashed border-faso-green/50 px-6 py-3 text-sm font-bold text-faso-green-dark transition-colors hover:bg-faso-green-soft/20"
+                  className="group flex min-h-12 items-center justify-center gap-2 rounded-full border border-faso-green/20 bg-faso-green-soft/20 px-6 py-3 text-xs font-extrabold text-faso-green-dark transition-all hover:border-faso-green/40 hover:bg-faso-green-soft/40"
                 >
                   <Gift className="h-4 w-4" />
                   Démarrer avec {TRIAL_DAYS} jours gratuits
@@ -234,22 +235,21 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
           {/* 2. Moyen de paiement */}
           {step === "method" && (
             <Panel key="method">
-              <h2 className="text-xl font-bold text-ink">Moyen de paiement</h2>
-              <p className="mt-1 text-xs text-ink-muted">
-                Agrégateur {PAYMENT_GATEWAY.name} · activation automatique de la
-                boutique dès confirmation (webhook).
-              </p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-faso-red">Étape suivante</p>
+              <h2 className="mt-1 text-xl font-black tracking-tight text-ink">Choisissez un moyen de paiement</h2>
+              <p className="mt-2 rounded-xl border border-faso-gold/20 bg-faso-gold-soft/20 px-3.5 py-3 text-xs leading-5 text-ink-soft">Sélectionnez le portefeuille associé à votre demande. FasoLink ne vous demandera jamais votre code PIN.</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 {PAYMENT_PROVIDERS.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setProvider(p.id)}
+                    aria-pressed={provider === p.id}
                     className={cn(
-                      "flex items-center gap-3 rounded-2xl border p-4 text-left transition-all",
+                      "relative flex min-h-[4.7rem] items-center gap-3 rounded-2xl border p-3.5 text-left transition-all",
                       provider === p.id
-                        ? "border-faso-gold shadow-premium"
-                        : "border-clay-200 hover:border-faso-gold/50",
+                        ? "border-faso-gold bg-faso-gold-soft/15 shadow-[0_8px_24px_rgba(194,140,34,.12)] ring-1 ring-faso-gold/30"
+                        : "border-clay-200/80 bg-white hover:border-faso-gold/50",
                     )}
                   >
                     <span
@@ -266,6 +266,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                         Mobile Money
                       </span>
                     </span>
+                    {provider === p.id && <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-faso-green" />}
                   </button>
                 ))}
               </div>
@@ -274,7 +275,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                 <span className="mb-1.5 block text-sm font-semibold text-ink">
                   Numéro {providerMeta.label}
                 </span>
-                <div className="flex items-center gap-2 rounded-xl border border-clay-200 bg-white px-3 focus-within:border-faso-gold">
+                <div className="flex items-center gap-2 rounded-2xl border border-clay-200 bg-white px-3.5 shadow-sm transition focus-within:border-faso-gold focus-within:shadow-[0_0_0_4px_rgba(244,169,60,.13)]">
                   <Phone className="h-4 w-4 text-ink-muted" />
                   <input
                     type="tel"
@@ -282,12 +283,14 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="70 00 00 00"
-                    className="h-11 w-full bg-transparent text-sm outline-none"
+                    className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-ink-muted/70"
                   />
                 </div>
               </label>
 
-              <div className="mt-6 flex gap-3">
+              <p className="mt-2 text-[10px] leading-4 text-ink-muted">Étape de préparation de la demande. Aucun code secret ne doit être communiqué.</p>
+
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row">
                 <Button
                   variant="ghost"
                   size="lg"
@@ -310,8 +313,9 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
           {/* 3. Confirmation */}
           {step === "confirm" && (
             <Panel key="confirm">
-              <h2 className="text-xl font-bold text-ink">Confirmez le paiement</h2>
-              <dl className="mt-5 space-y-3 rounded-2xl bg-clay-50 p-4 text-sm">
+              <p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-faso-red">Dernière vérification</p>
+              <h2 className="mt-1 text-xl font-black tracking-tight text-ink">Récapitulatif de la demande</h2>
+              <dl className="mt-5 space-y-3 rounded-2xl border border-clay-200/70 bg-[#FCFAF6] p-4 text-sm sm:p-5">
                 <Row label="Formule" value={`Abonnement ${plan.label}`} />
                 <Row label="Opérateur" value={providerMeta.label} />
                 <Row label="Passerelle" value={PAYMENT_GATEWAY.name} />
@@ -324,13 +328,12 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   strong
                 />
               </dl>
-              <p className="mt-4 flex items-start gap-2 rounded-xl bg-faso-gold-soft/30 p-3 text-xs text-ink-soft">
-                <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-faso-gold-dark" />
-                Vous allez recevoir une demande de confirmation sur votre
-                téléphone. {providerMeta.hint}.
+              <p className="mt-4 flex items-start gap-2 rounded-2xl border border-faso-gold/20 bg-faso-gold-soft/20 p-4 text-xs leading-5 text-ink-soft">
+                <CircleHelp className="mt-0.5 h-4 w-4 shrink-0 text-faso-gold-dark" />
+                Cette action enregistre une demande en attente : aucun paiement Mobile Money n’est initié depuis cette page. L’accès boutique ne sera activé qu’après confirmation effective du règlement.
               </p>
 
-              <div className="mt-6 flex gap-3">
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row">
                 <Button
                   variant="ghost"
                   size="lg"
@@ -343,7 +346,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   className="flex-1"
                   onClick={pay}
                 >
-                  Demander le paiement · {formatCFA(plan.price)}
+                  Enregistrer la demande · {formatCFA(plan.price)}
                 </Button>
               </div>
             </Panel>
@@ -441,8 +444,9 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   Traitement en cours…
                 </h2>
                 <p className="mt-1 text-sm text-ink-muted">
-                  Confirmation auprès de {providerMeta.label}
+                  Enregistrement sécurisé de votre demande d’abonnement
                 </p>
+                {!trialMode && <p className="mt-2 max-w-sm text-xs leading-5 text-ink-muted">Votre boutique reste en attente jusqu’à confirmation effective du règlement.</p>}
               </div>
             </Panel>
           )}
@@ -466,11 +470,11 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   {trialMode ? (
                     <>Votre essai <strong>{plan.label}</strong> est actif et votre vitrine est <strong>publiée</strong>. Redirection vers votre boutique…</>
                   ) : (
-                    <>Votre demande de paiement <strong>{reference}</strong> est enregistrée. La vitrine sera publiée automatiquement après confirmation du webhook sécurisé {PAYMENT_GATEWAY.name}.</>
+                    <>Votre demande <strong>{reference}</strong> est enregistrée. La vitrine sera publiée après confirmation effective du paiement par l’opérateur.</>
                   )}
                 </p>
                 <dl className="mt-5 w-full max-w-xs space-y-2 rounded-2xl bg-clay-50 p-4 text-sm">
-                  <Row label="Montant" value={formatCFA(plan.price)} />
+                  <Row label={trialMode ? "À payer aujourd'hui" : "Montant de la demande"} value={trialMode ? "0 FCFA" : formatCFA(plan.price)} />
                   <Row label="Référence" value={reference} />
                   <Row label="Opérateur" value={providerMeta.label} />
                 </dl>
@@ -506,7 +510,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
                   <AlertTriangle className="h-8 w-8" />
                 </span>
                 <h2 className="mt-5 text-2xl font-bold text-ink">
-                  Activation impossible
+                  Demande impossible à enregistrer
                 </h2>
                 <p className="mt-2 max-w-sm text-sm text-ink-soft">
                   {errorMsg}
@@ -526,28 +530,20 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
       </div>
 
       {/* Récapitulatif latéral */}
-      <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="card-premium overflow-hidden">
-          <div className="bg-faso-gradient bg-[length:200%_200%] p-5 text-white animate-gradient-pan">
-            <p className="text-xs font-semibold uppercase tracking-widest text-white/80">
-              Récapitulatif
-            </p>
-            <p className="mt-1 text-2xl font-extrabold">
-              Abonnement {plan.label}
-            </p>
-            <p className="text-sm text-white/85">
-              {formatCFA(plan.perMonth)}/mois · {plan.months} mois
-            </p>
+      <aside className="order-first lg:sticky lg:top-24 lg:order-2 lg:self-start">
+        <div className="overflow-hidden rounded-[1.7rem] border border-clay-200/80 bg-white shadow-[0_12px_38px_rgba(51,37,23,.06)]">
+          <div className="relative isolate overflow-hidden bg-[#17120E] p-5 text-white sm:p-6">
+            <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_100%_0,rgba(220,166,55,.26),transparent_46%)]" />
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[.18em] text-[#F3D88E]"><BadgeCheck className="h-3.5 w-3.5" />Votre récapitulatif</span>
+            <p className="mt-3 text-xl font-black tracking-tight">{trialSelected ? "Essai gratuit" : `Formule ${plan.label}`}</p>
+            <p className="mt-1 text-xs text-white/55">{trialSelected ? `${TRIAL_DAYS} jours · sans carte bancaire` : `${plan.months} mois · ${formatCFA(plan.perMonth)} / mois`}</p>
+            <div className="mt-5 flex items-end justify-between gap-3 border-t border-white/10 pt-4"><span className="text-xs font-semibold text-white/55">{trialSelected ? "À payer aujourd’hui" : "Total de la formule"}</span><strong className="text-2xl font-black tracking-tight text-white">{trialSelected ? "0 FCFA" : formatCFA(plan.price)}</strong></div>
           </div>
-          <div className="space-y-3 p-5">
-            <Row label="Sous-total" value={formatCFA(plan.price)} />
-            <Row label="Frais de service" value="Offerts" />
-            <div className="border-t border-clay-100" />
-            <Row label="Total" value={formatCFA(plan.price)} strong />
-            <p className="flex items-center gap-2 pt-2 text-xs text-ink-muted">
-              <ShieldCheck className="h-4 w-4 text-faso-green" />
-              Demande sécurisée — activation après confirmation opérateur
-            </p>
+          <div className="space-y-3 p-5 sm:p-6">
+            {!trialSelected && <><Row label="Sous-total" value={formatCFA(plan.price)} /><Row label="Frais de service" value="Offerts" /><div className="border-t border-clay-100" /><Row label="Total" value={formatCFA(plan.price)} strong /></>}
+            <ul className="space-y-2 pt-1">{plan.perks.slice(0, 3).map((perk) => <li key={perk} className="flex items-start gap-2 text-[11px] leading-4 text-ink-soft"><Check className="mt-0.5 h-3 w-3 shrink-0 text-faso-green" />{perk}</li>)}</ul>
+            <p className="flex items-start gap-2 rounded-xl border border-faso-green/10 bg-faso-green-soft/20 px-3 py-2.5 text-[10px] leading-4 text-faso-green-dark"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />Aucun code PIN à partager. L’accès payant reste en attente de confirmation du règlement.</p>
+            {shopId && <p className="truncate text-[9px] font-medium text-ink-muted">Boutique concernée · {shopId}</p>}
           </div>
         </div>
       </aside>
@@ -569,7 +565,7 @@ function Panel({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.25 }}
-      className="card-premium p-6 md:p-8"
+      className="card-premium rounded-[1.7rem] p-5 sm:p-7 lg:p-8"
     >
       {children}
     </motion.div>
@@ -617,36 +613,36 @@ function Stepper({ step }: { step: Step }) {
   ];
   const current =
     step === "trial"
-      ? order.length
+      ? 0
       : step === "error"
         ? order.indexOf("confirm")
         : order.indexOf(step);
   return (
-    <ol className="flex items-center gap-2">
+    <ol aria-label="Étapes de l’abonnement" className="flex items-center gap-1 rounded-2xl border border-clay-200/75 bg-white/85 px-3 py-3 shadow-sm sm:gap-2 sm:px-4">
       {STEP_LABELS.map((s, i) => {
         const reached = current >= order.indexOf(s.id);
         return (
-          <li key={s.id} className="flex flex-1 items-center gap-2">
+          <li key={s.id} aria-current={step === s.id ? "step" : undefined} className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
             <span
               className={cn(
-                "grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors",
+                "grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-extrabold transition-colors sm:h-9 sm:w-9 sm:text-xs",
                 reached
-                  ? "bg-faso-gradient text-white"
+                  ? "bg-faso-gradient text-white shadow-sm"
                   : "bg-clay-100 text-ink-muted",
               )}
             >
-              {i + 1}
+              {current > order.indexOf(s.id) ? <Check className="h-3.5 w-3.5" /> : i + 1}
             </span>
             <span
               className={cn(
-                "hidden text-xs font-semibold sm:block",
-                reached ? "text-ink" : "text-ink-muted",
+                "hidden truncate text-[10px] font-extrabold sm:block",
+                step === s.id ? "text-faso-red" : reached ? "text-ink" : "text-ink-muted",
               )}
             >
               {s.label}
             </span>
             {i < STEP_LABELS.length - 1 && (
-              <span className="h-px flex-1 bg-clay-200" />
+              <span className={cn("h-px min-w-1 flex-1", current > order.indexOf(s.id) ? "bg-faso-green/50" : "bg-clay-200")} />
             )}
           </li>
         );
