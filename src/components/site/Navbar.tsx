@@ -208,7 +208,7 @@ export function Navbar() {
           )}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-auto">
           {!user && (
             <Link href="/connexion" className="hidden rounded-full px-3 py-2 text-sm font-bold text-ink-soft transition-colors hover:bg-white hover:text-ink xl:inline-flex">
               Se connecter
