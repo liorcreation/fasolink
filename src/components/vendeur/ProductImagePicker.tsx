@@ -58,8 +58,34 @@ function decodeCodePoint(value: number): string {
 
 function isReusableCommercialLicense(label: string): boolean {
   const normalized = label.trim().toLowerCase();
-  if (/\b(nc|nd|sa)\b|noncommercial|non-commercial|no derivatives|share alike/.test(normalized)) return false;
-  return /^(cc0|public domain|pd\b|cc by(?:\s|$))/.test(normalized);
+  if (/\b(nc|nd)\b|noncommercial|non-commercial|no derivatives/.test(normalized)) return false;
+  // CC BY-SA permits commercial reuse when attribution and share-alike terms are respected.
+  return /^(cc0|public domain|pd\b|cc by(?:-sa)?(?:\s|$))/.test(normalized);
+}
+
+const ENGLISH_PRODUCT_TERMS: Array<[RegExp, string]> = [
+  [/\bsacs?\s+à\s+dos\b|\bsacs?\s+a\s+dos\b/i, "backpack"],
+  [/\bchaussures?\b/i, "shoes"],
+  [/\bsacs?\b/i, "bag"],
+  [/\brobes?\b/i, "dress"],
+  [/\bchemises?\b/i, "shirt"],
+  [/\bpantalons?\b/i, "trousers"],
+  [/\btéléphones?\b|\btelephones?\b/i, "mobile phone"],
+  [/\bmontres?\b/i, "watch"],
+  [/\bmeubles?\b/i, "furniture"],
+  [/\bjouets?\b/i, "toy"],
+  [/\bparfums?\b/i, "perfume"],
+  [/\blunettes?\b/i, "eyeglasses"],
+];
+
+function searchQueries(query: string): string[] {
+  const alternate = ENGLISH_PRODUCT_TERMS.reduce(
+    (term, [pattern, translation]) => term.replace(pattern, translation),
+    query,
+  ).trim();
+  return alternate && alternate.toLowerCase() !== query.toLowerCase()
+    ? [query, alternate]
+    : [query];
 }
 
 function toPhoto(page: CommonsPage): CommonsProductPhoto | null {
@@ -80,7 +106,7 @@ function toPhoto(page: CommonsPage): CommonsProductPhoto | null {
     !isReusableCommercialLicense(license)
   ) return null;
 
-  if (/^cc by(?:\s|$)/i.test(license) && !artist && !suppliedCredit) return null;
+  if (/^cc by(?:-sa)?(?:\s|$)/i.test(license) && !artist && !suppliedCredit) return null;
   const credit = (suppliedCredit || artist || "Auteur non indiqué").slice(0, 240);
 
   return {
@@ -157,34 +183,37 @@ export function ProductImagePicker({
     const timer = window.setTimeout(async () => {
       setLoading(true);
       setSearchMessage("");
-      const params = new URLSearchParams({
-        action: "query",
-        format: "json",
-        formatversion: "2",
-        generator: "search",
-        gsrsearch: `${normalizedQuery} filetype:bitmap`,
-        gsrnamespace: "6",
-        gsrlimit: "12",
-        prop: "imageinfo",
-        iiprop: "url|extmetadata",
-        iiurlwidth: "640",
-        iiextmetadatafilter: "LicenseShortName|LicenseUrl|Artist|Attribution",
-        origin: "*",
-      });
 
       try {
-        const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`, {
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        });
-        if (!response.ok) throw new Error("La recherche de photos est momentanément indisponible.");
-        const payload = await response.json() as { query?: { pages?: CommonsPage[] } };
-        const matches = (payload.query?.pages ?? [])
-          .map(toPhoto)
-          .filter((photo): photo is CommonsProductPhoto => Boolean(photo))
-          .slice(0, 8);
-        setPhotos(matches);
-        if (matches.length === 0) setSearchMessage("Aucune photo réutilisable trouvée. Essaie un nom plus simple ou ajoute ta propre photo.");
+        let matches: CommonsProductPhoto[] = [];
+        for (const term of searchQueries(normalizedQuery)) {
+          const params = new URLSearchParams({
+            action: "query",
+            format: "json",
+            formatversion: "2",
+            generator: "search",
+            gsrsearch: `${term} filetype:bitmap`,
+            gsrnamespace: "6",
+            gsrlimit: "24",
+            prop: "imageinfo",
+            iiprop: "url|extmetadata",
+            iiurlwidth: "640",
+            iiextmetadatafilter: "LicenseShortName|LicenseUrl|Artist|Attribution",
+            origin: "*",
+          });
+          const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`, {
+            signal: controller.signal,
+            headers: { Accept: "application/json" },
+          });
+          if (!response.ok) throw new Error("La recherche de photos est momentanément indisponible.");
+          const payload = await response.json() as { query?: { pages?: CommonsPage[] } };
+          matches = (payload.query?.pages ?? [])
+            .map(toPhoto)
+            .filter((photo): photo is CommonsProductPhoto => Boolean(photo));
+          if (matches.length > 0) break;
+        }
+        setPhotos(matches.slice(0, 8));
+        if (matches.length === 0) setSearchMessage("Aucune photo avec une licence réutilisable n’a été trouvée. Essaie un terme plus précis ou importe ta propre photo.");
       } catch (error) {
         if (controller.signal.aborted) return;
         setPhotos([]);
