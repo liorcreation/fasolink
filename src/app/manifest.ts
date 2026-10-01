@@ -29,8 +29,8 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: "Explorer les boutiques",
-        url: "/#explorer",
+        name: "Boutiques locales",
+        url: "/boutiques",
       },
       {
         name: "Ouvrir ma boutique",

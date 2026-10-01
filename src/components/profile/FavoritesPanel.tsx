@@ -65,7 +65,7 @@ export function FavoritesPanel() {
       )}
       {!loading && !loadError && (!isConfigured || user) && shops.length === 0 && (
         <div className="profile-empty-state">
-          <span className="profile-empty-icon profile-empty-icon-neutral"><Store aria-hidden="true" /></span><div><h3>Votre sélection commence ici</h3><p>Explorez les commerces du Burkina et touchez le cœur pour retrouver une boutique ici.</p><Link href="/#explorer">Découvrir les boutiques <ArrowRight aria-hidden="true" /></Link></div>
+          <span className="profile-empty-icon profile-empty-icon-neutral"><Store aria-hidden="true" /></span><div><h3>Votre sélection commence ici</h3><p>Explorez les commerces du Burkina et touchez le cœur pour retrouver une boutique ici.</p><Link href="/boutiques">Découvrir les boutiques <ArrowRight aria-hidden="true" /></Link></div>
         </div>
       )}
       {!loading && !loadError && shops.length > 0 && <div className="profile-favorite-grid">{shops.map((shop, index) => <ShopCard key={shop.id} shop={shop} index={index} />)}</div>}

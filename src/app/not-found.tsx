@@ -50,7 +50,7 @@ export default function NotFound() {
               <span className="inline-flex items-center gap-2"><ArrowLeft className="h-4 w-4" /> Accueil</span>
               <ArrowRight className="h-4 w-4 opacity-70" />
             </ButtonLink>
-            <ButtonLink href="/#explorer" size="lg" variant="outline" className="w-full justify-between">
+            <ButtonLink href="/boutiques" size="lg" variant="outline" className="w-full justify-between">
               <span className="inline-flex items-center gap-2"><Search className="h-4 w-4" /> Trouver une boutique</span>
               <ArrowRight className="h-4 w-4 opacity-50" />
             </ButtonLink>

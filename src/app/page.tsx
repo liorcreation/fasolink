@@ -56,7 +56,7 @@ export default async function HomePage({
               <p className="text-[11px] font-extrabold uppercase tracking-[.18em] text-faso-red">À chacun son coup de cœur</p>
               <h2 className="mt-1 text-lg font-bold text-ink sm:text-xl">Parcourir par univers</h2>
             </div>
-            <Link href="/#explorer" className="hidden items-center gap-1 text-xs font-bold text-ink-soft transition-colors hover:text-faso-red sm:inline-flex">Tout explorer <ArrowRight className="h-3.5 w-3.5" /></Link>
+            <Link href="/boutiques" className="hidden items-center gap-1 text-xs font-bold text-ink-soft transition-colors hover:text-faso-red sm:inline-flex">Voir toutes les boutiques <ArrowRight className="h-3.5 w-3.5" /></Link>
           </div>
           <div className="snap-row no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-6">
             {CATEGORIES.map((c, i) => {
@@ -64,7 +64,7 @@ export default async function HomePage({
               return (
                 <Reveal key={c.id} y={12} delay={i * 0.035} className="snap-item shrink-0 sm:shrink">
                   <Link
-                    href={`/?categorie=${c.id}#explorer`}
+                    href={`/boutiques?categorie=${c.id}#boutiques`}
                     className="group flex min-w-[154px] items-center gap-3 rounded-2xl border border-clay-100 bg-[#fbf8f3] p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-faso-gold/50 hover:bg-white hover:shadow-premium sm:min-w-0"
                   >
                     <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${c.accent} transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105`}><c.icon className="h-5 w-5" /></span>
@@ -148,12 +148,12 @@ export default async function HomePage({
                   <ArrowRight className="h-4 w-4" />
                 </ButtonLink>
                 <ButtonLink
-                  href="/#explorer"
+                  href="/boutiques"
                   size="lg"
                   variant="outline"
                   className="border-white/20 bg-white/5 text-white hover:bg-white hover:text-ink"
                 >
-                  Découvrir FasoLink
+                  Découvrir les boutiques
                 </ButtonLink>
               </div>
             </div>

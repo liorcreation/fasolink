@@ -118,7 +118,7 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
       if (results[active]) go(results[active]);
       else if (query.trim()) {
         setOpen(false);
-        router.push(`/#explorer`);
+        router.push(`/boutiques?q=${encodeURIComponent(query.trim())}#boutiques`);
       }
     }
   }
@@ -253,11 +253,11 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
                   {results.length > 0 && (
                     <div className="border-t border-clay-100 px-4 py-2.5">
                       <Link
-                        href="/#explorer"
+                        href={`/boutiques?q=${encodeURIComponent(query.trim())}#boutiques`}
                         onClick={() => setOpen(false)}
                         className="flex items-center justify-center gap-1.5 text-xs font-semibold text-faso-red hover:gap-2"
                       >
-                        Voir tous les résultats dans l&apos;explorateur
+                        Voir tous les résultats dans les boutiques
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>

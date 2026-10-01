@@ -34,11 +34,21 @@ const RADII = [3, 5, 10, 25];
 export function SearchExplorer({
   shops,
   initialCategory = "all",
+  initialQuery = "",
+  sectionId = "explorer",
+  eyebrow = "Explorer",
+  heading = "Trouvez une boutique près de chez vous",
+  description = "Recherche instantanée parmi les commerçants vérifiés du Burkina Faso.",
 }: {
   shops: ShopWithProducts[];
   initialCategory?: ShopCategory | "all";
+  initialQuery?: string;
+  sectionId?: string;
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<ShopCategory | "all">(initialCategory);
   const [city, setCity] = useState<string>("all");
   const [neighborhood, setNeighborhood] = useState<string>("all");
@@ -175,16 +185,16 @@ export function SearchExplorer({
   }, [results, query]);
 
   return (
-    <section id="explorer" className="container-faso scroll-mt-24 py-16 md:py-24">
+    <section id={sectionId} className="container-faso scroll-mt-24 py-16 md:py-24">
       <Reveal className="mx-auto max-w-2xl text-center">
         <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
-          Explorer
+          {eyebrow}
         </span>
         <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
-          Trouvez une boutique près de chez vous
+          {heading}
         </h2>
         <p className="mt-3 text-ink-muted">
-          Recherche instantanée parmi les commerçants vérifiés du Burkina Faso.
+          {description}
         </p>
       </Reveal>
 

@@ -3,36 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Compass, Home, Store, UserRound, type LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BriefcaseBusiness, Home, Store, UserRound, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
-  match: (path: string, hash: string) => boolean;
+  match: (path: string) => boolean;
   accent?: boolean;
 }
 
 const ITEMS: NavItem[] = [
-  { href: "/", label: "Accueil", icon: Home, match: (path, hash) => path === "/" && hash !== "#explorer" },
-  { href: "/#explorer", label: "Explorer", icon: Compass, match: (path, hash) => path === "/" && hash === "#explorer" },
-  { href: "/vendeur/inscription", label: "Vendre", icon: Store, match: (path) => path.startsWith("/vendeur"), accent: true },
+  { href: "/", label: "Accueil", icon: Home, match: (path) => path === "/" },
+  { href: "/boutiques", label: "Boutiques", icon: Store, match: (path) => path.startsWith("/boutiques") },
+  { href: "/vendeur/inscription", label: "Vendre", icon: BriefcaseBusiness, match: (path) => path.startsWith("/vendeur"), accent: true },
   { href: "/profil", label: "Profil", icon: UserRound, match: (path) => path.startsWith("/profil") || path.startsWith("/connexion") || path.startsWith("/inscription") },
 ];
 
 export function BottomNav() {
   const pathname = usePathname() || "/";
-  const [hash, setHash] = useState("");
-
-  useEffect(() => {
-    const syncHash = () => setHash(window.location.hash);
-    syncHash();
-    window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
-  }, []);
-
   return (
     <nav
       aria-label="Navigation rapide"
@@ -40,7 +30,7 @@ export function BottomNav() {
     >
       <ul className="mx-auto grid max-w-xl grid-cols-4 px-2">
         {ITEMS.map((item) => {
-          const active = item.match(pathname, hash);
+          const active = item.match(pathname);
           const Icon = item.icon;
 
           if (item.accent) {

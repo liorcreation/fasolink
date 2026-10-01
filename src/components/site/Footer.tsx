@@ -20,7 +20,7 @@ export function Footer() {
             {CATEGORIES.map((c) => (
               <li key={c.id}>
                 <Link
-                  href={`/#explorer`}
+                  href={`/boutiques?categorie=${c.id}#boutiques`}
                   className="transition-colors hover:text-faso-red"
                 >
                   {c.label}

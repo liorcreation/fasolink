@@ -104,7 +104,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             className="mt-4 flex flex-col gap-3 min-[420px]:flex-row"
           >
-            <ButtonLink href="/#explorer" size="lg" variant="primary" className="group shadow-[0_14px_30px_-16px_rgba(215,38,42,.72)]">
+            <ButtonLink href="/boutiques" size="lg" variant="primary" className="group shadow-[0_14px_30px_-16px_rgba(215,38,42,.72)]">
               Découvrir les boutiques <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </ButtonLink>
             <ButtonLink href="/vendeur/inscription" size="lg" variant="outline" className="border-clay-300 bg-white/65">
@@ -134,7 +134,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           <div aria-hidden className="absolute -inset-5 rounded-[3rem] bg-gradient-to-br from-faso-gold/20 via-transparent to-faso-green/15 blur-2xl" />
           <div className="relative grid grid-cols-[1fr_0.58fr] grid-rows-[minmax(0,1fr)_auto] gap-3 sm:gap-4">
             <Link
-              href={heroShop ? `/boutiques/${heroShop.id}` : "/#explorer"}
+              href={heroShop ? `/boutiques/${heroShop.id}` : "/boutiques"}
               className="group relative col-span-2 min-h-[370px] overflow-hidden rounded-[2rem] border border-white/70 bg-[#d8a55f] shadow-[0_35px_90px_-42px_rgba(26,17,9,.6)] sm:min-h-[480px] lg:col-span-1 lg:row-span-2"
             >
               {heroImage ? (
@@ -187,13 +187,13 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
               <div className="relative">
                 <p className="text-3xl font-extrabold tracking-tight">{verifiedCount.toLocaleString("fr-FR")}</p>
                 <p className="mt-1 text-xs leading-5 text-white/70">vendeurs vérifiés, proches de vous</p>
-                <Link href="/#explorer" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-faso-gold hover:gap-2">Explorer <ArrowRight className="h-3.5 w-3.5" /></Link>
+                <Link href="/boutiques" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-faso-gold hover:gap-2">Voir les boutiques <ArrowRight className="h-3.5 w-3.5" /></Link>
               </div>
             </motion.div>
           </div>
 
-          <Link href="/#explorer" className="mx-auto mt-5 hidden w-fit items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-ink-muted transition-colors hover:text-faso-red lg:flex">
-            Faire défiler pour découvrir <ArrowDown className="h-4 w-4 animate-bounce motion-reduce:animate-none" />
+          <Link href="/boutiques" className="mx-auto mt-5 hidden w-fit items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-ink-muted transition-colors hover:text-faso-red lg:flex">
+            Voir les boutiques <ArrowDown className="h-4 w-4 animate-bounce motion-reduce:animate-none" />
           </Link>
         </motion.div>
       </div>

@@ -23,10 +23,10 @@ export function FeaturedCarousel({ shops }: { shops: ShopWithProducts[] }) {
           </h2>
         </Reveal>
         <Link
-          href="/#explorer"
+          href="/boutiques"
           className="hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-faso-red hover:gap-2 sm:inline-flex"
         >
-          Tout voir
+          Voir toutes les boutiques
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

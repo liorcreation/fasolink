@@ -154,8 +154,8 @@ export function Navbar() {
           <Link href="/" aria-current={pathname === "/" ? "page" : undefined} className={activeLinkClass(pathname === "/")}>
             Accueil
           </Link>
-          <Link href="/#explorer" className={activeLinkClass(false)}>
-            Explorer
+          <Link href="/boutiques" aria-current={pathname.startsWith("/boutiques") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/boutiques"))}>
+            Boutiques
           </Link>
           <div className="relative" ref={sellerMenuRef}>
             <button
@@ -269,8 +269,8 @@ export function Navbar() {
               <div className="mt-5 rounded-2xl bg-[#f8f2e9] p-3.5 sm:p-4">
                 <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.13em] text-ink-soft"><Search className="h-4 w-4 text-faso-red" aria-hidden="true" /> Découvrir les boutiques</div>
                 <p className="mt-1.5 text-xs leading-5 text-ink-muted">Explorez les commerces, puis ouvrez une vitrine et ses produits.</p>
-                <Link href="/#explorer" onClick={closeMenus} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3.5 text-sm font-bold text-ink shadow-sm transition hover:text-faso-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
-                  Explorer maintenant <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                <Link href="/boutiques" onClick={closeMenus} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3.5 text-sm font-bold text-ink shadow-sm transition hover:text-faso-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
+                  Voir les boutiques <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
 
