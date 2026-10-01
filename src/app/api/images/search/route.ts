@@ -42,14 +42,13 @@ export async function GET(request: Request) {
     const params = new URLSearchParams({ query, locale: "fr-FR", per_page: "12", page: "1" });
     const response = await fetch(`https://api.pexels.com/v1/search?${params}`, {
       headers: { Authorization: apiKey, Accept: "application/json" },
-      cache: "no-store",
     });
     if (response.status === 401 || response.status === 403) {
       return NextResponse.json({ error: "La clé Pexels configurée sur le serveur est invalide." }, { status: 502 });
     }
     if (!response.ok) return NextResponse.json({ error: "Pexels est momentanément indisponible." }, { status: 502 });
 
-    const payload = await response.json() as { photos?: PexelsPhoto[] };
+    const payload = JSON.parse(await response.text()) as { photos?: PexelsPhoto[] };
     const photos = (payload.photos ?? []).map((photo) => {
       const imageUrl = safeHttpsUrl(photo.src?.large ?? photo.src?.medium, ["images.pexels.com"]);
       const sourceUrl = safeHttpsUrl(photo.url, ["www.pexels.com", "pexels.com"]);
