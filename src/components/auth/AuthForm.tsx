@@ -44,7 +44,7 @@ function getErrorMessage(cause: unknown) {
   if (code.includes("email-already-in-use")) return "Cette adresse possède déjà un compte. Connectez-vous plutôt.";
   if (code.includes("network-request-failed")) return "Connexion internet indisponible. Vérifiez votre réseau puis réessayez.";
   if (code.includes("too-many-requests")) return "Trop de tentatives. Patientez quelques minutes avant de réessayer.";
-  if (code.includes("weak-password")) return "Choisissez un mot de passe plus robuste (8 caractères minimum).";
+  if (code.includes("weak-password")) return "Choisissez un mot de passe d’au moins 12 caractères avec une minuscule, une majuscule, un chiffre et un symbole.";
   if (code.includes("invalid-email")) return "Cette adresse email ne semble pas valide.";
   return "L’opération n’a pas abouti. Réessayez dans un instant.";
 }
@@ -61,6 +61,12 @@ export function AuthForm({ initialMode }: AuthFormProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const isSignup = initialMode === "signup";
+  const passwordRequirements = [
+    { label: "12 caractères minimum", met: password.length >= 12 },
+    { label: "Une lettre minuscule et une majuscule", met: /\p{Ll}/u.test(password) && /\p{Lu}/u.test(password) },
+    { label: "Au moins un chiffre", met: /\p{N}/u.test(password) },
+    { label: "Au moins un symbole", met: /[^\p{L}\p{N}]/u.test(password) },
+  ];
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,9 +75,15 @@ export function AuthForm({ initialMode }: AuthFormProps) {
     setNotice(null);
 
     const normalizedEmail = email.trim().toLowerCase();
-    if (isSignup && password !== confirmPassword) {
-      setError("Les deux mots de passe ne correspondent pas.");
-      return;
+    if (isSignup) {
+      if (passwordRequirements.some((requirement) => !requirement.met)) {
+        setError("Renforcez votre mot de passe en respectant les quatre critères affichés.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Les deux mots de passe ne correspondent pas.");
+        return;
+      }
     }
 
     setBusy(true);
@@ -186,7 +198,10 @@ export function AuthForm({ initialMode }: AuthFormProps) {
 
         <label className="auth-field">
           <span>Mot de passe</span>
-          <span className="auth-input-wrap"><KeyRound aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? "8 caractères minimum" : "Votre mot de passe"} required /><button type="button" className="auth-password-toggle" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</button></span>
+          <span className="auth-input-wrap"><KeyRound aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={isSignup ? 12 : 1} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? "12 caractères minimum" : "Votre mot de passe"} required /><button type="button" className="auth-password-toggle" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</button></span>
+          {isSignup && <ul className="mt-2 grid gap-1 rounded-xl border border-[#eee3d7] bg-[#fbf7f1] px-3 py-2.5 text-xs" aria-label="Exigences du mot de passe">
+            {passwordRequirements.map((requirement) => <li key={requirement.label} className={`flex items-center gap-2 ${requirement.met ? "font-semibold text-faso-green" : "text-ink-muted"}`}><span className={`grid h-4 w-4 place-items-center rounded-full ${requirement.met ? "bg-faso-green/10" : "bg-[#eee3d7]"}`}><Check className="h-2.5 w-2.5" aria-hidden="true" /></span>{requirement.label}</li>)}
+          </ul>}
         </label>
 
         <AnimatePresence initial={false}>
@@ -199,7 +214,7 @@ export function AuthForm({ initialMode }: AuthFormProps) {
               className="auth-field"
             >
               <span>Confirmer le mot de passe</span>
-              <span className="auth-input-wrap"><ShieldCheck aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Saisissez-le à nouveau" required /></span>
+              <span className="auth-input-wrap"><ShieldCheck aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={12} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Saisissez-le à nouveau" required /></span>
             </motion.label>
           )}
         </AnimatePresence>
