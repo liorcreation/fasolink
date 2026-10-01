@@ -3,98 +3,75 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Store, User, type LucideIcon } from "lucide-react";
+import { Compass, Home, Store, UserRound, type LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
-  match: (path: string) => boolean;
+  match: (path: string, hash: string) => boolean;
   accent?: boolean;
 }
 
 const ITEMS: NavItem[] = [
-  {
-    href: "/",
-    label: "Accueil",
-    icon: Home,
-    match: (p) => p === "/",
-  },
-  {
-    href: "/vendeur/inscription",
-    label: "Vendre",
-    icon: Store,
-    match: (p) => p.startsWith("/vendeur"),
-    accent: true,
-  },
-  {
-    href: "/profil",
-    label: "Mon Profil",
-    icon: User,
-    match: (p) => p.startsWith("/profil") || p.startsWith("/inscription"),
-  },
+  { href: "/", label: "Accueil", icon: Home, match: (path, hash) => path === "/" && hash !== "#explorer" },
+  { href: "/#explorer", label: "Explorer", icon: Compass, match: (path, hash) => path === "/" && hash === "#explorer" },
+  { href: "/vendeur/inscription", label: "Vendre", icon: Store, match: (path) => path.startsWith("/vendeur"), accent: true },
+  { href: "/profil", label: "Profil", icon: UserRound, match: (path) => path.startsWith("/profil") || path.startsWith("/connexion") || path.startsWith("/inscription") },
 ];
 
 export function BottomNav() {
   const pathname = usePathname() || "/";
+  const [hash, setHash] = useState("");
+
+  useEffect(() => {
+    const syncHash = () => setHash(window.location.hash);
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
 
   return (
     <nav
-      aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-clay-100/80 bg-white/90 pb-safe shadow-[0_-12px_35px_-24px_rgba(26,17,9,0.5)] backdrop-blur-xl md:hidden"
+      aria-label="Navigation rapide"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-clay-100/80 bg-white/92 pb-safe shadow-[0_-12px_35px_-24px_rgba(26,17,9,0.5)] backdrop-blur-xl lg:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-3">
+      <ul className="mx-auto grid max-w-xl grid-cols-4 px-2">
         {ITEMS.map((item) => {
-          const active = item.match(pathname);
+          const active = item.match(pathname, hash);
           const Icon = item.icon;
 
           if (item.accent) {
             return (
               <li key={item.href} className="flex justify-center">
-                <Link
-                  href={item.href}
-                  aria-label={item.label}
-                  className="-mt-5 flex flex-col items-center gap-1"
-                >
-                  <span
-                    className={cn(
-                      "grid h-12 w-12 place-items-center rounded-2xl bg-faso-gradient text-white shadow-glow transition-transform active:scale-95",
-                      active && "ring-2 ring-faso-gold ring-offset-2",
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
+                <Link href={item.href} aria-label="Vendre sur FasoLink" aria-current={active ? "page" : undefined} className="-mt-4 flex min-w-[4.25rem] flex-col items-center gap-1 rounded-xl px-2 pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
+                  <span className={cn(
+                    "grid h-12 w-12 place-items-center rounded-[1.1rem] bg-faso-gradient text-white shadow-[0_9px_22px_-11px_rgba(215,38,42,.65)] transition-transform active:scale-95",
+                    active && "ring-2 ring-faso-gold ring-offset-2",
+                  )}>
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <span className="text-[10px] font-bold text-faso-red">
-                    {item.label}
-                  </span>
+                  <span className="text-[10px] font-extrabold text-faso-red">Vendre</span>
                 </Link>
               </li>
             );
           }
 
           return (
-            <li key={item.href}>
+            <li key={item.href} className="flex justify-center">
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold transition-colors",
-                  active ? "text-faso-red" : "text-ink-muted",
+                  "relative flex min-h-[3.5rem] min-w-[4.1rem] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red",
+                  active ? "text-faso-red" : "text-ink-muted hover:text-ink",
                 )}
               >
-                {active && (
-                  <motion.span
-                    layoutId="bottom-nav-active"
-                    className="absolute inset-x-3 top-1 h-1 rounded-full bg-faso-red"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                  />
-                )}
-                <Icon
-                  className={cn("h-5 w-5", active && "stroke-[2.5]")}
-                  aria-hidden
-                />
-                {item.label}
+                {active && <motion.span layoutId="bottom-nav-active" className="absolute inset-x-2 top-0 h-[3px] rounded-full bg-faso-red" transition={{ type: "spring", stiffness: 450, damping: 35 }} />}
+                <Icon className={cn("h-[19px] w-[19px]", active && "stroke-[2.5]")} aria-hidden="true" />
+                <span>{item.label}</span>
               </Link>
             </li>
           );

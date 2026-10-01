@@ -72,7 +72,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${inter.variable} ${sora.variable}`}>
-      <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav md:pb-0">
+      <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav lg:pb-0">
         <AuthProvider>
           <SplashScreen />
           <Navbar />
