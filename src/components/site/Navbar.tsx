@@ -150,7 +150,7 @@ export function Navbar() {
       <nav aria-label="Navigation principale" className="container-faso flex h-16 items-center gap-4 md:h-[4.5rem]">
         <Logo linked={false} />
 
-        <div className="ml-auto hidden items-center gap-1 lg:flex">
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
           <Link href="/" aria-current={pathname === "/" ? "page" : undefined} className={activeLinkClass(pathname === "/")}>
             Accueil
           </Link>
