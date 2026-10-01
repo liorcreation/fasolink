@@ -73,7 +73,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             <br />
             du Faso,
             <br />
-            <span className="relative inline-block text-gradient-faso">
+            <span className="relative inline-block pl-[0.08em] text-gradient-faso">
               juste ici.
               <svg className="absolute -bottom-2 left-1 h-3 w-[94%] text-faso-gold/80" viewBox="0 0 300 16" fill="none" aria-hidden="true">
                 <path d="M4 11C66 3 178 1 295 8" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
