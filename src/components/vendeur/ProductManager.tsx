@@ -7,11 +7,13 @@ import type { Product, ProductAvailability } from "@/lib/database.types";
 import {
   createProduct,
   deleteProduct,
+  uploadProductImage,
   updateProduct,
   type ProductDraft,
 } from "@/lib/vendor";
 import { formatCFA } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { ProductImagePicker, type CommonsProductPhoto } from "@/components/vendeur/ProductImagePicker";
 
 const AVAILABILITY: { id: ProductAvailability; label: string }[] = [
   { id: "in_stock", label: "En stock" },
@@ -25,6 +27,10 @@ const EMPTY_DRAFT: ProductDraft = {
   price: 0,
   availability: "in_stock",
   image_url: null,
+  image_credit: null,
+  image_source_url: null,
+  image_license: null,
+  image_license_url: null,
 };
 
 export function ProductManager({
@@ -38,24 +44,31 @@ export function ProductManager({
 }) {
   const [products, setProducts] = useState(initialProducts);
   const [draft, setDraft] = useState<ProductDraft>(EMPTY_DRAFT);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function reset() {
     setDraft(EMPTY_DRAFT);
+    setImageFile(null);
     setEditingId(null);
     setError(null);
   }
 
   function edit(product: Product) {
     setEditingId(product.id);
+    setImageFile(null);
     setDraft({
       name: product.name,
       description: product.description ?? "",
       price: product.price,
       availability: product.availability,
       image_url: product.image_url,
+      image_credit: product.image_credit ?? null,
+      image_source_url: product.image_source_url ?? null,
+      image_license: product.image_license ?? null,
+      image_license_url: product.image_license_url ?? null,
     });
     setError(null);
   }
@@ -66,12 +79,22 @@ export function ProductManager({
     setBusy(true);
     setError(null);
     try {
+      const submittedDraft: ProductDraft = imageFile
+        ? {
+            ...draft,
+            image_url: demo ? null : await uploadProductImage(shopId, imageFile),
+            image_credit: null,
+            image_source_url: null,
+            image_license: null,
+            image_license_url: null,
+          }
+        : draft;
       if (editingId) {
-        if (!demo) await updateProduct(editingId, draft);
+        if (!demo) await updateProduct(editingId, submittedDraft);
         setProducts((current) =>
           current.map((product) =>
             product.id === editingId
-              ? { ...product, ...draft, name: draft.name.trim(), description: draft.description.trim() || null, updated_at: new Date().toISOString() }
+              ? { ...product, ...submittedDraft, name: submittedDraft.name.trim(), description: submittedDraft.description.trim() || null, updated_at: new Date().toISOString() }
               : product,
           ),
         );
@@ -82,18 +105,22 @@ export function ProductManager({
           {
             id: `demo-${Date.now()}`,
             shop_id: shopId,
-            name: draft.name.trim(),
-            description: draft.description.trim() || null,
-            price: Number(draft.price),
+            name: submittedDraft.name.trim(),
+            description: submittedDraft.description.trim() || null,
+            price: Number(submittedDraft.price),
             currency: "FCFA",
-            image_url: draft.image_url ?? null,
-            availability: draft.availability,
+            image_url: submittedDraft.image_url ?? null,
+            image_credit: submittedDraft.image_credit ?? null,
+            image_source_url: submittedDraft.image_source_url ?? null,
+            image_license: submittedDraft.image_license ?? null,
+            image_license_url: submittedDraft.image_license_url ?? null,
+            availability: submittedDraft.availability,
             created_at: now,
             updated_at: now,
           },
         ]);
       } else {
-        const created = await createProduct(shopId, draft);
+        const created = await createProduct(shopId, submittedDraft);
         setProducts((current) => [...current, created]);
       }
       reset();
@@ -166,6 +193,27 @@ export function ProductManager({
             {AVAILABILITY.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
           </select></label>
           <label className="text-[11px] font-bold text-ink-soft sm:col-span-2">Description <span className="font-medium text-ink-muted">(facultatif)</span><textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Matière, dimensions, origine, points forts…" rows={3} className="input-premium mt-1.5 h-auto py-3 sm:col-span-2" /></label>
+          <ProductImagePicker
+            query={draft.name}
+            imageUrl={draft.image_url ?? null}
+            imageCredit={draft.image_credit}
+            imageSourceUrl={draft.image_source_url}
+            imageLicense={draft.image_license}
+            imageLicenseUrl={draft.image_license_url}
+            file={imageFile}
+            onFileChange={(file) => {
+              setImageFile(file);
+              setDraft((current) => ({ ...current, image_url: null, image_credit: null, image_source_url: null, image_license: null, image_license_url: null }));
+            }}
+            onPhotoSelect={(photo: CommonsProductPhoto) => {
+              setImageFile(null);
+              setDraft((current) => ({ ...current, ...photo }));
+            }}
+            onClear={() => {
+              setImageFile(null);
+              setDraft((current) => ({ ...current, image_url: null, image_credit: null, image_source_url: null, image_license: null, image_license_url: null }));
+            }}
+          />
         </div>
         {error && <p className="mt-3 rounded-xl bg-faso-red-soft/40 px-3 py-2 text-xs text-faso-red-dark">{error}</p>}
         <Button type="submit" className="mt-4" disabled={busy || !draft.name.trim()}>

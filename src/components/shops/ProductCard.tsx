@@ -60,6 +60,11 @@ export function ProductCard({
           </div>
         </div>
       </Link>
+      {product.image_credit && product.image_source_url?.startsWith("https://commons.wikimedia.org/") && (
+        <p className="truncate px-3 pt-2 text-[9px] font-medium text-ink-muted">
+          Photo illustrative · {product.image_credit} · {product.image_license || "Licence"} · <a href={product.image_source_url} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>
+        </p>
+      )}
       <div className="flex flex-1 flex-col p-3">
         <Link href={href}>
           <h3 className="text-sm font-bold text-ink group-hover:text-faso-red">

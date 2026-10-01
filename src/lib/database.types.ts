@@ -85,6 +85,10 @@ export interface Product {
   price: number;
   currency: string;
   image_url: string | null;
+  image_credit?: string | null;
+  image_source_url?: string | null;
+  image_license?: string | null;
+  image_license_url?: string | null;
   availability: ProductAvailability;
   created_at: string;
   updated_at: string;

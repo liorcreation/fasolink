@@ -192,6 +192,24 @@ export interface ProductDraft {
   price: number;
   availability: ProductAvailability;
   image_url?: string | null;
+  image_credit?: string | null;
+  image_source_url?: string | null;
+  image_license?: string | null;
+  image_license_url?: string | null;
+}
+
+export async function uploadProductImage(shopId: string, file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new VendorError("insert", "Le fichier choisi n’est pas une image.");
+  }
+  if (file.size >= 5 * 1024 * 1024) {
+    throw new VendorError("insert", "L’image doit faire moins de 5 Mo.");
+  }
+  await ensureSession();
+  const key = `produit-${crypto.randomUUID()}`;
+  const url = await uploadPublicAsset(shopId, key, file);
+  if (!url) throw new VendorError("insert", "L’envoi de la photo vers le stockage a échoué.");
+  return url;
 }
 
 export async function createProduct(
@@ -210,6 +228,10 @@ export async function createProduct(
     price: Math.max(0, Number(input.price)),
     currency: "FCFA",
     image_url: input.image_url ?? null,
+    image_credit: input.image_credit ?? null,
+    image_source_url: input.image_source_url ?? null,
+    image_license: input.image_license ?? null,
+    image_license_url: input.image_license_url ?? null,
     availability: input.availability,
     created_at: now,
     updated_at: now,
@@ -222,6 +244,10 @@ export async function createProduct(
     price: Math.max(0, Number(input.price)),
     currency: "FCFA",
     image_url: input.image_url ?? null,
+    image_credit: input.image_credit ?? null,
+    image_source_url: input.image_source_url ?? null,
+    image_license: input.image_license ?? null,
+    image_license_url: input.image_license_url ?? null,
     availability: input.availability,
     created_at: now,
     updated_at: now,
@@ -242,6 +268,10 @@ export async function updateProduct(
     price: Math.max(0, Number(input.price)),
     availability: input.availability,
     image_url: input.image_url ?? null,
+    image_credit: input.image_credit ?? null,
+    image_source_url: input.image_source_url ?? null,
+    image_license: input.image_license ?? null,
+    image_license_url: input.image_license_url ?? null,
     updated_at: new Date().toISOString(),
   });
 }

@@ -85,13 +85,18 @@ export default async function ProduitPage({
             <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
               <AvailabilityBadge status={product.availability} />
             </div>
-            <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/80 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[.13em] text-ink-soft shadow-sm backdrop-blur-md sm:right-6 sm:top-6"><Sparkles className="h-3.5 w-3.5 text-faso-gold-dark" /> Sélection locale</div>
+            <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/80 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[.13em] text-ink-soft shadow-sm backdrop-blur-md sm:right-6 sm:top-6"><Sparkles className="h-3.5 w-3.5 text-faso-gold-dark" />{product.image_source_url ? "Photo illustrative" : "Sélection locale"}</div>
             <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-3 sm:inset-x-6 sm:bottom-6">
               <span className="rounded-2xl border border-white/70 bg-white/85 px-3.5 py-2.5 shadow-lg backdrop-blur-xl"><span className="block text-[9px] font-extrabold uppercase tracking-[.16em] text-ink-muted">Proposé par</span><span className="mt-0.5 block max-w-[58vw] truncate text-xs font-bold text-ink sm:max-w-xs">{shop.name}</span></span>
               <Link href={`/boutiques/${shop.id}`} aria-label={`Découvrir la boutique ${shop.name}`} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/70 bg-white/90 text-ink shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:text-faso-red"><ArrowUpRightIcon /></Link>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 px-1 text-[10px] font-semibold text-ink-muted sm:mt-4 sm:text-xs"><span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-faso-green" /> Achat en direct auprès du commerçant</span><span className="hidden sm:inline">Burkina Faso · FasoLink</span></div>
+          {product.image_credit && product.image_source_url?.startsWith("https://commons.wikimedia.org/") && (
+            <p className="mt-2 px-1 text-[10px] leading-4 text-ink-muted">
+              Photo illustrative · {product.image_credit} · {product.image_license || "Licence"}{product.image_license_url?.startsWith("https://") && <> · <a href={product.image_license_url} target="_blank" rel="noreferrer" className="underline underline-offset-2">Licence</a></>}{" · "}<a href={product.image_source_url} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>
+            </p>
+          )}
         </Reveal>
 
         {/* Infos */}
