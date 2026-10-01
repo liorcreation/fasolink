@@ -77,10 +77,10 @@ export default async function BoutiquePage({
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#17120E]/55 to-transparent" />
         <div className="container-faso relative flex h-full flex-col justify-between py-5 sm:py-7">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 text-xs font-bold text-white shadow-lg backdrop-blur-xl transition hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ArrowLeft className="h-4 w-4" />Explorer FasoLink</Link>
+            <Link href="/boutiques" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 text-xs font-bold text-white shadow-lg backdrop-blur-xl transition hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ArrowLeft className="h-4 w-4" />Retour aux boutiques</Link>
             <span className="hidden items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-2 text-[10px] font-bold uppercase tracking-[.16em] text-white/85 backdrop-blur-xl sm:inline-flex"><Sparkles className="h-3.5 w-3.5 text-faso-gold" /> Le savoir-faire d’ici</span>
           </div>
-          <div className="flex items-end justify-between gap-4 text-white">
+          <div className="mb-14 flex items-end justify-between gap-4 text-white sm:mb-24 lg:mb-32">
             <div className="max-w-xl"><p className="text-[10px] font-extrabold uppercase tracking-[.22em] text-[#F3D88E]">La vitrine officielle</p><p className="mt-2 text-sm text-white/75 sm:text-base">Découvrez une adresse qui fait vivre le talent burkinabè.</p></div>
             {shop.gallery.length > 0 && <a href="#shop-gallery" className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-xs font-bold text-white backdrop-blur-lg transition hover:bg-white/20"><Camera className="h-4 w-4" /><span className="hidden sm:inline">Voir la galerie</span><span className="sm:hidden">{shop.gallery.length} photos</span></a>}
           </div>
