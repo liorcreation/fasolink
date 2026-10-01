@@ -60,7 +60,7 @@ export function ProductCard({
           </div>
         </div>
       </Link>
-      {product.image_credit && product.image_source_url?.startsWith("https://commons.wikimedia.org/") && (
+      {product.image_credit && (product.image_source_url?.startsWith("https://commons.wikimedia.org/") || product.image_source_url?.startsWith("https://www.pexels.com/") || product.image_source_url?.startsWith("https://pexels.com/")) && (
         <p className="truncate px-3 pt-2 text-[9px] font-medium text-ink-muted">
           Photo illustrative · {product.image_credit} · {product.image_license || "Licence"} · <a href={product.image_source_url} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>
         </p>

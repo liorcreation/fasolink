@@ -13,7 +13,7 @@ import {
 } from "@/lib/vendor";
 import { formatCFA } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { ProductImagePicker, type CommonsProductPhoto } from "@/components/vendeur/ProductImagePicker";
+import { ProductImagePicker, type PexelsProductPhoto } from "@/components/vendeur/ProductImagePicker";
 
 const AVAILABILITY: { id: ProductAvailability; label: string }[] = [
   { id: "in_stock", label: "En stock" },
@@ -205,7 +205,7 @@ export function ProductManager({
               setImageFile(file);
               setDraft((current) => ({ ...current, image_url: null, image_credit: null, image_source_url: null, image_license: null, image_license_url: null }));
             }}
-            onPhotoSelect={(photo: CommonsProductPhoto) => {
+            onPhotoSelect={(photo: PexelsProductPhoto) => {
               setImageFile(null);
               setDraft((current) => ({ ...current, ...photo }));
             }}
