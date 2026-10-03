@@ -40,7 +40,7 @@ export function Footer() {
             </li>
             <li>
               <Link href="/vendeur/inscription" className="hover:text-faso-red">
-                Ouvrir une boutique
+                Vendre des produits tech
               </Link>
             </li>
             <li>

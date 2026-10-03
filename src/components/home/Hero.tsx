@@ -13,7 +13,6 @@ import {
   Store,
 } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
-import { CATEGORY_MAP } from "@/lib/constants";
 import { formatCFA } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/Button";
 import { LogoMark } from "@/components/site/Logo";
@@ -31,7 +30,6 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
     shops.find((shop) => shop.cover_url || shop.gallery?.[0]) ??
     shops[0];
   const heroImage = heroShop?.cover_url || heroShop?.gallery?.[0] || null;
-  const category = heroShop ? CATEGORY_MAP[heroShop.category] : null;
   const heroProduct = heroShop?.products.find((product) => product.image_url);
   const verifiedCount = shops.filter((shop) => shop.verification_status === "verified").length;
   const cityCount = new Set(shops.map((shop) => shop.city).filter(Boolean)).size;
@@ -60,7 +58,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-faso-green opacity-40 motion-reduce:animate-none" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-faso-green" />
               </span>
-              Le savoir-faire burkinabè, tout près de vous
+              La tech locale, choisie au Burkina Faso
             </span>
           </motion.div>
 
@@ -69,12 +67,12 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
             className="mt-7 max-w-3xl text-[clamp(3.15rem,8vw,6.3rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-ink"
           >
-            Le meilleur
+            La tech
             <br />
             du Faso,
             <br />
             <span className="relative inline-block pl-[0.08em] text-gradient-faso">
-              juste ici.
+              à portée de main.
               <svg className="absolute -bottom-2 left-1 h-3 w-[94%] text-faso-gold/80" viewBox="0 0 300 16" fill="none" aria-hidden="true">
                 <path d="M4 11C66 3 178 1 295 8" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
               </svg>
@@ -86,9 +84,9 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             className="mt-6 max-w-xl text-base leading-7 text-ink-soft sm:text-lg sm:leading-8"
           >
-            Les bonnes adresses, les beaux produits, les talents d’ici.
-            Découvrez les boutiques locales et contactez-les directement —
-            simplement, en toute confiance.
+            Téléphones, ordinateurs et accessoires : découvrez les vendeurs
+            tech près de vous, comparez leurs offres et échangez directement
+            avec eux sur WhatsApp.
           </motion.p>
 
           <motion.div
@@ -104,8 +102,8 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             className="mt-4 flex flex-col gap-3 min-[420px]:flex-row"
           >
-            <ButtonLink href="/boutiques" size="lg" variant="primary" className="group shadow-[0_14px_30px_-16px_rgba(215,38,42,.72)]">
-              Découvrir les boutiques <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <ButtonLink href="#produits" size="lg" variant="primary" className="group shadow-[0_14px_30px_-16px_rgba(215,38,42,.72)]">
+              Explorer les produits <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </ButtonLink>
             <ButtonLink href="/vendeur/inscription" size="lg" variant="outline" className="border-clay-300 bg-white/65">
               <Store className="h-4 w-4" /> Vendre sur FasoLink
@@ -117,7 +115,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-clay-200/80 pt-5"
           >
-            <Stat value={shops.length.toLocaleString("fr-FR")} label="boutiques à découvrir" />
+            <Stat value={shops.length.toLocaleString("fr-FR")} label="boutiques tech" />
             <span className="hidden h-8 w-px bg-clay-200 min-[420px]:block" />
             <Stat value={cityCount.toLocaleString("fr-FR")} label="villes représentées" />
             <span className="hidden h-8 w-px bg-clay-200 min-[650px]:block" />
@@ -146,15 +144,15 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#17120e]/85 via-[#17120e]/5 to-[#17120e]/10" />
               <div className="absolute left-4 top-4 flex flex-wrap gap-2 sm:left-6 sm:top-6">
-                {category && <span className="rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-extrabold text-ink shadow-lg backdrop-blur">{category.label}</span>}
+                <span className="rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-extrabold text-ink shadow-lg backdrop-blur">Téléphones · Informatique · Audio</span>
                 {heroShop?.verification_status === "verified" && <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-extrabold text-faso-green-dark shadow-lg backdrop-blur"><BadgeCheck className="h-3.5 w-3.5" /> Vérifiée</span>}
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-7">
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-white/80"><MapPin className="h-3.5 w-3.5" />{heroShop?.city ?? "Partout au Burkina Faso"}</p>
                 <div className="mt-2 flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[.18em] text-faso-gold">À découvrir</p>
-                    <h2 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{heroShop?.name ?? "Les talents du Faso"}</h2>
+                    <p className="text-xs font-semibold uppercase tracking-[.18em] text-faso-gold">La sélection FasoLink</p>
+                    <h2 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{heroProduct?.name ?? heroShop?.name ?? "La tech du Faso"}</h2>
                   </div>
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-ink transition-transform group-hover:rotate-45"><MoveUpRight className="h-5 w-5" /></span>
                 </div>
@@ -167,13 +165,14 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
               className="relative col-span-1 min-h-[156px] overflow-hidden rounded-[1.5rem] border border-white/75 bg-white shadow-[0_24px_55px_-35px_rgba(26,17,9,.55)] sm:min-h-[210px] lg:col-span-1"
             >
               {heroProduct?.image_url ? (
-                <Image src={heroProduct.image_url} alt={heroProduct.name} fill sizes="(max-width: 640px) 42vw, 200px" className="object-cover" />
+                <Image src={heroProduct.image_url} alt={heroProduct.name} fill sizes="(max-width: 640px) 42vw, 200px" className="object-contain p-4 sm:p-6" />
               ) : (
                 <div className="absolute inset-0 grid place-items-center bg-[linear-gradient(145deg,#f8e9d1,#f2c86f)]"><Sparkles className="h-10 w-10 text-faso-red" /></div>
               )}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent p-3 pt-10 text-white sm:p-4 sm:pt-12">
-                <p className="line-clamp-1 text-xs font-bold">{heroProduct?.name ?? "Le goût des belles découvertes"}</p>
+                <p className="line-clamp-1 text-xs font-bold">{heroShop?.name ?? "Boutique tech locale"}</p>
                 {heroProduct && <p className="mt-0.5 text-[11px] font-semibold text-faso-gold">{formatCFA(heroProduct.price)}</p>}
+                {heroProduct?.image_credit && <p className="mt-0.5 truncate text-[8px] font-medium text-white/75">Photo d’illustration · {heroProduct.image_credit}</p>}
               </div>
             </motion.div>
 
@@ -192,7 +191,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             </motion.div>
           </div>
 
-          <Link href="/boutiques" className="mx-auto mt-5 hidden w-fit items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-ink-muted transition-colors hover:text-faso-red lg:flex">
+          <Link href="#produits" className="mx-auto mt-5 hidden w-fit items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-ink-muted transition-colors hover:text-faso-red lg:flex">
             Voir les boutiques <ArrowDown className="h-4 w-4 animate-bounce motion-reduce:animate-none" />
           </Link>
         </motion.div>

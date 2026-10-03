@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { ArrowRight, MessageCircle, Search, Sparkles, Store } from "lucide-react";
 import { fetchShops } from "@/lib/shops";
-import { CATEGORIES } from "@/lib/constants";
 import { Hero } from "@/components/home/Hero";
 import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
+import { ElectronicsShowcase } from "@/components/home/ElectronicsShowcase";
 import { SearchExplorer } from "@/components/home/SearchExplorer";
 import { ImpactCounter } from "@/components/home/ImpactCounter";
 import { Reveal } from "@/components/ui/Reveal";
@@ -16,73 +15,47 @@ export const dynamic = "force-dynamic";
 const STEPS = [
   {
     icon: Search,
-    title: "Cherchez",
-    text: "Parcourez l'annuaire par catégorie, ville ou mot-clé. Résultats instantanés.",
+    title: "Explorez",
+    text: "Téléphones, ordinateurs, audio et accessoires auprès de boutiques tech locales.",
   },
   {
     icon: Store,
-    title: "Découvrez la vitrine",
-    text: "Galerie de produits, prix, localisation et avis pour chaque boutique.",
+    title: "Comparez",
+    text: "Consultez les prix, les photos, le stock annoncé et les détails de chaque produit.",
   },
   {
     icon: MessageCircle,
-    title: "Contactez sur WhatsApp",
-    text: "Un bouton direct vers le WhatsApp Business du commerçant. Zéro intermédiaire.",
+    title: "Échangez en direct",
+    text: "Posez vos questions au vendeur sur WhatsApp avant de vous déplacer ou commander.",
   },
 ];
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams?: { categorie?: string };
-}) {
+export default async function HomePage() {
   const shops = await fetchShops();
-  const requestedCategory = CATEGORIES.some((category) => category.id === searchParams?.categorie)
-    ? (searchParams?.categorie as (typeof CATEGORIES)[number]["id"])
-    : "all";
-  const productCount = shops.reduce((count, shop) => count + shop.products.length, 0);
-  const cityCount = new Set(shops.map((shop) => shop.city).filter(Boolean)).size;
-  const verifiedCount = shops.filter((shop) => shop.verification_status === "verified").length;
+  const techShops = shops.filter((shop) => shop.category === "electronique");
+  const productCount = techShops.reduce((count, shop) => count + shop.products.length, 0);
+  const cityCount = new Set(techShops.map((shop) => shop.city).filter(Boolean)).size;
+  const verifiedCount = techShops.filter((shop) => shop.verification_status === "verified").length;
 
   return (
     <>
-      <Hero shops={shops} />
+      <Hero shops={techShops} />
 
-      {/* Bandeau catégories — défilable au doigt sur mobile */}
-      <section className="border-y border-clay-100/80 bg-white/70 py-7 backdrop-blur-sm sm:py-9">
-        <div className="container-faso">
-          <div className="mb-4 flex items-end justify-between gap-4 sm:mb-5">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[.18em] text-faso-red">À chacun son coup de cœur</p>
-              <h2 className="mt-1 text-lg font-bold text-ink sm:text-xl">Parcourir par univers</h2>
-            </div>
-            <Link href="/boutiques" className="hidden items-center gap-1 text-xs font-bold text-ink-soft transition-colors hover:text-faso-red sm:inline-flex">Voir toutes les boutiques <ArrowRight className="h-3.5 w-3.5" /></Link>
-          </div>
-          <div className="snap-row no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-6">
-            {CATEGORIES.map((c, i) => {
-              const count = shops.filter((shop) => shop.category === c.id).length;
-              return (
-                <Reveal key={c.id} y={12} delay={i * 0.035} className="snap-item shrink-0 sm:shrink">
-                  <Link
-                    href={`/boutiques?categorie=${c.id}#boutiques`}
-                    className="group flex min-w-[154px] items-center gap-3 rounded-2xl border border-clay-100 bg-[#fbf8f3] p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-faso-gold/50 hover:bg-white hover:shadow-premium sm:min-w-0"
-                  >
-                    <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${c.accent} transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105`}><c.icon className="h-5 w-5" /></span>
-                    <span className="min-w-0"><span className="block truncate text-xs font-extrabold text-ink">{c.label}</span><span className="mt-0.5 block text-[10px] text-ink-muted">{count} boutique{count === 1 ? "" : "s"}</span></span>
-                  </Link>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <ElectronicsShowcase shops={techShops} />
 
-      <FeaturedCarousel shops={shops} />
+      <FeaturedCarousel shops={techShops} />
 
-      <SearchExplorer key={requestedCategory} shops={shops} initialCategory={requestedCategory} />
+      <SearchExplorer
+        shops={techShops}
+        initialCategory="electronique"
+        electronicsOnly
+        eyebrow="Le réseau tech burkinabè"
+        heading="Les boutiques tech, près de vous"
+        description="Repérez les vendeurs par ville, vérifiez leurs horaires et ouvrez leur vitrine pour poser vos questions."
+      />
 
       <ImpactCounter
-        shopCount={shops.length}
+        shopCount={techShops.length}
         productCount={productCount}
         cityCount={cityCount}
         verifiedCount={verifiedCount}
@@ -93,12 +66,12 @@ export default async function HomePage({
         <div aria-hidden className="pointer-events-none absolute -right-36 top-1/4 h-80 w-80 rounded-full bg-faso-gold/10 blur-[100px]" />
         <div className="container-faso relative">
           <Reveal className="mx-auto max-w-2xl text-center">
-            <span className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> L’expérience FasoLink</span>
+        <span className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> L’expérience FasoLink</span>
             <h2 className="mt-4 text-3xl font-bold text-ink md:text-5xl">
-              Du coup de cœur au contact, sans détour.
+              La bonne technologie. Le bon vendeur. En direct.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-ink-muted md:text-base">
-              Tout est pensé pour vous faire gagner du temps et rapprocher les talents d’ici de ceux qui les recherchent.
+              Repérez les appareils, vérifiez les informations publiées et échangez directement avec une boutique locale avant votre achat.
             </p>
           </Reveal>
 
@@ -131,10 +104,10 @@ export default async function HomePage({
               <div className="max-w-2xl">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-gold"><Store className="h-3.5 w-3.5" /> Le Faso entreprend</span>
                 <h2 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">
-                  Votre savoir-faire mérite une vitrine à sa hauteur.
+                  Votre boutique tech mérite une vitrine à sa hauteur.
                 </h2>
                 <p className="mt-4 max-w-xl text-sm leading-7 text-white/70 md:text-base">
-                  Rejoignez les vendeurs locaux, présentez vos produits avec élégance et échangez directement avec vos futurs clients.
+                  Présentez vos téléphones, ordinateurs et accessoires aux acheteurs du Burkina Faso. Publiez vos offres et échangez directement avec vos futurs clients.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:min-w-[230px] lg:flex-col">

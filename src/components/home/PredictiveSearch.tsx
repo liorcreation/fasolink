@@ -133,7 +133,7 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
       >
         <Search className="h-5 w-5 text-ink-muted" />
         <span className="flex-1 text-sm text-ink-muted">
-          Rechercher un produit, une boutique…
+          Rechercher un téléphone, un ordinateur, une boutique…
         </span>
         <kbd className="hidden rounded-md border border-clay-200 bg-clay-50 px-1.5 py-0.5 text-[10px] font-semibold text-ink-muted sm:block">
           Ctrl K
@@ -196,8 +196,8 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
 
                     {query.trim().length >= 2 && results.length === 0 && (
                       <p className="px-3 py-6 text-center text-sm text-ink-muted">
-                        Rien pour «&nbsp;{query}&nbsp;». Essayez «&nbsp;bissap&nbsp;»,
-                        «&nbsp;pagne&nbsp;», «&nbsp;solaire&nbsp;».
+                        Rien pour «&nbsp;{query}&nbsp;». Essayez «&nbsp;iPhone&nbsp;»,
+                        «&nbsp;ordinateur&nbsp;», «&nbsp;écouteurs&nbsp;».
                       </p>
                     )}
 

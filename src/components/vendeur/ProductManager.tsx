@@ -149,13 +149,13 @@ export function ProductManager({
   return (
     <section className="overflow-hidden rounded-[1.8rem] border border-clay-200/80 bg-white shadow-[0_12px_38px_rgba(51,37,23,.055)]">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-clay-100 px-5 py-5 sm:px-7">
-        <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-faso-red-soft/35 text-faso-red"><Package className="h-5 w-5" /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-faso-red">Votre vitrine</p><h3 className="mt-0.5 text-lg font-black tracking-tight text-ink">Catalogue produits</h3><p className="mt-0.5 text-xs text-ink-muted">Présentez clairement vos produits et leurs disponibilités.</p></div></div>
+        <div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-faso-red-soft/35 text-faso-red"><Package className="h-5 w-5" /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-faso-red">Votre boutique tech</p><h3 className="mt-0.5 text-lg font-black tracking-tight text-ink">Catalogue électronique</h3><p className="mt-0.5 text-xs text-ink-muted">Indiquez les caractéristiques utiles et la disponibilité réelle de chaque appareil.</p></div></div>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-faso-green/10 bg-faso-green-soft/35 px-3 py-1.5 text-[11px] font-extrabold text-faso-green-dark"><Package className="h-3.5 w-3.5" />{products.length} produit{products.length === 1 ? "" : "s"}</span>
       </div>
 
       <div className="p-5 sm:p-7">
         {products.length === 0 && (
-          <div className="mb-5 grid justify-items-center rounded-2xl border border-dashed border-clay-200 bg-clay-50/70 px-5 py-8 text-center"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-faso-gold-dark shadow-sm"><PackagePlus className="h-5 w-5" /></span><p className="mt-3 text-sm font-bold text-ink">Votre vitrine commence ici</p><p className="mt-1 max-w-sm text-xs leading-5 text-ink-muted">Ajoutez votre premier produit ou service pour aider les clients à découvrir votre offre.</p></div>
+          <div className="mb-5 grid justify-items-center rounded-2xl border border-dashed border-clay-200 bg-clay-50/70 px-5 py-8 text-center"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-faso-gold-dark shadow-sm"><PackagePlus className="h-5 w-5" /></span><p className="mt-3 text-sm font-bold text-ink">Votre catalogue prend vie ici</p><p className="mt-1 max-w-sm text-xs leading-5 text-ink-muted">Publiez un téléphone, un ordinateur ou un accessoire avec ses informations exactes.</p></div>
         )}
         {products.length > 0 && <div className="grid gap-3 sm:grid-cols-2">
         {products.map((product) => {
@@ -179,7 +179,7 @@ export function ProductManager({
 
       <form onSubmit={save} className="mx-5 mb-5 rounded-[1.5rem] border border-clay-200/80 bg-[#FCFAF6] p-4 sm:mx-7 sm:mb-7 sm:p-5">
         <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-faso-gold-soft/45 text-faso-gold-dark"><PackagePlus className="h-4 w-4" /></span>
-          <p className="text-sm font-extrabold text-ink">{editingId ? "Modifier le produit" : "Ajouter à ma vitrine"}</p></div>
+          <p className="text-sm font-extrabold text-ink">{editingId ? "Modifier le produit" : "Ajouter un appareil"}</p></div>
           {editingId && (
             <button type="button" onClick={reset} className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-ink-muted transition hover:bg-clay-100 hover:text-ink">
               <X className="h-3.5 w-3.5" /> Annuler
@@ -187,12 +187,12 @@ export function ProductManager({
           )}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-[11px] font-bold text-ink-soft">Nom<input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} placeholder="Ex. Sac Faso Dan Fani" className="input-premium mt-1.5" required /></label>
+          <label className="text-[11px] font-bold text-ink-soft">Nom / modèle<input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} placeholder="Ex. Samsung Galaxy A55 5G" className="input-premium mt-1.5" required /></label>
           <label className="text-[11px] font-bold text-ink-soft">Prix (FCFA)<input type="number" min="0" step="1" value={draft.price} onChange={(event) => setDraft((current) => ({ ...current, price: Number(event.target.value) }))} placeholder="Ex. 12 500" className="input-premium mt-1.5" required /></label>
           <label className="text-[11px] font-bold text-ink-soft sm:col-span-2">Disponibilité<select value={draft.availability} onChange={(event) => setDraft((current) => ({ ...current, availability: event.target.value as ProductAvailability }))} className="input-premium mt-1.5">
             {AVAILABILITY.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
           </select></label>
-          <label className="text-[11px] font-bold text-ink-soft sm:col-span-2">Description <span className="font-medium text-ink-muted">(facultatif)</span><textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Matière, dimensions, origine, points forts…" rows={3} className="input-premium mt-1.5 h-auto py-3 sm:col-span-2" /></label>
+          <label className="text-[11px] font-bold text-ink-soft sm:col-span-2">Détails techniques & état <span className="font-medium text-ink-muted">(facultatif)</span><textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Stockage, RAM, couleur, état (neuf/occasion), accessoires inclus, garantie et facture si disponibles…" rows={4} className="input-premium mt-1.5 h-auto py-3 sm:col-span-2" /></label>
           <ProductImagePicker
             query={draft.name}
             imageUrl={draft.image_url ?? null}

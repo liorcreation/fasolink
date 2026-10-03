@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FasoLink — Consommer Burkinabè",
+    name: "FasoLink — La tech du Faso",
     short_name: "FasoLink",
     description:
-      "L'annuaire et la marketplace des commerçants du Burkina Faso. Contact WhatsApp direct.",
+      "Téléphones, ordinateurs et accessoires auprès des vendeurs tech du Burkina Faso.",
     start_url: "/?utm_source=pwa",
     display: "standalone",
     orientation: "any",
@@ -29,7 +29,7 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: "Boutiques locales",
+        name: "Boutiques tech",
         url: "/boutiques",
       },
       {

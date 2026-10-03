@@ -14,7 +14,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import type { ShopCategory, ShopWithProducts } from "@/lib/database.types";
-import { BURKINA_CITIES, CATEGORIES, NEIGHBORHOODS } from "@/lib/constants";
+import { BURKINA_CITIES, CATEGORIES, CATEGORY_MAP, NEIGHBORHOODS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
   getBrowserPosition,
@@ -36,6 +36,7 @@ export function SearchExplorer({
   initialCategory = "all",
   initialQuery = "",
   sectionId = "explorer",
+  electronicsOnly = false,
   eyebrow = "Explorer",
   heading = "Trouvez une boutique près de chez vous",
   description = "Recherche instantanée parmi les commerçants vérifiés du Burkina Faso.",
@@ -44,6 +45,7 @@ export function SearchExplorer({
   initialCategory?: ShopCategory | "all";
   initialQuery?: string;
   sectionId?: string;
+  electronicsOnly?: boolean;
   eyebrow?: string;
   heading?: string;
   description?: string;
@@ -206,7 +208,7 @@ export function SearchExplorer({
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Bissap, pagne tissé, climatiseur…"
+              placeholder={electronicsOnly ? "iPhone, ordinateur, écouteurs…" : "Bissap, pagne tissé, climatiseur…"}
             className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
               aria-label="Rechercher une boutique ou un produit"
             />
@@ -313,7 +315,7 @@ export function SearchExplorer({
             icon={<LayoutGrid className="h-4 w-4" />}
             label="Tout"
           />
-          {CATEGORIES.map((c) => (
+          {(electronicsOnly ? [CATEGORY_MAP.electronique] : CATEGORIES).map((c) => (
             <FilterChip
               key={c.id}
               className="snap-item"
@@ -458,7 +460,7 @@ export function SearchExplorer({
               >
                 Tout
               </SheetChip>
-              {CATEGORIES.map((c) => (
+              {(electronicsOnly ? [CATEGORY_MAP.electronique] : CATEGORIES).map((c) => (
                 <SheetChip
                   key={c.id}
                   active={category === c.id}

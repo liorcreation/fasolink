@@ -139,7 +139,7 @@ export function ProductImagePicker({
       <label className="mt-3 block text-[10px] font-bold text-ink-muted">Recherche automatique — modifiable pour affiner les résultats
         <span className="relative mt-1 block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
-          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Ex. sac à dos, backpack…" className="input-premium h-10 pl-9 text-xs" aria-label="Termes de recherche des photos" />
+          <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Ex. iPhone 13, ordinateur portable, casque audio…" className="input-premium h-10 pl-9 text-xs" aria-label="Termes de recherche des photos" />
         </span>
       </label>
 

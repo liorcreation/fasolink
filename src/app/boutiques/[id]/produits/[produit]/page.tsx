@@ -90,8 +90,8 @@ export default async function ProduitPage({
               <span className="rounded-2xl border border-white/70 bg-white/85 px-3.5 py-2.5 shadow-lg backdrop-blur-xl"><span className="block text-[9px] font-extrabold uppercase tracking-[.16em] text-ink-muted">Proposé par</span><span className="mt-0.5 block max-w-[58vw] truncate text-xs font-bold text-ink sm:max-w-xs">{shop.name}</span></span>
               <Link href={`/boutiques/${shop.id}`} aria-label={`Découvrir la boutique ${shop.name}`} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/70 bg-white/90 text-ink shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:text-faso-red"><ArrowUpRightIcon /></Link>
             </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between gap-3 px-1 text-[10px] font-semibold text-ink-muted sm:mt-4 sm:text-xs"><span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-faso-green" /> Achat en direct auprès du commerçant</span><span className="hidden sm:inline">Burkina Faso · FasoLink</span></div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 px-1 text-[10px] font-semibold text-ink-muted sm:mt-4 sm:text-xs"><span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-faso-green" /> Achat en direct auprès du commerçant</span><span className="hidden sm:inline">Burkina Faso · FasoLink</span></div>
           {product.image_credit && (product.image_source_url?.startsWith("https://commons.wikimedia.org/") || product.image_source_url?.startsWith("https://www.pexels.com/") || product.image_source_url?.startsWith("https://pexels.com/")) && (
             <p className="mt-2 px-1 text-[10px] leading-4 text-ink-muted">
               Photo illustrative · {product.image_credit} · {product.image_license || "Licence"}{product.image_license_url?.startsWith("https://") && <> · <a href={product.image_license_url} target="_blank" rel="noreferrer" className="underline underline-offset-2">Licence</a></>}{" · "}<a href={product.image_source_url} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>
@@ -114,8 +114,8 @@ export default async function ProduitPage({
           </div>
 
           <div className="mt-5 rounded-[1.5rem] border border-clay-200/75 bg-white p-5 shadow-[0_8px_26px_rgba(51,37,23,.035)] sm:p-6">
-            <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-red">À propos de ce produit</p>
-            <p className="mt-2 whitespace-pre-line text-sm leading-7 text-ink-soft">{product.description || "Contactez directement la boutique pour en savoir plus sur ce produit, ses caractéristiques et sa disponibilité."}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-red">Caractéristiques & détails</p>
+            <p className="mt-2 whitespace-pre-line text-sm leading-7 text-ink-soft">{product.description || "Demandez au vendeur les caractéristiques complètes, l’état exact de l’appareil, les accessoires inclus et les conditions de garantie avant votre achat."}</p>
           </div>
 
           {/* Carte boutique */}

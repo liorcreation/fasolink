@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Smartphone } from "lucide-react";
 import type { Product } from "@/lib/database.types";
 import { buildWhatsAppLink, formatCFA } from "@/lib/utils";
 import { trackContact } from "@/lib/tracking";
@@ -42,16 +42,17 @@ export function ProductCard({
       className="group card-premium flex flex-col overflow-hidden"
     >
       <Link href={href} className="block">
-        <div className="relative aspect-square overflow-hidden bg-clay-100">
+        <div className="relative aspect-square overflow-hidden bg-[radial-gradient(ellipse_at_50%_42%,#fff,transparent_48%),linear-gradient(145deg,#f8f4ed,#eee6d9)]">
           {product.image_url && (
             <Image
               src={product.image_url}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-contain p-5 transition-transform duration-500 group-hover:scale-[1.06] sm:p-7"
             />
           )}
+          {!product.image_url && <span className="absolute inset-0 grid place-items-center text-clay-300"><Smartphone className="h-12 w-12" /></span>}
           <div className="absolute left-2 top-2">
             <AvailabilityBadge
               status={product.availability}
@@ -67,6 +68,7 @@ export function ProductCard({
       )}
       <div className="flex flex-1 flex-col p-3">
         <Link href={href}>
+          <p className="mb-1 truncate text-[10px] font-bold uppercase tracking-[.1em] text-ink-muted">{shopName}</p>
           <h3 className="text-sm font-bold text-ink group-hover:text-faso-red">
             {product.name}
           </h3>

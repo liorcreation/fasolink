@@ -12,11 +12,12 @@ import {
   Loader2,
   MapPin,
   Phone,
+  Smartphone,
   Trash2,
   Upload,
 } from "lucide-react";
 import type { ShopCategory } from "@/lib/database.types";
-import { BURKINA_CITIES, CATEGORIES } from "@/lib/constants";
+import { BURKINA_CITIES, CATEGORY_MAP } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createShopWithAssets, VendorError } from "@/lib/vendor";
@@ -33,7 +34,7 @@ interface FormState {
 
 const initial: FormState = {
   name: "",
-  category: "",
+  category: "electronique",
   city: "",
   neighborhood: "",
   whatsapp: "",
@@ -77,7 +78,7 @@ export function ShopRegistrationForm() {
     form.city !== "" &&
     /\d{6,}/.test(form.whatsapp) &&
     form.description.trim().length > 20;
-  const category = CATEGORIES.find((item) => item.id === form.category);
+  const category = CATEGORY_MAP.electronique;
   const completedFields = [
     form.name.trim().length > 1,
     Boolean(form.category),
@@ -187,30 +188,16 @@ export function ShopRegistrationForm() {
             type="text"
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
-            placeholder="Ex. Faso Délices"
+            placeholder="Ex. Faso Mobile, Ouaga Digital…"
             className={inputCls}
             required
           />
         </Field>
 
-        <Field label="Catégorie" required>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {CATEGORIES.map((c) => (
-              <button
-                type="button"
-                key={c.id}
-                onClick={() => update("category", c.id)}
-                className={cn(
-                "inline-flex min-h-11 items-center justify-start gap-2 rounded-2xl border px-3 py-2.5 text-left text-xs font-bold transition-all sm:px-3.5 sm:text-sm",
-                  form.category === c.id
-                    ? "border-transparent bg-faso-gradient text-white shadow-premium"
-                    : "border-clay-200/80 bg-white text-ink-soft hover:border-faso-gold hover:bg-faso-gold-soft/15",
-                )}
-              >
-                <c.icon className="h-4 w-4" />
-                {c.label}
-              </button>
-            ))}
+        <Field label="Univers de la boutique">
+          <div className="flex items-center gap-3 rounded-2xl border border-faso-green/15 bg-faso-green-soft/20 p-4">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-faso-green-dark shadow-sm"><Smartphone className="h-5 w-5" /></span>
+            <span><span className="block text-sm font-extrabold text-ink">Téléphonie & informatique</span><span className="mt-0.5 block text-xs leading-5 text-ink-muted">FasoLink accueille désormais les boutiques de produits électroniques.</span></span>
           </div>
         </Field>
 
@@ -219,7 +206,7 @@ export function ShopRegistrationForm() {
             value={form.description}
             onChange={(e) => update("description", e.target.value)}
             rows={4}
-            placeholder="Décrivez vos produits, votre savoir-faire, vos délais de livraison…"
+            placeholder="Marques et catégories proposées, état des appareils, garanties annoncées, livraison et service après-vente…"
             className={cn(inputCls, "resize-none")}
             required
           />

@@ -19,7 +19,7 @@ export function FeaturedCarousel({ shops }: { shops: ShopWithProducts[] }) {
             À la une
           </span>
           <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
-            Boutiques vedettes
+            Boutiques tech à la une
           </h2>
         </Reveal>
         <Link

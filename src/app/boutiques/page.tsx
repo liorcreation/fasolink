@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { SearchExplorer } from "@/components/home/SearchExplorer";
-import { CATEGORIES } from "@/lib/constants";
-import type { ShopCategory } from "@/lib/database.types";
 import { fetchShops } from "@/lib/shops";
 
 export const metadata: Metadata = {
-  title: "Boutiques locales",
+  title: "Boutiques tech du Burkina Faso",
   description:
-    "Parcourez les boutiques, commerces et artisans du Burkina Faso. Filtrez par catégorie, ville et proximité sur FasoLink.",
+    "Découvrez les boutiques de téléphonie et d’informatique au Burkina Faso. Trouvez téléphones, ordinateurs et accessoires sur FasoLink.",
 };
 
 export const runtime = "edge";
@@ -18,23 +16,19 @@ export default async function BoutiquesPage({
 }: {
   searchParams?: { categorie?: string; q?: string };
 }) {
-  const shops = await fetchShops();
-  const requestedCategory = CATEGORIES.some(
-    (category) => category.id === searchParams?.categorie,
-  )
-    ? (searchParams?.categorie as ShopCategory)
-    : "all";
+  const shops = (await fetchShops()).filter((shop) => shop.category === "electronique");
 
   return (
     <SearchExplorer
-      key={`${requestedCategory}:${searchParams?.q ?? ""}`}
+      key={`electronique:${searchParams?.q ?? ""}`}
       shops={shops}
-      initialCategory={requestedCategory}
+      initialCategory="electronique"
       initialQuery={searchParams?.q?.slice(0, 100) ?? ""}
       sectionId="boutiques"
-      eyebrow="L’annuaire FasoLink"
-      heading="Les boutiques du Faso, à portée de main"
-      description="Trouvez une adresse, un talent ou un produit local. Filtrez par univers, ville ou proximité, puis ouvrez directement la vitrine qui vous plaît."
+      electronicsOnly
+      eyebrow="L’annuaire tech FasoLink"
+      heading="La tech du Faso, tout près de vous"
+      description="Trouvez téléphones, ordinateurs, audio et accessoires auprès des vendeurs tech. Filtrez par ville ou proximité, puis découvrez leur vitrine."
     />
   );
 }

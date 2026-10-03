@@ -67,7 +67,7 @@ export function ImpactCounter({
     {
       icon: Package,
       value: products.toLocaleString("fr-FR"),
-      label: "produits et créations présentés",
+    label: "produits tech présentés",
       accent: "text-faso-red",
     },
     {

@@ -28,7 +28,7 @@ import { ButtonLink } from "@/components/ui/Button";
 
 const SELLER_LINKS = [
   { href: "/vendeur/dashboard", label: "Tableau de bord", detail: "Pilotez votre boutique", icon: Gauge },
-  { href: "/vendeur/inscription", label: "Ouvrir une boutique", detail: "Présentez votre activité", icon: Store },
+  { href: "/vendeur/inscription", label: "Ouvrir une boutique", detail: "Vendez téléphones, ordinateurs et accessoires", icon: Store },
   { href: "/vendeur/verification", label: "Vérification", detail: "Suivez votre dossier", icon: BadgeCheck },
   { href: "/vendeur/paiement", label: "Abonnement & paiement", detail: "Gérez votre formule", icon: CreditCard },
 ];

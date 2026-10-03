@@ -26,17 +26,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fasolink.pages.dev"),
   applicationName: "FasoLink",
   title: {
-    default: "FasoLink — Consommer Burkinabè",
+    default: "FasoLink — La tech du Faso, à portée de main",
     template: "%s · FasoLink",
   },
   description:
-    "L'annuaire et la marketplace des commerçants, artisans et producteurs du Burkina Faso. Découvrez, contactez et soutenez le made in Burkina.",
+    "Téléphones, ordinateurs et accessoires proposés par des boutiques tech au Burkina Faso. Comparez les offres et contactez les vendeurs directement sur FasoLink.",
   keywords: [
     "Burkina Faso",
-    "consommer burkinabè",
-    "marketplace",
-    "annuaire commerçants",
-    "artisanat",
+    "électronique Burkina Faso",
+    "téléphones Ouagadougou",
+    "ordinateurs Burkina Faso",
+    "boutique informatique Bobo-Dioulasso",
     "Ouagadougou",
   ],
   manifest: "/manifest.webmanifest",
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/icon.svg" }],
   },
   openGraph: {
-    title: "FasoLink — Consommer Burkinabè",
+    title: "FasoLink — La tech du Faso, à portée de main",
     description:
-      "La vitrine digitale des commerçants du Burkina Faso. Un clic vers WhatsApp.",
+      "Téléphones, ordinateurs et accessoires auprès des vendeurs tech du Burkina Faso.",
     locale: "fr_BF",
     type: "website",
   },
