@@ -10,7 +10,7 @@ type PexelsPhoto = {
   photographer_url?: string;
   url?: string;
   alt?: string;
-  src?: { medium?: string; large?: string };
+  src?: { medium?: string; large?: string; large2x?: string };
 };
 
 function safeHttpsUrl(value: unknown, hosts: string[]): string | null {
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 
     const payload = JSON.parse(await response.text()) as { photos?: PexelsPhoto[] };
     const photos = (payload.photos ?? []).map((photo) => {
-      const imageUrl = safeHttpsUrl(photo.src?.large ?? photo.src?.medium, ["images.pexels.com"]);
+      const imageUrl = safeHttpsUrl(photo.src?.large2x ?? photo.src?.large ?? photo.src?.medium, ["images.pexels.com"]);
       const sourceUrl = safeHttpsUrl(photo.url, ["www.pexels.com", "pexels.com"]);
       const photographerUrl = safeHttpsUrl(photo.photographer_url, ["www.pexels.com", "pexels.com"]);
       if (!imageUrl || !sourceUrl) return null;

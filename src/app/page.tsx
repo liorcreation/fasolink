@@ -1,6 +1,7 @@
 import { ArrowRight, MessageCircle, Search, Sparkles, Store } from "lucide-react";
 import { fetchShops } from "@/lib/shops";
 import { Hero } from "@/components/home/Hero";
+import { TechScrollStory } from "@/components/home/TechScrollStory";
 import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
 import { ElectronicsShowcase } from "@/components/home/ElectronicsShowcase";
 import { SearchExplorer } from "@/components/home/SearchExplorer";
@@ -40,6 +41,8 @@ export default async function HomePage() {
   return (
     <>
       <Hero shops={techShops} />
+
+      <TechScrollStory shops={techShops} />
 
       <ElectronicsShowcase shops={techShops} />
 

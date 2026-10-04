@@ -318,6 +318,87 @@
   .auth-benefit, .auth-input-wrap, .auth-submit { transition-duration: .01ms !important; }
 }
 
+/* Immersive electronics story: depth comes from scroll-linked transforms, not a heavy 3D runtime. */
+.tech-story-section { position: relative; height: 300svh; background: #111714; color: white; }
+.tech-story-sticky { position: sticky; top: 0; display: flex; height: 100svh; min-height: 620px; flex-direction: column; overflow: hidden; padding: clamp(5.25rem,9vh,7.5rem) clamp(1.1rem,5vw,5rem) 2rem; isolation: isolate; }
+.tech-story-background { position: absolute; z-index: -2; inset: 0; background: radial-gradient(ellipse at 79% 40%,rgba(192,112,61,.22),transparent 38%),radial-gradient(ellipse at 15% 92%,rgba(31,146,84,.16),transparent 44%),linear-gradient(125deg,#101512,#1b201b 58%,#121713); }
+.tech-story-background::after { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px); background-size: 54px 54px; content: ""; mask-image: linear-gradient(90deg,transparent,#000 28%,#000 82%,transparent); opacity: .35; }
+.tech-story-topline { display: flex; width: min(100%,1440px); flex: 0 0 auto; align-items: center; justify-content: space-between; margin: 0 auto; color: rgba(255,255,255,.62); font-size: .68rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.tech-story-stage { position: relative; display: grid; width: min(100%,1440px); flex: 1; align-items: center; margin: 0 auto; perspective: 1400px; }
+.tech-story-scene { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0,.88fr) minmax(0,1.12fr); align-items: center; gap: clamp(1.5rem,5vw,5.5rem); transform-style: preserve-3d; will-change: transform,opacity; }
+.tech-story-copy { position: relative; z-index: 2; padding: 1rem 0; }
+.tech-story-copy h3 { white-space: pre-line; }
+.tech-story-art { position: relative; min-width: 0; height: min(68vh,690px); min-height: 400px; perspective: 1200px; }
+.tech-story-image-shell { position: absolute; inset: 5% 4% 5% 9%; overflow: hidden; border: 1px solid rgba(255,255,255,.22); border-radius: clamp(1.5rem,4vw,3rem); background: radial-gradient(ellipse at 25% 15%,color-mix(in srgb,var(--scene-accent) 82%,white),var(--scene-accent) 45%,#171c18 100%); box-shadow: 0 52px 115px -58px rgba(0,0,0,.92),0 0 0 1px rgba(255,255,255,.035),inset 0 1px rgba(255,255,255,.4); transform: rotateY(-7deg) rotateX(2deg) translateZ(24px); transform-style: preserve-3d; }
+.tech-story-image { object-fit: cover; object-position: center; transform: scale(1.015); transition: transform 1.2s cubic-bezier(.2,.75,.25,1); }
+.tech-story-image-shell:hover .tech-story-image { transform: scale(1.055); }
+.tech-story-image-product { object-fit: contain; padding: clamp(1.5rem,7vw,5rem); }
+.tech-story-image-shade { position: absolute; inset: 0; background: linear-gradient(180deg,rgba(6,9,7,.02) 35%,rgba(6,9,7,.2)),linear-gradient(90deg,rgba(6,9,7,.12),transparent 40%); pointer-events: none; }
+.tech-story-photo-caption { position: absolute; right: 1.2rem; bottom: 1.1rem; left: 1.2rem; color: white; font-size: .7rem; font-weight: 800; text-shadow: 0 1px 12px rgba(0,0,0,.8); }
+.tech-story-orbit { position: absolute; z-index: -1; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; transform: rotate(-24deg); }
+.tech-story-orbit-one { inset: -2% -5% 4% 24%; }
+.tech-story-orbit-two { inset: 8% 10% -4% -1%; border-color: color-mix(in srgb,var(--scene-accent) 65%,transparent); transform: rotate(32deg); }
+.tech-story-float-card { position: absolute; z-index: 3; display: flex; min-width: min(19rem,78%); align-items: center; gap: .7rem; padding: .75rem .9rem; border: 1px solid rgba(255,255,255,.18); border-radius: 1.15rem; background: rgba(25,30,26,.76); box-shadow: 0 20px 55px -25px rgba(0,0,0,.8); backdrop-filter: blur(18px); transform: translateZ(65px); }
+.tech-story-float-card-top { top: 14%; left: -2%; }
+.tech-story-float-card-bottom { right: -2%; bottom: 13%; }
+.tech-story-float-card strong,.tech-story-float-card small { display: block; }
+.tech-story-float-card strong { max-width: 13rem; overflow: hidden; color: white; font-size: .68rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
+.tech-story-float-card small { max-width: 13rem; margin-top: .15rem; overflow: hidden; color: rgba(255,255,255,.58); font-size: .59rem; text-overflow: ellipsis; white-space: nowrap; }
+.tech-story-placeholder { position: absolute; inset: 0; display: grid; overflow: hidden; place-items: center; background: radial-gradient(ellipse at 30% 28%,color-mix(in srgb,var(--scene-accent) 75%,white),transparent 35%),linear-gradient(140deg,var(--scene-accent),#252d27 76%); }
+.tech-story-device { position: relative; width: 39%; height: 67%; border: 2px solid rgba(255,255,255,.65); border-radius: 2.6rem; background: linear-gradient(130deg,rgba(255,255,255,.3),rgba(8,13,10,.48)),radial-gradient(ellipse at 20% 15%,rgba(255,255,255,.7),transparent 24%); box-shadow: 22px 35px 55px rgba(0,0,0,.36),inset 0 0 0 5px rgba(20,25,21,.48); transform: rotate(-12deg) rotateY(-18deg); }
+.tech-story-device span { position: absolute; top: 4%; left: 50%; width: 23%; height: 1.7%; border-radius: 9px; background: rgba(15,19,16,.7); transform: translateX(-50%); }
+.tech-story-device i,.tech-story-device b { position: absolute; top: 9%; width: 13%; height: 8%; border: 2px solid rgba(255,255,255,.5); border-radius: 50%; background: radial-gradient(circle at 35% 35%,#ded6c2 0 12%,#25362c 25%,#090e0b 72%); box-shadow: 0 5px 12px rgba(0,0,0,.35); }
+.tech-story-device i { left: 10%; }.tech-story-device b { left: 26%; }
+.tech-story-scroll-cue { display: flex; width: min(100%,1440px); flex: 0 0 auto; align-items: center; justify-content: center; gap: .6rem; margin: .1rem auto 0; color: rgba(255,255,255,.52); font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.tech-story-progress { position: absolute; z-index: 5; top: 15%; right: clamp(.6rem,2vw,2rem); bottom: 15%; width: 2px; overflow: hidden; border-radius: 2px; background: rgba(255,255,255,.15); }
+.tech-story-progress span { display: block; width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(#f4bd69,#36a269); }
+.tech-story-static-list { display: grid; width: min(100%,1440px); gap: 1.5rem; margin: 2rem auto 0; overflow-y: auto; }
+.tech-story-scene-static { position: relative; min-height: 68vh; grid-template-columns: 1fr 1fr; }
+.tech-story-section-reduced { height: auto; padding-bottom: 3rem; }
+.tech-story-section-reduced .tech-story-sticky { position: relative; top: auto; height: auto; }
+.tech-story-section-reduced .tech-story-static-list { overflow: visible; }
+.tech-story-section-reduced .tech-story-progress,.tech-story-section-reduced .tech-story-scroll-cue { display: none; }
+@media (max-width: 760px) {
+  .tech-story-section { height: 285svh; }
+  .tech-story-sticky { min-height: 560px; padding: 5.25rem 1.15rem max(5.75rem,env(safe-area-inset-bottom)); }
+  .tech-story-topline { font-size: .56rem; letter-spacing: .1em; }
+  .tech-story-scene { grid-template-columns: 1fr; align-items: end; }
+  .tech-story-copy { align-self: end; padding: 0 0 clamp(4.25rem,10vh,6rem); }
+  .tech-story-copy h3 { max-width: 13ch; font-size: clamp(2.3rem,10.5vw,4.2rem); }
+  .tech-story-copy p { max-width: 37rem; font-size: .82rem; line-height: 1.65; }
+  .tech-story-copy a { min-height: 2.8rem; margin-top: 1.15rem; padding: .65rem 1rem; font-size: .75rem; }
+  .tech-story-art { position: absolute; z-index: -1; inset: 0; height: auto; min-height: 0; }
+  .tech-story-image-shell { inset: 0; border-radius: 1.8rem; transform: none; }
+  .tech-story-image { opacity: .58; }
+  .tech-story-image-product { opacity: .72; }
+  .tech-story-image-shade { background: linear-gradient(180deg,rgba(12,16,13,.08) 3%,rgba(12,16,13,.18) 32%,rgba(12,16,13,.91) 88%),linear-gradient(90deg,rgba(12,16,13,.28),transparent 75%); }
+  .tech-story-orbit-one { inset: 5% -17% 25% 24%; }
+  .tech-story-orbit-two { inset: 15% 8% 17% -15%; }
+  .tech-story-float-card { min-width: 0; gap: .45rem; padding: .48rem .58rem; border-radius: .9rem; }
+  .tech-story-float-card-top { top: 7%; left: -2%; }
+  .tech-story-float-card-bottom { right: -2%; bottom: 8%; }
+  .tech-story-float-card > span:first-child { width: 2rem; height: 2rem; }
+  .tech-story-float-card strong { max-width: 10rem; font-size: .58rem; }
+  .tech-story-float-card small { max-width: 10rem; font-size: .51rem; }
+  .tech-story-photo-caption { top: 8.25rem; right: .8rem; bottom: auto; left: .8rem; font-size: .58rem; }
+  .tech-story-scroll-cue { margin-top: .5rem; font-size: .53rem; }
+  .tech-story-progress { top: 22%; right: .42rem; bottom: 22%; width: 1px; }
+  .tech-story-scene-static { min-height: 72svh; }
+  .tech-story-section-reduced .tech-story-sticky { padding-inline: .85rem; }
+  .tech-story-section-reduced .tech-story-static-list { gap: 1rem; }
+}
+@media (max-width: 380px) {
+  .tech-story-sticky { padding-inline: .85rem; }
+  .tech-story-copy h3 { font-size: clamp(2.1rem,10vw,2.7rem); }
+  .tech-story-copy p { font-size: .75rem; }
+  .tech-story-float-card-top { left: -1%; }
+  .tech-story-float-card-bottom { right: -1%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tech-story-image { transition: none; }
+  .tech-story-scroll-cue svg { animation: none !important; }
+}
+
 /* Profil utilisateur : cockpit personnel adaptatif, distinct du dashboard vendeur. */
 .profile-page { min-height: 76vh; overflow: hidden; background: radial-gradient(ellipse at 95% 5%,rgba(244,169,60,.1),transparent 30rem),linear-gradient(180deg,#fbf6ef 0%,#fffdfa 52%,#fbf6ef 100%); }
 .profile-hero { position: relative; display: flex; min-height: 14.5rem; align-items: center; justify-content: space-between; gap: 2rem; overflow: hidden; padding: clamp(1.5rem,4vw,3rem); border: 1px solid rgba(255,255,255,.13); border-radius: 2rem; background: radial-gradient(ellipse at 86% 8%,rgba(244,169,60,.19),transparent 24rem),radial-gradient(ellipse at 12% 110%,rgba(31,146,84,.2),transparent 24rem),linear-gradient(125deg,#20170f 0%,#302117 53%,#1d251c 100%); color: white; box-shadow: 0 24px 60px -32px rgba(26,17,9,.55); }
