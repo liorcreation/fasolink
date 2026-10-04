@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowRight, Store } from "lucide-react";
+import { ArrowDown, ArrowRight, Play, Store } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { ButtonLink } from "@/components/ui/Button";
 import { PredictiveSearch } from "@/components/home/PredictiveSearch";
@@ -22,6 +22,7 @@ function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
   const [enabled, setEnabled] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const failedClips = useRef(new Set<number>());
 
@@ -46,10 +47,12 @@ function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
     // iOS Safari requires these to be set on the element before play().
     video.muted = true;
     video.playsInline = true;
-    void video.play().catch(() => {
-      // Autoplay can be temporarily refused (for example Low Power Mode).
-      // Keep the poster visible and retry on canplay/visibility changes.
+    void video.play().catch((error: unknown) => {
+      if (error instanceof Error && error.name === "AbortError") return;
+      // Some mobile browsers require a user gesture for media playback.
+      // Keep the poster visible and offer an explicit, accessible retry.
       setPlaying(false);
+      setNeedsTap(true);
     });
   }, [enabled]);
 
@@ -74,6 +77,7 @@ function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
 
   const handleError = () => {
     setPlaying(false);
+    setNeedsTap(false);
     failedClips.current.add(currentIndex);
     const nextIndex = HERO_VIDEO_SOURCES.findIndex((_, index) => !failedClips.current.has(index));
     if (nextIndex === -1) setEnabled(false);
@@ -84,33 +88,49 @@ function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
     <>
       <div aria-hidden="true" className="hero-video-fallback" />
       {enabled && (
-        <video
-          ref={videoRef}
-          aria-hidden="true"
-          className={`hero-video-layer${playing ? " is-playing" : ""}`}
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          poster={HERO_VIDEO_POSTER}
-          src={HERO_VIDEO_SOURCES[currentIndex]}
-          tabIndex={-1}
-          disablePictureInPicture
-          onPlaying={() => setPlaying(true)}
-          onWaiting={() => setPlaying(false)}
-          onCanPlay={attemptPlayback}
-          onEnded={() => {
-            setPlaying(false);
-            setCurrentIndex((index) => {
-              for (let offset = 1; offset <= HERO_VIDEO_SOURCES.length; offset += 1) {
-                const next = (index + offset) % HERO_VIDEO_SOURCES.length;
-                if (!failedClips.current.has(next)) return next;
-              }
-              return index;
-            });
-          }}
-          onError={handleError}
-        />
+        <>
+          <video
+            ref={videoRef}
+            aria-hidden="true"
+            className={`hero-video-layer${playing ? " is-playing" : ""}`}
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            poster={HERO_VIDEO_POSTER}
+            src={HERO_VIDEO_SOURCES[currentIndex]}
+            tabIndex={-1}
+            disablePictureInPicture
+            onPlaying={() => {
+              setPlaying(true);
+              setNeedsTap(false);
+            }}
+            onWaiting={() => setPlaying(false)}
+            onCanPlay={attemptPlayback}
+            onEnded={() => {
+              setPlaying(false);
+              setCurrentIndex((index) => {
+                for (let offset = 1; offset <= HERO_VIDEO_SOURCES.length; offset += 1) {
+                  const next = (index + offset) % HERO_VIDEO_SOURCES.length;
+                  if (!failedClips.current.has(next)) return next;
+                }
+                return index;
+              });
+            }}
+            onError={handleError}
+          />
+          {needsTap && (
+            <button
+              type="button"
+              aria-label="Lancer l'animation vidéo"
+              title="Lancer l'animation vidéo"
+              onClick={attemptPlayback}
+              className="absolute right-5 top-1/2 z-[3] grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-[#f2bd65]/70 bg-[#101a24]/80 text-[#ffe0a8] shadow-xl backdrop-blur-md transition hover:scale-105 hover:bg-[#101a24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2bd65]"
+            >
+              <Play className="ml-0.5 h-5 w-5 fill-current" aria-hidden="true" />
+            </button>
+          )}
+        </>
       )}
     </>
   );
