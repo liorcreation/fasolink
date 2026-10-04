@@ -399,6 +399,34 @@
   .tech-story-scroll-cue svg { animation: none !important; }
 }
 
+/* Hero d'accueil : vidéo produit cinématique, sans défilement scénarisé. */
+.hero-cinematic { min-height: clamp(660px,calc(100svh - 4.5rem),900px); }
+.hero-cinematic-video { object-position: 0% center; filter: brightness(1.2) saturate(.96) contrast(1.04); }
+.hero-cinematic-shade { background: linear-gradient(90deg,#05070b 0%,rgba(5,7,11,.96) 27%,rgba(5,7,11,.76) 48%,rgba(5,7,11,.23) 100%),linear-gradient(0deg,rgba(5,7,11,.88) 0%,transparent 34%,rgba(5,7,11,.2) 100%); }
+.hero-cinematic-glow { background: radial-gradient(ellipse at 78% 48%,rgba(19,101,87,.18),transparent 33%),radial-gradient(ellipse at 22% 17%,rgba(202,132,41,.09),transparent 28%); }
+.hero-cinematic-pill { border-color: rgba(255,255,255,.17); background: rgba(13,17,20,.48); color: rgba(255,255,255,.92); }
+.hero-cinematic-accent { background: linear-gradient(100deg,#f2b64f 8%,#f7dfaa 49%,#8bdda9 100%); background-clip: text; color: transparent; }
+.hero-cinematic-secondary { color: white !important; }
+.hero-cinematic-secondary:hover { color: white !important; }
+.hero-cinematic-stats { border-color: rgba(255,255,255,.16); }
+.hero-cinematic-scroll svg { animation: hero-scroll 1.8s ease-in-out infinite; }
+.hero-cinematic-credit { text-shadow: 0 1px 8px rgba(0,0,0,.65); }
+@keyframes hero-scroll { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+@media (max-width: 639px) {
+  .hero-cinematic { min-height: 0; }
+  .hero-cinematic-video { object-position: center 37%; }
+  .hero-cinematic-shade { background: linear-gradient(180deg,rgba(5,7,11,.28) 0%,rgba(5,7,11,.54) 25%,rgba(5,7,11,.82) 64%,#05070b 100%),linear-gradient(90deg,rgba(5,7,11,.42),rgba(5,7,11,.12)); }
+  .hero-cinematic-glow { background: radial-gradient(ellipse at 50% 15%,rgba(19,101,87,.16),transparent 46%); }
+  .hero-cinematic .container-faso { min-height: max(750px,calc(100svh - 4rem)); padding-bottom: 4.5rem; }
+  .hero-cinematic-credit { bottom: .9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-cinematic-video { display: none; }
+  .hero-cinematic { background: #05070b url("https://images.pexels.com/videos/9558109/iphone-rotating-9558109.jpeg?auto=compress&dpr=1&h=750&w=1260") center 40% / cover no-repeat; }
+  .hero-cinematic-shade { background: linear-gradient(90deg,#05070b 0%,rgba(5,7,11,.92) 48%,rgba(5,7,11,.5) 100%),linear-gradient(0deg,rgba(5,7,11,.84),transparent 60%); }
+  .hero-cinematic-scroll svg { animation: none !important; }
+}
+
 /* Profil utilisateur : cockpit personnel adaptatif, distinct du dashboard vendeur. */
 .profile-page { min-height: 76vh; overflow: hidden; background: radial-gradient(ellipse at 95% 5%,rgba(244,169,60,.1),transparent 30rem),linear-gradient(180deg,#fbf6ef 0%,#fffdfa 52%,#fbf6ef 100%); }
 .profile-hero { position: relative; display: flex; min-height: 14.5rem; align-items: center; justify-content: space-between; gap: 2rem; overflow: hidden; padding: clamp(1.5rem,4vw,3rem); border: 1px solid rgba(255,255,255,.13); border-radius: 2rem; background: radial-gradient(ellipse at 86% 8%,rgba(244,169,60,.19),transparent 24rem),radial-gradient(ellipse at 12% 110%,rgba(31,146,84,.2),transparent 24rem),linear-gradient(125deg,#20170f 0%,#302117 53%,#1d251c 100%); color: white; box-shadow: 0 24px 60px -32px rgba(26,17,9,.55); }
