@@ -20,10 +20,10 @@ const reveal = {
 
 function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
   const [enabled, setEnabled] = useState(false);
-  const [activeSlot, setActiveSlot] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const videoRefs = useRef<Array<HTMLVideoElement | null>>([null, null]);
-  const waitingSlot = useRef<number | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const failedClips = useRef(new Set<number>());
 
   useEffect(() => {
     if (reducedMotion) {
@@ -40,50 +40,78 @@ function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
     setEnabled(true);
   }, [reducedMotion]);
 
-  const advanceTo = useCallback((slot: number) => {
-    const nextVideo = videoRefs.current[slot];
-    if (!nextVideo) return;
-    if (nextVideo.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
-      waitingSlot.current = slot;
-      return;
-    }
-    nextVideo.play().then(() => {
-      waitingSlot.current = null;
-      setActiveSlot(slot);
-      setCurrentIndex((index) => (index + 1) % HERO_VIDEO_SOURCES.length);
-    }).catch(() => setEnabled(false));
-  }, []);
+  const attemptPlayback = useCallback(() => {
+    const video = videoRef.current;
+    if (!enabled || !video || document.hidden) return;
+    // iOS Safari requires these to be set on the element before play().
+    video.muted = true;
+    video.playsInline = true;
+    void video.play().catch(() => {
+      // Autoplay can be temporarily refused (for example Low Power Mode).
+      // Keep the poster visible and retry on canplay/visibility changes.
+      setPlaying(false);
+    });
+  }, [enabled]);
 
-  const handleEnded = (slot: number) => advanceTo(slot === 0 ? 1 : 0);
-  const handleCanPlay = (slot: number) => {
-    if (waitingSlot.current === slot) advanceTo(slot);
+  useEffect(() => {
+    if (!enabled) return;
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        videoRef.current?.pause();
+        setPlaying(false);
+      } else {
+        attemptPlayback();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pageshow", attemptPlayback);
+    attemptPlayback();
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", attemptPlayback);
+    };
+  }, [attemptPlayback, currentIndex, enabled]);
+
+  const handleError = () => {
+    setPlaying(false);
+    failedClips.current.add(currentIndex);
+    const nextIndex = HERO_VIDEO_SOURCES.findIndex((_, index) => !failedClips.current.has(index));
+    if (nextIndex === -1) setEnabled(false);
+    else setCurrentIndex(nextIndex);
   };
 
   return (
     <>
       <div aria-hidden="true" className="hero-video-fallback" />
-      {enabled && [0, 1].map((slot) => {
-        const isActive = slot === activeSlot;
-        const clipIndex = isActive ? currentIndex : (currentIndex + 1) % HERO_VIDEO_SOURCES.length;
-        return (
-          <video
-            key={slot}
-            ref={(element) => { videoRefs.current[slot] = element; }}
-            aria-hidden="true"
-            className={`hero-video-layer${isActive ? " is-active" : ""}`}
-            autoPlay={isActive}
-            muted
-            playsInline
-            preload="auto"
-            poster={HERO_VIDEO_POSTER}
-            src={HERO_VIDEO_SOURCES[clipIndex]}
-            tabIndex={-1}
-            onEnded={() => handleEnded(slot)}
-            onCanPlay={() => handleCanPlay(slot)}
-            onError={() => { if (isActive) setEnabled(false); }}
-          />
-        );
-      })}
+      {enabled && (
+        <video
+          ref={videoRef}
+          aria-hidden="true"
+          className={`hero-video-layer${playing ? " is-playing" : ""}`}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          poster={HERO_VIDEO_POSTER}
+          src={HERO_VIDEO_SOURCES[currentIndex]}
+          tabIndex={-1}
+          disablePictureInPicture
+          onPlaying={() => setPlaying(true)}
+          onWaiting={() => setPlaying(false)}
+          onCanPlay={attemptPlayback}
+          onEnded={() => {
+            setPlaying(false);
+            setCurrentIndex((index) => {
+              for (let offset = 1; offset <= HERO_VIDEO_SOURCES.length; offset += 1) {
+                const next = (index + offset) % HERO_VIDEO_SOURCES.length;
+                if (!failedClips.current.has(next)) return next;
+              }
+              return index;
+            });
+          }}
+          onError={handleError}
+        />
+      )}
     </>
   );
 }
