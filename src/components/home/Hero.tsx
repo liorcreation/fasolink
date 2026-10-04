@@ -2,20 +2,91 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, Clapperboard, Store } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowDown, ArrowRight, Store } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { ButtonLink } from "@/components/ui/Button";
 import { PredictiveSearch } from "@/components/home/PredictiveSearch";
 
-const VIDEO_URL =
-  "https://videos.pexels.com/video-files/9558109/9558109-hd_1920_1080_24fps.mp4";
-const VIDEO_POSTER =
-  "https://images.pexels.com/videos/9558109/iphone-rotating-9558109.jpeg?auto=compress&dpr=1&h=750&w=1260";
+const HERO_VIDEO_SOURCES = Array.from({ length: 8 }, (_, index) =>
+  `/videos/hero/clip-${String(index + 1).padStart(2, "0")}.mp4`,
+);
+const HERO_VIDEO_POSTER = "/videos/hero/poster.jpg";
 
 const reveal = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0 },
 };
+
+function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
+  const [enabled, setEnabled] = useState(false);
+  const [activeSlot, setActiveSlot] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([null, null]);
+  const waitingSlot = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setEnabled(false);
+      return;
+    }
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }).connection;
+    if (connection?.saveData || connection?.effectiveType === "2g" || connection?.effectiveType === "slow-2g") {
+      setEnabled(false);
+      return;
+    }
+    setEnabled(true);
+  }, [reducedMotion]);
+
+  const advanceTo = useCallback((slot: number) => {
+    const nextVideo = videoRefs.current[slot];
+    if (!nextVideo) return;
+    if (nextVideo.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+      waitingSlot.current = slot;
+      return;
+    }
+    nextVideo.play().then(() => {
+      waitingSlot.current = null;
+      setActiveSlot(slot);
+      setCurrentIndex((index) => (index + 1) % HERO_VIDEO_SOURCES.length);
+    }).catch(() => setEnabled(false));
+  }, []);
+
+  const handleEnded = (slot: number) => advanceTo(slot === 0 ? 1 : 0);
+  const handleCanPlay = (slot: number) => {
+    if (waitingSlot.current === slot) advanceTo(slot);
+  };
+
+  return (
+    <>
+      <div aria-hidden="true" className="hero-video-fallback" />
+      {enabled && [0, 1].map((slot) => {
+        const isActive = slot === activeSlot;
+        const clipIndex = isActive ? currentIndex : (currentIndex + 1) % HERO_VIDEO_SOURCES.length;
+        return (
+          <video
+            key={slot}
+            ref={(element) => { videoRefs.current[slot] = element; }}
+            aria-hidden="true"
+            className={`hero-video-layer${isActive ? " is-active" : ""}`}
+            autoPlay={isActive}
+            muted
+            playsInline
+            preload="auto"
+            poster={HERO_VIDEO_POSTER}
+            src={HERO_VIDEO_SOURCES[clipIndex]}
+            tabIndex={-1}
+            onEnded={() => handleEnded(slot)}
+            onCanPlay={() => handleCanPlay(slot)}
+            onError={() => { if (isActive) setEnabled(false); }}
+          />
+        );
+      })}
+    </>
+  );
+}
 
 export function Hero({ shops }: { shops: ShopWithProducts[] }) {
   const reduce = useReducedMotion();
@@ -24,20 +95,9 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
 
   return (
     <section className="hero-cinematic relative isolate overflow-hidden bg-[#05070b] text-white">
-      <video
-        aria-hidden="true"
-        className="hero-cinematic-video absolute inset-0 -z-10 h-full w-full object-cover"
-        autoPlay={!reduce}
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster={VIDEO_POSTER}
-        src={reduce ? undefined : VIDEO_URL}
-        tabIndex={-1}
-      />
-      <div aria-hidden="true" className="hero-cinematic-shade pointer-events-none absolute inset-0 -z-[9]" />
-      <div aria-hidden="true" className="hero-cinematic-glow pointer-events-none absolute inset-0 -z-[8]" />
+      <HeroVideoBackdrop reducedMotion={Boolean(reduce)} />
+      <div aria-hidden="true" className="hero-cinematic-shade pointer-events-none absolute inset-0 z-[1]" />
+      <div aria-hidden="true" className="hero-cinematic-glow pointer-events-none absolute inset-0 z-[2]" />
 
       <div className="container-faso relative z-10 flex min-h-[min(760px,calc(100svh-5rem))] flex-col justify-center py-12 sm:py-16 lg:py-20">
         <motion.div
@@ -131,14 +191,6 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
         >
           Défilez pour découvrir <ArrowDown className="h-4 w-4" />
         </Link>
-        <a
-          className="hero-cinematic-credit absolute bottom-3 left-5 z-10 flex items-center gap-1.5 text-[9px] font-medium text-white/55 underline decoration-white/30 underline-offset-2 sm:left-8 lg:bottom-5 lg:left-auto lg:right-10"
-          href="https://www.pexels.com/video/a-mobile-phone-rotating-9558109/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Clapperboard className="h-3 w-3" /> Vidéo : Max Laurell / Pexels
-        </a>
       </div>
     </section>
   );
