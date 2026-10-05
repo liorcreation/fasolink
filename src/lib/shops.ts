@@ -37,7 +37,7 @@ function groupBy<T extends { shop_id: string }>(items: T[]): Map<string, T[]> {
 }
 
 export async function fetchShops(): Promise<ShopWithProducts[]> {
-  if (!isFirebaseConfigured) return MOCK_SHOPS;
+  if (!isFirebaseConfigured) return MOCK_SHOPS.filter((shop) => shop.category === "electronique");
 
   try {
     const [shopSnap, productSnap, reviewSnap] = await Promise.all([
@@ -57,6 +57,7 @@ export async function fetchShops(): Promise<ShopWithProducts[]> {
 
     return shopSnap.docs
       .map(fromDoc<Shop>)
+      .filter((shop) => shop.category === "electronique")
       .map((shop) => ({
         ...shop,
         products: productsByShop.get(shop.id) ?? [],
@@ -75,7 +76,10 @@ export async function fetchShops(): Promise<ShopWithProducts[]> {
 export async function fetchShopById(
   id: string,
 ): Promise<ShopWithProducts | null> {
-  if (!isFirebaseConfigured) return getMockShop(id) ?? null;
+  if (!isFirebaseConfigured) {
+    const shop = getMockShop(id);
+    return shop?.category === "electronique" ? shop : null;
+  }
 
   try {
     let shop: Shop | null = null;
@@ -90,7 +94,7 @@ export async function fetchShopById(
       if (!bySlug.empty) shop = fromDoc<Shop>(bySlug.docs[0]);
     }
 
-    if (!shop || shop.status !== "active") return null;
+    if (!shop || shop.status !== "active" || shop.category !== "electronique") return null;
 
     const [productSnap, reviewSnap] = await Promise.all([
       getDocs(

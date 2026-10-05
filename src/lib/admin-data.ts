@@ -59,7 +59,9 @@ export async function fetchAdminSnapshot(): Promise<{
     getDocs(collection(db, COLLECTIONS.verifications)),
   ]);
   return {
-    shops: shops.docs.map((snapshot) => withId<Shop>(snapshot)),
+    shops: shops.docs
+      .map((snapshot) => withId<Shop>(snapshot))
+      .filter((shop) => shop.category === "electronique"),
     verifications: verifications.docs.map((snapshot) =>
       withId<VerificationRequest>(snapshot),
     ),
