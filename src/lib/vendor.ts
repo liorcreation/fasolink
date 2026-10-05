@@ -117,7 +117,13 @@ export async function createShopWithAssets(
     throw new VendorError("config", "Firebase n'est pas configuré.");
   }
 
-  const ownerId = await ensureSession();
+  if (!auth.currentUser || auth.currentUser.isAnonymous) {
+    throw new VendorError(
+      "auth",
+      "Connectez-vous à votre compte FasoLink avant de créer une boutique.",
+    );
+  }
+  const ownerId = auth.currentUser.uid;
   const whatsapp = normalizeBurkinaPhone(draft.whatsapp);
   if (!whatsapp) {
     throw new VendorError(

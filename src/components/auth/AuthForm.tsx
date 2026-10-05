@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -60,7 +60,17 @@ export function AuthForm({ initialMode }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [returnTo, setReturnTo] = useState("/profil");
   const isSignup = initialMode === "signup";
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("returnTo");
+    if (requested?.startsWith("/") && !requested.startsWith("//")) {
+      setReturnTo(requested);
+    }
+  }, []);
+
+  const switchHref = `${isSignup ? "/connexion" : "/inscription"}${returnTo === "/profil" ? "" : `?returnTo=${encodeURIComponent(returnTo)}`}`;
   const passwordRequirements = [
     { label: "12 caractères minimum", met: password.length >= 12 },
     { label: "Une lettre minuscule et une majuscule", met: /\p{Ll}/u.test(password) && /\p{Lu}/u.test(password) },
@@ -158,8 +168,8 @@ export function AuthForm({ initialMode }: AuthFormProps) {
         <span className="auth-icon-badge auth-icon-success"><Check aria-hidden="true" /></span>
         <p className="mt-6 text-xs font-extrabold uppercase tracking-[0.2em] text-faso-green">Tout est prêt</p>
         <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink">{isSignup ? "Bienvenue chez FasoLink" : "Heureux de vous revoir"}</h2>
-        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-ink-muted">{notice || (isSignup ? "Votre compte acheteur est créé. Découvrez les commerces qui font vivre le Burkina." : "Votre session est ouverte. Retrouvez vos favoris et votre espace personnel.")}</p>
-        <Link href="/profil" className="btn-base mt-8 min-h-12 bg-faso-red px-6 text-sm text-white shadow-premium transition hover:-translate-y-0.5">Ouvrir mon espace <ArrowRight className="h-4 w-4" /></Link>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-ink-muted">{notice || (returnTo === "/vendeur/inscription" ? "Votre compte est prêt. Vous pouvez maintenant créer et gérer votre boutique." : isSignup ? "Votre compte acheteur est créé. Découvrez les commerces qui font vivre le Burkina." : "Votre session est ouverte. Retrouvez vos favoris et votre espace personnel.")}</p>
+        <Link href={returnTo} className="btn-base mt-8 min-h-12 bg-faso-red px-6 text-sm text-white shadow-premium transition hover:-translate-y-0.5">{returnTo === "/vendeur/inscription" ? "Continuer la création" : "Ouvrir mon espace"} <ArrowRight className="h-4 w-4" /></Link>
       </motion.section>
     );
   }
@@ -235,7 +245,7 @@ export function AuthForm({ initialMode }: AuthFormProps) {
 
       <div className="auth-switch">
         <span>{isSignup ? "Déjà membre ?" : "Pas encore de compte ?"}</span>
-        <Link href={isSignup ? "/connexion" : "/inscription"}>{isSignup ? "Se connecter" : "Créer un compte"}<ArrowRight aria-hidden="true" /></Link>
+        <Link href={switchHref}>{isSignup ? "Se connecter" : "Créer un compte"}<ArrowRight aria-hidden="true" /></Link>
       </div>
       <p className="auth-privacy"><ShieldCheck aria-hidden="true" /> Vos informations restent protégées et ne sont jamais affichées publiquement.</p>
     </section>

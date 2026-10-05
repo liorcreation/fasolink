@@ -9,6 +9,7 @@ import {
   Check,
   CircleCheck,
   ImagePlus,
+  LockKeyhole,
   Loader2,
   MapPin,
   Phone,
@@ -21,7 +22,8 @@ import { BURKINA_CITIES, CATEGORY_MAP } from "@/lib/constants";
 import { cn, isValidBurkinaPhone } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createShopWithAssets, VendorError } from "@/lib/vendor";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface FormState {
   name: string;
@@ -45,6 +47,7 @@ const MAX_GALLERY = 6;
 
 export function ShopRegistrationForm() {
   const router = useRouter();
+  const { user, loading: authLoading, isConfigured } = useAuth();
   const [form, setForm] = useState<FormState>(initial);
   const [logo, setLogo] = useState<File | null>(null);
   const [gallery, setGallery] = useState<File[]>([]);
@@ -132,6 +135,45 @@ export function ShopRegistrationForm() {
     if (!list) return;
     setGallery((prev) =>
       [...prev, ...Array.from(list)].slice(0, MAX_GALLERY),
+    );
+  }
+
+  if (authLoading) {
+    return (
+      <div className="card-premium mx-auto flex min-h-48 max-w-xl items-center justify-center gap-3 rounded-[1.75rem] p-8 text-sm text-ink-muted">
+        <Loader2 className="h-5 w-5 animate-spin text-faso-red" />
+        Vérification de votre session sécurisée…
+      </div>
+    );
+  }
+
+  if (!isConfigured || !user || user.isAnonymous) {
+    const returnTo = encodeURIComponent("/vendeur/inscription");
+    return (
+      <section className="card-premium relative isolate mx-auto max-w-2xl overflow-hidden rounded-[2rem] p-6 text-center shadow-premium sm:p-10">
+        <div className="pointer-events-none absolute -right-16 -top-20 -z-10 h-56 w-56 rounded-full bg-faso-gold/10 blur-3xl" />
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-faso-gold-soft/40 text-faso-gold-dark">
+          <LockKeyhole className="h-6 w-6" />
+        </span>
+        <p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.2em] text-faso-red">Création de boutique sécurisée</p>
+        <h2 className="mt-2 text-2xl font-black tracking-tight text-ink sm:text-3xl">
+          {!isConfigured ? "Connexion momentanément indisponible" : "Connectez-vous pour continuer"}
+        </h2>
+        <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-ink-muted">
+          {!isConfigured
+            ? "La création d’une boutique exige un compte FasoLink vérifié. Réessayez lorsque l’authentification sera disponible."
+            : "Chaque boutique doit être rattachée à un compte personnel afin que son propriétaire puisse la gérer et la retrouver."}
+        </p>
+        {isConfigured && (
+          <>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <ButtonLink href={`/connexion?returnTo=${returnTo}`} size="lg" className="w-full sm:w-auto">Me connecter</ButtonLink>
+              <ButtonLink href={`/inscription?returnTo=${returnTo}`} variant="outline" size="lg" className="w-full sm:w-auto">Créer un compte</ButtonLink>
+            </div>
+            <p className="mt-4 text-[11px] text-ink-muted">Après connexion, revenez ici pour terminer la création de votre boutique.</p>
+          </>
+        )}
+      </section>
     );
   }
 
