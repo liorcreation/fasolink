@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, RotateCw, Wifi, WifiOff } from "lucide-react";
 
 export function OfflineRetryButton() {
+  const router = useRouter();
   const [online, setOnline] = useState<boolean | null>(null);
   const [retrying, setRetrying] = useState(false);
 
@@ -24,7 +26,7 @@ export function OfflineRetryButton() {
         type="button"
         onClick={() => {
           setRetrying(true);
-          window.location.reload();
+          router.replace("/");
         }}
         disabled={retrying}
         className="btn-base h-12 justify-center bg-faso-red px-5 text-sm font-bold text-white shadow-premium transition-all hover:-translate-y-0.5 hover:bg-faso-red-dark hover:shadow-premium-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80"

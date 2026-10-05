@@ -8,6 +8,7 @@ import { SplashScreen } from "@/components/site/SplashScreen";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { AutoRefresh } from "@/components/site/AutoRefresh";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -81,6 +82,7 @@ export default function RootLayout({
           <BottomNav />
           <ServiceWorkerRegister />
           <InstallPrompt />
+          <AutoRefresh />
         </AuthProvider>
       </body>
     </html>

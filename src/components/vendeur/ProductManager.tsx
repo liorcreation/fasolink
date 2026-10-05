@@ -37,10 +37,12 @@ export function ProductManager({
   shopId,
   initialProducts,
   demo = false,
+  onProductsChange,
 }: {
   shopId: string;
   initialProducts: Product[];
   demo?: boolean;
+  onProductsChange?: (products: Product[]) => void;
 }) {
   const [products, setProducts] = useState(initialProducts);
   const [draft, setDraft] = useState<ProductDraft>(EMPTY_DRAFT);
@@ -91,17 +93,17 @@ export function ProductManager({
         : draft;
       if (editingId) {
         if (!demo) await updateProduct(editingId, submittedDraft);
-        setProducts((current) =>
-          current.map((product) =>
-            product.id === editingId
-              ? { ...product, ...submittedDraft, name: submittedDraft.name.trim(), description: submittedDraft.description.trim() || null, updated_at: new Date().toISOString() }
-              : product,
-          ),
+        const nextProducts = products.map((product) =>
+          product.id === editingId
+            ? { ...product, ...submittedDraft, name: submittedDraft.name.trim(), description: submittedDraft.description.trim() || null, updated_at: new Date().toISOString() }
+            : product,
         );
+        setProducts(nextProducts);
+        onProductsChange?.(nextProducts);
       } else if (demo) {
         const now = new Date().toISOString();
-        setProducts((current) => [
-          ...current,
+        const nextProducts = [
+          ...products,
           {
             id: `demo-${Date.now()}`,
             shop_id: shopId,
@@ -118,10 +120,14 @@ export function ProductManager({
             created_at: now,
             updated_at: now,
           },
-        ]);
+        ];
+        setProducts(nextProducts);
+        onProductsChange?.(nextProducts);
       } else {
         const created = await createProduct(shopId, submittedDraft);
-        setProducts((current) => [...current, created]);
+        const nextProducts = [...products, created];
+        setProducts(nextProducts);
+        onProductsChange?.(nextProducts);
       }
       reset();
     } catch (cause) {
@@ -137,7 +143,9 @@ export function ProductManager({
     setError(null);
     try {
       if (!demo) await deleteProduct(product.id);
-      setProducts((current) => current.filter((item) => item.id !== product.id));
+      const nextProducts = products.filter((item) => item.id !== product.id);
+      setProducts(nextProducts);
+      onProductsChange?.(nextProducts);
       if (editingId === product.id) reset();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Impossible de supprimer le produit.");

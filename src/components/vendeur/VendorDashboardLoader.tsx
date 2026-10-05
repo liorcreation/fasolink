@@ -141,7 +141,15 @@ export function VendorDashboardLoader() {
           </label>
         </div>
       )}
-      <VendorDashboard key={shop.id} shop={shop} subscription={subscription} demo={!isConfigured} />
+      <VendorDashboard
+        key={shop.id}
+        shop={shop}
+        subscription={subscription}
+        demo={!isConfigured}
+        onProductsChange={(products) => {
+          setShops((current) => current.map((item) => item.id === shop.id ? { ...item, products } : item));
+        }}
+      />
     </>
   );
 }

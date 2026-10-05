@@ -38,10 +38,12 @@ export function VendorDashboard({
   shop,
   subscription = null,
   demo = false,
+  onProductsChange,
 }: {
   shop: ShopWithProducts;
   subscription?: Subscription | null;
   demo?: boolean;
+  onProductsChange?: (products: ShopWithProducts["products"]) => void;
 }) {
   const [stats, setStats] = useState<ContactStats | null>(null);
 
@@ -146,7 +148,7 @@ export function VendorDashboard({
           <div className="flex flex-wrap gap-2">
             <Link href="/vendeur/boutiques" className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-4 text-xs font-bold text-white transition hover:bg-white/10"><Store className="h-3.5 w-3.5" /> Mes boutiques</Link>
             <Link href={`/boutiques/${shop.id}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-4 text-xs font-bold text-white transition hover:bg-white/10"><Eye className="h-3.5 w-3.5" /> Voir ma vitrine <ExternalLink className="h-3 w-3 text-white/50" /></Link>
-            <Link href="/vendeur/paiement" className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-faso-gold px-4 text-xs font-extrabold text-[#21170A] shadow-[0_8px_24px_rgba(220,166,55,.18)] transition hover:-translate-y-0.5 hover:bg-[#F1CA70]"><CalendarClock className="h-3.5 w-3.5" />{subscription?.status === "active" ? "Gérer la licence" : "Activer mon abonnement"}</Link>
+            <Link href={`/vendeur/paiement?shop=${shop.id}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-faso-gold px-4 text-xs font-extrabold text-[#21170A] shadow-[0_8px_24px_rgba(220,166,55,.18)] transition hover:-translate-y-0.5 hover:bg-[#F1CA70]"><CalendarClock className="h-3.5 w-3.5" />{subscription?.status === "active" ? "Gérer la licence" : "Activer mon abonnement"}</Link>
           </div>
         </div>
       </motion.section>
@@ -175,7 +177,7 @@ export function VendorDashboard({
       </section>
 
       {/* Catalogue vendeur */}
-      <div id="seller-catalog" className="scroll-mt-24"><ProductManager shopId={shop.id} initialProducts={shop.products} demo={demo} /></div>
+      <div id="seller-catalog" className="scroll-mt-24"><ProductManager shopId={shop.id} initialProducts={shop.products} demo={demo} onProductsChange={onProductsChange} /></div>
 
       {/* Performance — les contacts ne sont pas des ventes */}
       <section id="seller-performance" className="grid scroll-mt-24 gap-4 lg:grid-cols-[.72fr_1.28fr]">
