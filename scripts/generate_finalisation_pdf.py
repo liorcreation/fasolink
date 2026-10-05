@@ -340,6 +340,19 @@ def build_story():
     story += [make_table(handover, [45 * mm, 125 * mm]), Spacer(1, 12)]
     story += [P("Transfert sécurisé", "H2Faso"), P("Les secrets ne doivent jamais être envoyés dans un message public, un PDF ou le dépôt Git. Ils doivent être transférés directement dans Cloudflare/Firebase ou via un gestionnaire de mots de passe. Après la livraison, le client doit remplacer les accès temporaires et activer la double authentification lorsque le service le permet.", "CalloutFaso"), PageBreak()]
 
+    story += section_title("08 BIS - Gestion propriétaire", "Paramètres de boutique livrés", "La vitrine FasoLink dispose désormais d'un espace de gestion réservé au compte qui a créé la boutique. Cette fonctionnalité améliore l'autonomie du vendeur sans exposer les contrôles sensibles de la plateforme.")
+    settings = [
+        ["Élément", "Implémentation", "État"],
+        ["Accès depuis la vitrine", "Le bouton Paramètres / Gérer n'apparaît que pour l'utilisateur dont l'UID correspond à owner_id.", "Fait"],
+        ["Route dédiée", "/boutiques/[id]/parametres, responsive mobile, tablette et desktop, publiée en Edge Runtime Cloudflare.", "Fait"],
+        ["Informations modifiables", "Nom, description, ville, quartier / secteur et numéro WhatsApp Business.", "Fait"],
+        ["Protection serveur", "Les règles Firestore limitent les écritures du propriétaire aux champs publics validés ; owner_id, slug, statut, vérification et abonnements restent protégés.", "Fait"],
+        ["Parcours vendeur", "Accès direct au dashboard pour les produits, la licence, la vérification, les médias et les statistiques.", "Fait"],
+        ["Contrôle de publication", "Rules Firestore déployées sur fasolink-d6e77 ; build Cloudflare confirmé success sur le commit fb2aa55.", "Fait"],
+    ]
+    story += [make_table(settings, [38 * mm, 102 * mm, 30 * mm]), Spacer(1, 12)]
+    story += [P("Utilisation recommandée", "H2Faso"), P("Depuis la vitrine d'une boutique, le propriétaire connecté sélectionne Paramètres. Il peut mettre à jour les coordonnées visibles puis enregistrer. Un autre compte peut consulter la boutique mais ne voit pas cette action et ne peut pas écrire ses informations sensibles, même en appelant directement Firebase.", "CalloutFaso"), PageBreak()]
+
     story += section_title("09 - Critères de réception", "Quand peut-on dire que FasoLink est finalisé ?", "La livraison finale est recommandée uniquement lorsque tous les critères P0 sont validés et que le client a signé la recette.")
     acceptance = [
         ["Critère", "Preuve attendue", "Validé"],
