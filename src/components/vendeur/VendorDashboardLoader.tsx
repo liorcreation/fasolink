@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown, LayoutGrid, Loader2, LogIn, Store } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ButtonLink } from "@/components/ui/Button";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchShops } from "@/lib/shops";
@@ -13,10 +13,8 @@ import { subscribeToShopStatus } from "@/lib/shop-realtime";
 
 export function VendorDashboardLoader() {
   const { user, loading: authLoading, isConfigured } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const requestedShopId = searchParams.get("shop");
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(() => searchParams.get("shop"));
   const [shops, setShops] = useState<ShopWithProducts[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +52,7 @@ export function VendorDashboardLoader() {
     };
   }, [authLoading, isConfigured, user]);
 
-  const shop = shops.find((item) => item.id === requestedShopId) ?? shops[0] ?? null;
+  const shop = shops.find((item) => item.id === selectedShopId) ?? shops[0] ?? null;
 
   const shopId = shop?.id;
 
@@ -66,6 +64,7 @@ export function VendorDashboardLoader() {
         mounted = false;
       };
     }
+    setSubscription(null);
     void fetchLatestSubscription(shopId).then((next) => {
       if (mounted) setSubscription(next);
     }).catch(() => {
@@ -74,9 +73,13 @@ export function VendorDashboardLoader() {
     if (!isConfigured) return () => {
       mounted = false;
     };
-    return subscribeToShopStatus(shopId, (status) => {
+    const unsubscribe = subscribeToShopStatus(shopId, (status) => {
       setShops((current) => current.map((item) => item.id === shopId ? { ...item, status } : item));
     });
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, [isConfigured, shopId]);
 
   if (authLoading || loading) {
@@ -129,7 +132,7 @@ export function VendorDashboardLoader() {
             <span className="sr-only">Choisir une boutique</span>
             <select
               value={shop.id}
-              onChange={(event) => router.replace(`${pathname}?shop=${encodeURIComponent(event.target.value)}`, { scroll: false })}
+              onChange={(event) => setSelectedShopId(event.target.value)}
               className="h-11 w-full appearance-none rounded-xl border border-clay-200 bg-clay-50 px-4 pr-10 text-sm font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15"
             >
               {shops.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.city}</option>)}
@@ -138,7 +141,7 @@ export function VendorDashboardLoader() {
           </label>
         </div>
       )}
-      <VendorDashboard shop={shop} subscription={subscription} demo={!isConfigured} />
+      <VendorDashboard key={shop.id} shop={shop} subscription={subscription} demo={!isConfigured} />
     </>
   );
 }

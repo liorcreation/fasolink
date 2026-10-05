@@ -346,7 +346,7 @@ def build_story():
         ["Accès depuis la vitrine", "Le bouton Paramètres / Gérer n'apparaît que pour l'utilisateur dont l'UID correspond à owner_id.", "Fait"],
         ["Authentification vendeur", "La création d'une boutique exige désormais une session email authentifiée ; les visiteurs et comptes anonymes sont redirigés vers Connexion / Inscription.", "Fait"],
           ["Portefeuille vendeur", "La page /vendeur/boutiques regroupe toutes les vitrines du compte connecté, avec recherche, statuts, produits, contacts et accès direct à Modifier / Voir la vitrine.", "Fait"],
-          ["Sélecteur dashboard", "Le vendeur choisit sa boutique active depuis /vendeur/dashboard?shop=... ; le catalogue et l'ajout de produits utilisent alors exclusivement le shop_id sélectionné.", "Fait"],
+          ["Sélecteur dashboard fluide", "La boutique active est choisie en état local sans navigation ni rechargement ; le dashboard et ProductManager se réinitialisent immédiatement sur le shop_id choisi.", "Fait"],
           ["Périmètre tech", "Nettoyage de production effectué : seules Faso Mobile et Rachedel Store électronique sont conservées ; les anciennes catégories et Apple Store sont exclues du catalogue et du Super Admin.", "Fait"],
           ["Avis visiteurs", "Les visiteurs ayant contacté la boutique peuvent publier un avis ; le propriétaire ne voit pas le formulaire et Firestore bloque aussi toute auto-évaluation.", "Fait"],
         ["Route dédiée", "/boutiques/[id]/parametres, responsive mobile, tablette et desktop, publiée en Edge Runtime Cloudflare.", "Fait"],
