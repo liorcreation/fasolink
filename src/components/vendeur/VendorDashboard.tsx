@@ -19,6 +19,7 @@ import {
   Sparkles,
   ShieldAlert,
   ShieldCheck,
+  Store,
   TrendingUp,
 } from "lucide-react";
 import type { ShopWithProducts, Subscription } from "@/lib/database.types";
@@ -143,6 +144,7 @@ export function VendorDashboard({
         <div className="mt-7 grid gap-4 border-t border-white/10 pt-5 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="flex items-start gap-3"><span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[.07] text-faso-gold"><CalendarClock className="h-4 w-4" /></span><div><p className="text-sm font-extrabold text-white">{subscriptionLabel}</p><p className="mt-1 max-w-2xl text-xs leading-5 text-white/55">{subscriptionCopy}</p></div></div>
           <div className="flex flex-wrap gap-2">
+            <Link href="/vendeur/boutiques" className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-4 text-xs font-bold text-white transition hover:bg-white/10"><Store className="h-3.5 w-3.5" /> Mes boutiques</Link>
             <Link href={`/boutiques/${shop.id}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-4 text-xs font-bold text-white transition hover:bg-white/10"><Eye className="h-3.5 w-3.5" /> Voir ma vitrine <ExternalLink className="h-3 w-3 text-white/50" /></Link>
             <Link href="/vendeur/paiement" className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-faso-gold px-4 text-xs font-extrabold text-[#21170A] shadow-[0_8px_24px_rgba(220,166,55,.18)] transition hover:-translate-y-0.5 hover:bg-[#F1CA70]"><CalendarClock className="h-3.5 w-3.5" />{subscription?.status === "active" ? "Gérer la licence" : "Activer mon abonnement"}</Link>
           </div>

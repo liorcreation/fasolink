@@ -41,7 +41,7 @@ const EMPTY_PROFILE: ProfileFields = { full_name: "", phone: "", city: "", role:
 
 const QUICK_LINKS = [
   { href: "#favoris", icon: Heart, title: "Mes favoris", detail: "Vos boutiques enregistrées", tone: "red" },
-  { href: "/vendeur/dashboard", icon: Store, title: "Espace vendeur", detail: "Gérer ma boutique", tone: "gold" },
+  { href: "/vendeur/boutiques", icon: Store, title: "Mes boutiques", detail: "Retrouver et gérer mes vitrines", tone: "gold" },
   { href: "/vendeur/verification", icon: BadgeCheck, title: "Ma vérification", detail: "Dossier vendeur", tone: "green" },
 ];
 

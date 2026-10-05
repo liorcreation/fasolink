@@ -10,6 +10,7 @@ import {
   CreditCard,
   Gauge,
   Grid2X2,
+  LayoutGrid,
   Heart,
   LogIn,
   Search,
@@ -28,6 +29,7 @@ import { ButtonLink } from "@/components/ui/Button";
 
 const SELLER_LINKS = [
   { href: "/vendeur/dashboard", label: "Tableau de bord", detail: "Pilotez votre boutique", icon: Gauge },
+  { href: "/vendeur/boutiques", label: "Mes boutiques", detail: "Retrouvez toutes vos vitrines", icon: LayoutGrid },
   { href: "/vendeur/inscription", label: "Ouvrir une boutique", detail: "Vendez téléphones, ordinateurs et accessoires", icon: Store },
   { href: "/vendeur/verification", label: "Vérification", detail: "Suivez votre dossier", icon: BadgeCheck },
   { href: "/vendeur/paiement", label: "Abonnement & paiement", detail: "Gérez votre formule", icon: CreditCard },
