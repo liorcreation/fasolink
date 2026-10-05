@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { VendorDashboardLoader } from "@/components/vendeur/VendorDashboardLoader";
 
@@ -20,7 +21,9 @@ export default function VendorDashboardPage() {
       />
 
       <div className="mt-10">
-        <VendorDashboardLoader />
+        <Suspense fallback={<div className="card-premium flex min-h-48 items-center justify-center text-sm text-ink-muted">Chargement de votre espace vendeur…</div>}>
+          <VendorDashboardLoader />
+        </Suspense>
       </div>
     </div>
   );
