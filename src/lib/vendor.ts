@@ -25,7 +25,7 @@ import type {
 } from "@/lib/database.types";
 import { PAYMENT_GATEWAY, TRIAL_DAYS } from "@/lib/constants";
 import { STANDARD_HOURS } from "@/lib/hours";
-import { slugify } from "@/lib/utils";
+import { normalizeBurkinaPhone, slugify } from "@/lib/utils";
 
 /**
  * Couche « écriture vendeur » : création de boutique + activation d'abonnement.
@@ -118,6 +118,13 @@ export async function createShopWithAssets(
   }
 
   const ownerId = await ensureSession();
+  const whatsapp = normalizeBurkinaPhone(draft.whatsapp);
+  if (!whatsapp) {
+    throw new VendorError(
+      "insert",
+      "Numéro burkinabè invalide. Utilisez 8 chiffres (ex. 70 00 00 00) ou +226.",
+    );
+  }
   const now = new Date().toISOString();
   const slug = `${slugify(draft.name)}-${Date.now().toString(36)}`;
   const id = slug; // id du document = slug (URL lisible)
@@ -134,7 +141,7 @@ export async function createShopWithAssets(
       latitude: null,
       longitude: null,
       opening_hours: STANDARD_HOURS,
-      whatsapp: draft.whatsapp.trim(),
+      whatsapp,
       logo_url: null,
       cover_url: null,
       gallery: [],
@@ -213,7 +220,7 @@ export async function updateShopSettings(
   const description = input.description.trim();
   const city = input.city.trim();
   const neighborhood = input.neighborhood?.trim() || null;
-  const whatsapp = input.whatsapp.trim();
+  const whatsapp = normalizeBurkinaPhone(input.whatsapp);
 
   if (name.length < 2) {
     throw new VendorError("insert", "Le nom de la boutique est trop court.");
@@ -227,8 +234,11 @@ export async function updateShopSettings(
   if (!city) {
     throw new VendorError("insert", "La ville de la boutique est requise.");
   }
-  if (!/\d{6,}/.test(whatsapp)) {
-    throw new VendorError("insert", "Indiquez un numéro WhatsApp valide.");
+  if (!whatsapp) {
+    throw new VendorError(
+      "insert",
+      "Numéro burkinabè invalide. Utilisez 8 chiffres (ex. 70 00 00 00) ou +226.",
+    );
   }
 
   await updateDoc(doc(db, COLLECTIONS.shops, shopId), {

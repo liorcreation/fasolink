@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type { ShopCategory } from "@/lib/database.types";
 import { BURKINA_CITIES, CATEGORY_MAP } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, isValidBurkinaPhone } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createShopWithAssets, VendorError } from "@/lib/vendor";
 import { Button } from "@/components/ui/Button";
@@ -76,14 +76,14 @@ export function ShopRegistrationForm() {
     form.name.trim().length > 1 &&
     form.category !== "" &&
     form.city !== "" &&
-    /\d{6,}/.test(form.whatsapp) &&
+    isValidBurkinaPhone(form.whatsapp) &&
     form.description.trim().length > 20;
   const category = CATEGORY_MAP.electronique;
   const completedFields = [
     form.name.trim().length > 1,
     Boolean(form.category),
     Boolean(form.city),
-    /\d{6,}/.test(form.whatsapp),
+    isValidBurkinaPhone(form.whatsapp),
     form.description.trim().length > 20,
   ].filter(Boolean).length;
   const completion = Math.round((completedFields / 5) * 100);
@@ -264,6 +264,7 @@ export function ShopRegistrationForm() {
               required
             />
           </div>
+          {form.whatsapp && !isValidBurkinaPhone(form.whatsapp) && <span className="mt-1 block text-xs font-medium text-faso-red-dark">Numéro invalide : 8 chiffres burkinabè attendus, par exemple 70 00 00 00 ou +226 70 00 00 00.</span>}
         </Field>
       </fieldset>
 

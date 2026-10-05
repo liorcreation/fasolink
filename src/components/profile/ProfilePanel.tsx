@@ -28,6 +28,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { FavoritesPanel } from "@/components/profile/FavoritesPanel";
 import { COLLECTIONS, db } from "@/lib/firebase";
 import type { ProfileRole } from "@/lib/database.types";
+import { normalizeBurkinaPhone } from "@/lib/utils";
 
 interface ProfileFields {
   full_name: string;
@@ -111,19 +112,27 @@ export function ProfilePanel() {
     setSaving(true);
     setError(null);
     setMessage(null);
+    const normalizedPhone = profile.phone.trim()
+      ? normalizeBurkinaPhone(profile.phone)
+      : null;
+    if (profile.phone.trim() && !normalizedPhone) {
+      setError("Numéro invalide. Utilisez 8 chiffres burkinabè ou le format +226.");
+      setSaving(false);
+      return;
+    }
     try {
       const now = new Date().toISOString();
       await setDoc(doc(db, COLLECTIONS.profiles, user.uid), {
         id: user.uid,
         role: profile.role ?? "buyer",
         full_name: profile.full_name.trim(),
-        phone: profile.phone.trim() || null,
+        phone: normalizedPhone,
         city: profile.city.trim() || null,
         avatar_url: user.photoURL || null,
         created_at: user.metadata.creationTime ? new Date(user.metadata.creationTime).toISOString() : now,
         updated_at: now,
       }, { merge: true });
-      setProfile((current) => ({ ...current, full_name: current.full_name.trim(), phone: current.phone.trim(), city: current.city.trim() }));
+      setProfile((current) => ({ ...current, full_name: current.full_name.trim(), phone: normalizedPhone ?? "", city: current.city.trim() }));
       setEditing(false);
       setMessage("Votre profil a bien été mis à jour.");
     } catch (cause) {

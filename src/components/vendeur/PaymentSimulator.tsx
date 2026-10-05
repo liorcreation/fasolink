@@ -26,7 +26,7 @@ import {
   SUBSCRIPTION_PLANS,
   TRIAL_DAYS,
 } from "@/lib/constants";
-import { cn, formatCFA } from "@/lib/utils";
+import { cn, formatCFA, isValidBurkinaPhone, normalizeBurkinaPhone } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { activateSubscription, VendorError } from "@/lib/vendor";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -61,7 +61,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
 
   const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId)!;
   const providerMeta = PAYMENT_PROVIDERS.find((p) => p.id === provider)!;
-  const phoneValid = /\d{2}\s?\d{2}\s?\d{2}\s?\d{2}/.test(phone.trim());
+  const phoneValid = isValidBurkinaPhone(phone);
   const trialSelected = step === "trial" || trialMode;
 
   const targetShop = shopId ?? DEMO_SHOP_ID;
@@ -87,7 +87,7 @@ export function PaymentSimulator({ shopId }: { shopId?: string }) {
           months: plan.months,
           amount: plan.price,
           provider,
-          phone: phone.trim() || undefined,
+          phone: normalizeBurkinaPhone(phone) ?? undefined,
           reference,
           trial: opts.trial,
         });

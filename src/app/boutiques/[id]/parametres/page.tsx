@@ -26,6 +26,7 @@ import { isFirebaseConfigured } from "@/lib/firebase";
 import { fetchOwnedShop } from "@/lib/vendor-data";
 import { updateShopSettings, VendorError } from "@/lib/vendor";
 import type { ShopWithProducts } from "@/lib/database.types";
+import { isValidBurkinaPhone } from "@/lib/utils";
 
 type FormState = {
   name: string;
@@ -110,7 +111,7 @@ export default function ShopSettingsPage() {
     form.name.trim().length >= 2 &&
     form.description.trim().length >= 20 &&
     Boolean(form.city) &&
-    /\d{6,}/.test(form.whatsapp);
+    isValidBurkinaPhone(form.whatsapp);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -233,6 +234,7 @@ export default function ShopSettingsPage() {
                   <MessageCircle className="h-4 w-4 text-faso-green" />
                   <input type="tel" value={form.whatsapp} onChange={(event) => update("whatsapp", event.target.value)} className="h-12 w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70" placeholder="70 12 34 56" required />
                 </div>
+                {form.whatsapp && !isValidBurkinaPhone(form.whatsapp) && <span className="mt-1 block text-xs font-medium text-faso-red-dark">Format attendu : 8 chiffres burkinabè ou +226 suivi de 8 chiffres.</span>}
               </Field>
             </section>
 

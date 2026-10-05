@@ -346,6 +346,7 @@ def build_story():
         ["Accès depuis la vitrine", "Le bouton Paramètres / Gérer n'apparaît que pour l'utilisateur dont l'UID correspond à owner_id.", "Fait"],
         ["Route dédiée", "/boutiques/[id]/parametres, responsive mobile, tablette et desktop, publiée en Edge Runtime Cloudflare.", "Fait"],
         ["Informations modifiables", "Nom, description, ville, quartier / secteur et numéro WhatsApp Business.", "Fait"],
+        ["Numérotation Burkina", "La saisie conserve le zéro éventuel ; le format national à 8 chiffres est contrôlé et enregistré au format canonique +226.", "Fait"],
         ["Protection serveur", "Les règles Firestore limitent les écritures du propriétaire aux champs publics validés ; owner_id, slug, statut, vérification et abonnements restent protégés.", "Fait"],
         ["Parcours vendeur", "Accès direct au dashboard pour les produits, la licence, la vérification, les médias et les statistiques.", "Fait"],
         ["Contrôle de publication", "Rules Firestore déployées sur fasolink-d6e77 ; build Cloudflare confirmé success sur le commit fb2aa55.", "Fait"],
