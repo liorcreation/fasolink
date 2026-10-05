@@ -264,7 +264,7 @@ export function ShopRegistrationForm() {
               required
             />
           </div>
-          {form.whatsapp && !isValidBurkinaPhone(form.whatsapp) && <span className="mt-1 block text-xs font-medium text-faso-red-dark">Numéro invalide : 8 chiffres burkinabè attendus, par exemple 70 00 00 00 ou +226 70 00 00 00.</span>}
+          {form.whatsapp && !isValidBurkinaPhone(form.whatsapp) && <span className="mt-1 block text-xs font-medium text-faso-red-dark">Numéro invalide : 8 chiffres burkinabè attendus, par exemple 05 88 27 68 ou +226 70 00 00 00.</span>}
         </Field>
       </fieldset>
 

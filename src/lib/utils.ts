@@ -31,9 +31,9 @@ export function normalizeBurkinaPhone(rawPhone: string): string | null {
     national = digits.slice(1);
   }
 
-  // Le PNN burkinabè est fermé à 8 chiffres ; 0 en première position n'est
-  // pas un numéro national exploitable après l'indicatif +226.
-  if (!/^\d{8}$/.test(national) || national.startsWith("0")) return null;
+  // Le PNN burkinabè est fermé à 8 chiffres. Le premier chiffre peut faire
+  // partie d'un préfixe AB attribué par l'ARCEP : on ne le supprime jamais.
+  if (!/^\d{8}$/.test(national)) return null;
   return `+226${national}`;
 }
 

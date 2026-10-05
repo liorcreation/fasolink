@@ -122,7 +122,7 @@ export async function createShopWithAssets(
   if (!whatsapp) {
     throw new VendorError(
       "insert",
-      "Numéro burkinabè invalide. Utilisez 8 chiffres (ex. 70 00 00 00) ou +226.",
+      "Numéro burkinabè invalide. Utilisez 8 chiffres (ex. 05 88 27 68) ou +226.",
     );
   }
   const now = new Date().toISOString();
@@ -237,7 +237,7 @@ export async function updateShopSettings(
   if (!whatsapp) {
     throw new VendorError(
       "insert",
-      "Numéro burkinabè invalide. Utilisez 8 chiffres (ex. 70 00 00 00) ou +226.",
+      "Numéro burkinabè invalide. Utilisez 8 chiffres (ex. 05 88 27 68) ou +226.",
     );
   }
 

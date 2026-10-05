@@ -33,7 +33,7 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.owner_id == request.auth.uid
         && request.resource.data.whatsapp is string
-        && request.resource.data.whatsapp.matches('^\\+226[1-9][0-9]{7}$');
+        && request.resource.data.whatsapp.matches('^\\+226[0-9]{8}$');
       // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
       // de contacts WhatsApp (increment).
       allow update: if isAdmin()
@@ -56,7 +56,7 @@ service cloud.firestore {
           && request.resource.data.city is string
           && request.resource.data.city.size() >= 2
           && request.resource.data.whatsapp is string
-          && request.resource.data.whatsapp.matches('^\\+226[1-9][0-9]{7}$')
+          && request.resource.data.whatsapp.matches('^\\+226[0-9]{8}$')
           && request.resource.data.updated_at is string)
         // L'essai gratuit peut publier la boutique, mais seulement après la
         // création de son abonnement d'essai dédié. Aucun autre statut ne peut
