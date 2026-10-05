@@ -134,18 +134,24 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ── reviews : lecture publique, dépôt par un utilisateur connecté ──
-    // (le contrôle « après contact vérifié » est appliqué côté client)
+    // ── reviews : lecture publique, dépôt par un visiteur connecté ──
+    // Le propriétaire de la boutique ne peut jamais s'auto-évaluer.
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if isSignedIn()
+        && request.resource.data.shop_id is string
+        && exists(/databases/$(database)/documents/shops/$(request.resource.data.shop_id))
+        && get(/databases/$(database)/documents/shops/$(request.resource.data.shop_id)).data.owner_id != request.auth.uid
         && request.resource.data.author_id == request.auth.uid
+        && request.resource.data.author_name is string
+        && request.resource.data.author_name.size() >= 2
         && request.resource.data.is_verified == false
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && request.resource.data.comment is string
-        && request.resource.data.comment.size() >= 5;
+        && request.resource.data.comment.size() >= 10
+        && request.resource.data.created_at is string;
       allow update, delete: if isAdmin();
     }
 

@@ -345,6 +345,7 @@ def build_story():
         ["Élément", "Implémentation", "État"],
         ["Accès depuis la vitrine", "Le bouton Paramètres / Gérer n'apparaît que pour l'utilisateur dont l'UID correspond à owner_id.", "Fait"],
         ["Authentification vendeur", "La création d'une boutique exige désormais une session email authentifiée ; les visiteurs et comptes anonymes sont redirigés vers Connexion / Inscription.", "Fait"],
+          ["Avis visiteurs", "Les visiteurs ayant contacté la boutique peuvent publier un avis ; le propriétaire ne voit pas le formulaire et Firestore bloque aussi toute auto-évaluation.", "Fait"],
         ["Route dédiée", "/boutiques/[id]/parametres, responsive mobile, tablette et desktop, publiée en Edge Runtime Cloudflare.", "Fait"],
         ["Informations modifiables", "Nom, description, ville, quartier / secteur et numéro WhatsApp Business.", "Fait"],
         ["Numérotation Burkina", "La saisie conserve le zéro éventuel ; le format national à 8 chiffres est contrôlé et enregistré au format canonique +226.", "Fait"],

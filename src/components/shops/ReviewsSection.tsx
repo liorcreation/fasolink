@@ -9,28 +9,36 @@ import { getLocalContactStats } from "@/lib/tracking";
 import { addDoc, collection } from "firebase/firestore/lite";
 import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
 import { ensureSession } from "@/lib/vendor";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const LS_KEY = (id: string) => `fasolink:reviews:${id}`;
 
 export function ReviewsSection({
   shopId,
   shopName,
+  ownerId,
   initialReviews = [],
 }: {
   shopId: string;
   shopName: string;
+  ownerId: string;
   initialReviews?: Review[];
 }) {
+  const { user, loading: authLoading } = useAuth();
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
-  const [canReview, setCanReview] = useState(false);
+  const [hasContacted, setHasContacted] = useState(false);
   const [rating, setRating] = useState(5);
   const [hover, setHover] = useState(0);
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const isOwner = Boolean(user?.uid && ownerId && user.uid === ownerId);
+  const canReview = !authLoading && !isOwner && hasContacted;
 
   useEffect(() => {
-    setCanReview(getLocalContactStats(shopId).total > 0);
+    setHasContacted(getLocalContactStats(shopId).total > 0);
     try {
       const local = JSON.parse(
         localStorage.getItem(LS_KEY(shopId)) ?? "[]",
@@ -54,7 +62,12 @@ export function ReviewsSection({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || comment.trim().length < 10) return;
+    if (isOwner || !hasContacted || !name.trim() || comment.trim().length < 10) {
+      return;
+    }
+
+    setError("");
+    setSent(false);
 
     const review: Review = {
       id: `local-${Date.now()}`,
@@ -80,7 +93,13 @@ export function ReviewsSection({
           created_at: review.created_at,
         });
       } catch (error) {
-        console.warn("[FasoLink] review:", error);
+        console.error("[FasoLink] review:", error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Impossible de publier votre avis pour le moment.",
+        );
+        return;
       }
     } else {
       try {
@@ -219,15 +238,44 @@ export function ReviewsSection({
             </button>
           </form>
         ) : (
-          <div className="card-premium mb-6 flex items-center gap-3 p-5 text-sm text-ink-soft">
-            <Lock className="h-5 w-5 shrink-0 text-ink-muted" />
-            <p>
-              Pour garantir des notes fiables, seuls les acheteurs ayant
-              <strong> contacté cette boutique </strong> via FasoLink peuvent
-              laisser un avis.
-            </p>
+          <div className="card-premium mb-6 flex items-start gap-3 p-5 text-sm text-ink-soft">
+            {authLoading || isOwner ? (
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-faso-gold" />
+            ) : (
+              <Lock className="mt-0.5 h-5 w-5 shrink-0 text-ink-muted" />
+            )}
+            <div>
+              <p className="font-bold text-ink">
+                {authLoading
+                  ? "Vérification de votre espace…"
+                  : isOwner
+                    ? "Espace propriétaire"
+                    : "Avis réservé aux visiteurs"}
+              </p>
+              <p className="mt-1">
+                {authLoading
+                  ? "Nous vérifions vos droits avant d’afficher les actions disponibles."
+                  : isOwner
+                    ? "Les avis sont réservés aux visiteurs de la boutique. Le propriétaire ne peut pas s’auto-évaluer, y compris via une requête directe."
+                    : "Pour garantir des notes fiables, contactez d’abord cette boutique via FasoLink. Le formulaire d’avis sera ensuite déverrouillé pour vous."}
+              </p>
+            </div>
           </div>
         )}
+
+        <AnimatePresence>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              role="alert"
+              className="mb-4 rounded-xl bg-faso-red/10 px-4 py-3 text-sm font-medium text-faso-red"
+            >
+              {error}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
         <ul className="space-y-4">
           {reviews.length === 0 && (

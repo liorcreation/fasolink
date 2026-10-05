@@ -197,6 +197,7 @@ export default async function BoutiquePage({
             <ReviewsSection
               shopId={shop.id}
               shopName={shop.name}
+              ownerId={shop.owner_id}
               initialReviews={shop.reviews ?? []}
             />
           </div>
