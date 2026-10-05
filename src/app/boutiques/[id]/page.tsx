@@ -19,6 +19,7 @@ import { PublishedToast } from "@/components/shops/PublishedToast";
 import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/shops/FavoriteButton";
+import { OwnerShopActions } from "@/components/shops/OwnerShopActions";
 
 // Cloudflare Pages : rendu Edge à la demande — les boutiques créées après le
 // déploiement (via /vendeur/inscription) ont immédiatement leur page, fraîche.
@@ -121,6 +122,7 @@ export default async function BoutiquePage({
             </div>
             <div className="flex shrink-0 items-center gap-2 self-start lg:self-auto">
               <FavoriteButton shopId={shop.id} />
+              <OwnerShopActions ownerId={shop.owner_id} shopId={shop.id} />
               <WhatsAppButton phone={shop.whatsapp} shopName={shop.name} shopId={shop.id} size="sm" label="Contacter" className="h-11 rounded-full px-4 shadow-[0_8px_24px_rgba(37,211,102,.2)]" />
             </div>
           </div>

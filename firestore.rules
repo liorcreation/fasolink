@@ -35,7 +35,50 @@ service cloud.firestore {
       // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
       // de contacts WhatsApp (increment).
       allow update: if isAdmin()
-        || (isSignedIn() && resource.data.owner_id == request.auth.uid)
+        // Le propriétaire ne peut modifier que l'identité publique de sa
+        // boutique. Les champs sensibles restent sous contrôle plateforme.
+        || (isSignedIn()
+          && resource.data.owner_id == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'description', 'city', 'neighborhood', 'whatsapp',
+            'logo_url', 'cover_url', 'gallery', 'updated_at'
+          ])
+          && request.resource.data.owner_id == resource.data.owner_id
+          && request.resource.data.slug == resource.data.slug
+          && request.resource.data.status == resource.data.status
+          && request.resource.data.verification_status == resource.data.verification_status
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 2
+          && request.resource.data.description is string
+          && request.resource.data.description.size() >= 20
+          && request.resource.data.city is string
+          && request.resource.data.city.size() >= 2
+          && request.resource.data.whatsapp is string
+          && request.resource.data.whatsapp.size() >= 6
+          && request.resource.data.updated_at is string)
+        // L'essai gratuit peut publier la boutique, mais seulement après la
+        // création de son abonnement d'essai dédié. Aucun autre statut ne peut
+        // être changé par le propriétaire.
+        || (isSignedIn()
+          && resource.data.owner_id == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'updated_at'
+          ])
+          && resource.data.status == 'pending'
+          && request.resource.data.status == 'active'
+          && exists(/databases/$(database)/documents/subscriptions/$(shopId))
+          && get(/databases/$(database)/documents/subscriptions/$(shopId)).data.shop_id == shopId
+          && get(/databases/$(database)/documents/subscriptions/$(shopId)).data.status == 'trialing'
+          && request.resource.data.updated_at is string)
+        // Dépôt d'un dossier de vérification : le vendeur peut seulement
+        // passer à pending et renseigner sa localisation.
+        || (isSignedIn()
+          && resource.data.owner_id == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'verification_status', 'latitude', 'longitude', 'updated_at'
+          ])
+          && request.resource.data.verification_status == 'pending'
+          && request.resource.data.updated_at is string)
         || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['whatsapp_clicks'])
           && request.resource.data.whatsapp_clicks == resource.data.whatsapp_clicks + 1);
       allow delete: if isAdmin()

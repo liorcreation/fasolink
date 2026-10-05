@@ -46,6 +46,15 @@ export interface ShopDraft {
   description: string;
 }
 
+/** Champs publics qu'un propriétaire peut modifier depuis les paramètres. */
+export interface ShopSettingsInput {
+  name: string;
+  description: string;
+  city: string;
+  neighborhood: string | null;
+  whatsapp: string;
+}
+
 export class VendorError extends Error {
   code: "auth" | "insert" | "config";
   constructor(code: VendorError["code"], message: string) {
@@ -184,6 +193,52 @@ export async function createShopWithAssets(
   }
 
   return { id, slug };
+}
+
+/**
+ * Met à jour uniquement l'identité publique d'une boutique.
+ * Les règles Firestore bloquent indépendamment toute tentative de modifier
+ * le propriétaire, le statut, la vérification ou les données d'abonnement.
+ */
+export async function updateShopSettings(
+  shopId: string,
+  input: ShopSettingsInput,
+): Promise<void> {
+  if (!isFirebaseConfigured) {
+    throw new VendorError("config", "Firebase n'est pas configuré.");
+  }
+
+  await ensureSession();
+  const name = input.name.trim();
+  const description = input.description.trim();
+  const city = input.city.trim();
+  const neighborhood = input.neighborhood?.trim() || null;
+  const whatsapp = input.whatsapp.trim();
+
+  if (name.length < 2) {
+    throw new VendorError("insert", "Le nom de la boutique est trop court.");
+  }
+  if (description.length < 20) {
+    throw new VendorError(
+      "insert",
+      "La description doit contenir au moins 20 caractères.",
+    );
+  }
+  if (!city) {
+    throw new VendorError("insert", "La ville de la boutique est requise.");
+  }
+  if (!/\d{6,}/.test(whatsapp)) {
+    throw new VendorError("insert", "Indiquez un numéro WhatsApp valide.");
+  }
+
+  await updateDoc(doc(db, COLLECTIONS.shops, shopId), {
+    name,
+    description,
+    city,
+    neighborhood,
+    whatsapp,
+    updated_at: new Date().toISOString(),
+  });
 }
 
 export interface ProductDraft {
@@ -414,7 +469,11 @@ export async function activateSubscription(
     "FL-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
   try {
-    await addDoc(collection(db, COLLECTIONS.subscriptions), {
+    const subscriptionRef = input.trial
+      ? doc(db, COLLECTIONS.subscriptions, input.shopId)
+      : doc(collection(db, COLLECTIONS.subscriptions));
+
+    await setDoc(subscriptionRef, {
       shop_id: input.shopId,
       plan: input.plan,
       status: input.trial ? "trialing" : "pending",
