@@ -89,12 +89,19 @@ export function AdminDashboard() {
   }
 
   async function changeStatus(shopId: string, status: ShopStatus) {
+    if (busyId) return;
+    const previousStatus = shops.find((shop) => shop.id === shopId)?.status;
+    if (!previousStatus || previousStatus === status) return;
+
+    // Mise à jour optimiste : le Super Admin voit le statut changer au clic,
+    // pendant que Firestore confirme l'écriture en arrière-plan.
+    setShops((current) => current.map((shop) => shop.id === shopId ? { ...shop, status } : shop));
     setBusyId(shopId);
     setError(null);
     try {
       await updateShopStatus(shopId, status);
-      await load();
     } catch (cause) {
+      setShops((current) => current.map((shop) => shop.id === shopId ? { ...shop, status: previousStatus } : shop));
       setError(cause instanceof Error ? cause.message : "Action impossible.");
     } finally {
       setBusyId(null);
@@ -213,7 +220,7 @@ export function AdminDashboard() {
         </div>
         <div className="divide-y divide-clay-100 px-5 md:px-7">
           {shops.length === 0 && <p className="py-8 text-center text-sm text-ink-muted">Aucune boutique à modérer.</p>}
-          {shops.map((shop) => <ShopRow key={shop.id} shop={shop} busy={busyId === shop.id} onChange={changeStatus} />)}
+          {shops.map((shop) => <ShopRow key={shop.id} shop={shop} busy={busyId !== null} saving={busyId === shop.id} onChange={changeStatus} />)}
         </div>
       </motion.section>
     </div>
@@ -238,7 +245,7 @@ function AdminNavItem({ href, icon, label, count }: { href: string; icon: React.
   return <a href={href} className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-bold text-ink-soft transition-colors hover:bg-clay-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold sm:px-4">{icon}{label}{typeof count === "number" && count > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-faso-red px-1 text-[10px] font-extrabold text-white">{count}</span>}</a>;
 }
 
-function ShopRow({ shop, busy, onChange }: { shop: Shop; busy: boolean; onChange: (shopId: string, status: ShopStatus) => Promise<void> }) {
+function ShopRow({ shop, busy, saving, onChange }: { shop: Shop; busy: boolean; saving: boolean; onChange: (shopId: string, status: ShopStatus) => Promise<void> }) {
   const next: ShopStatus = shop.status === "suspended" ? "active" : "suspended";
-  return <div className="flex flex-wrap items-center justify-between gap-4 py-4"><div className="flex min-w-0 items-center gap-3"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${shop.status === "suspended" ? "bg-faso-red-soft/40 text-faso-red" : "bg-faso-green-soft/40 text-faso-green-dark"}`}><Store className="h-4 w-4" /></span><div className="min-w-0"><p className="truncate text-sm font-bold text-ink">{shop.name}</p><p className="mt-0.5 text-xs text-ink-muted">{shop.city} <span className="mx-1">·</span> Vérification {shop.verification_status}</p></div></div><div className="flex items-center gap-3"><span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${shop.status === "suspended" ? "bg-faso-red-soft/45 text-faso-red-dark" : "bg-faso-green-soft/40 text-faso-green-dark"}`}>{shop.status === "suspended" ? "Suspendue" : "Active"}</span><Button size="sm" variant={next === "active" ? "secondary" : "outline"} disabled={busy} onClick={() => void onChange(shop.id, next)}>{next === "active" ? "Réactiver" : "Suspendre"}</Button></div></div>;
+  return <div className="flex flex-wrap items-center justify-between gap-4 py-4"><div className="flex min-w-0 items-center gap-3"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${shop.status === "suspended" ? "bg-faso-red-soft/40 text-faso-red" : "bg-faso-green-soft/40 text-faso-green-dark"}`}><Store className="h-4 w-4" /></span><div className="min-w-0"><p className="truncate text-sm font-bold text-ink">{shop.name}</p><p className="mt-0.5 text-xs text-ink-muted">{shop.city} <span className="mx-1">·</span> Vérification {shop.verification_status}</p></div></div><div className="flex items-center gap-3" aria-live="polite"><span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${shop.status === "suspended" ? "bg-faso-red-soft/45 text-faso-red-dark" : "bg-faso-green-soft/40 text-faso-green-dark"}`}>{shop.status === "suspended" ? "Suspendue" : "Active"}</span><Button size="sm" variant={next === "active" ? "secondary" : "outline"} disabled={busy} onClick={() => void onChange(shop.id, next)}>{saving ? <><Loader2 className="h-4 w-4 animate-spin" />Enregistrement…</> : next === "active" ? "Réactiver" : "Suspendre"}</Button></div></div>;
 }
