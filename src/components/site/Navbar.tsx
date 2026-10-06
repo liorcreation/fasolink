@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   Heart,
   LogIn,
+  PackageSearch,
   Search,
   ShieldCheck,
   Store,
@@ -20,6 +21,7 @@ import {
   UserPlus,
   X,
   FileText,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -51,7 +53,7 @@ function QuickLink({
   href: string;
   label: string;
   detail?: string;
-  icon: typeof Store;
+  icon: LucideIcon;
   onNavigate: () => void;
 }) {
   return (
@@ -158,6 +160,10 @@ export function Navbar() {
           </Link>
           <Link href="/boutiques" aria-current={pathname.startsWith("/boutiques") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/boutiques"))}>
             Boutiques
+          </Link>
+          <Link href="/produits" aria-current={pathname.startsWith("/produits") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/produits"))}>
+            <PackageSearch className="h-4 w-4" aria-hidden="true" />
+            Produits
           </Link>
           <div className="relative" ref={sellerMenuRef}>
             <button
@@ -271,9 +277,14 @@ export function Navbar() {
               <div className="mt-5 rounded-2xl bg-[#f8f2e9] p-3.5 sm:p-4">
                 <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.13em] text-ink-soft"><Search className="h-4 w-4 text-faso-red" aria-hidden="true" /> Découvrir les boutiques</div>
                 <p className="mt-1.5 text-xs leading-5 text-ink-muted">Explorez les commerces, puis ouvrez une vitrine et ses produits.</p>
-                <Link href="/boutiques" onClick={closeMenus} className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3.5 text-sm font-bold text-ink shadow-sm transition hover:text-faso-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
-                  Voir les boutiques <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <Link href="/boutiques" onClick={closeMenus} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3.5 text-sm font-bold text-ink shadow-sm transition hover:text-faso-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
+                    Voir les boutiques <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                  <Link href="/produits" onClick={closeMenus} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-ink px-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-faso-green-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
+                    Tous les produits <PackageSearch className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
               </div>
 
               <div className="mt-5">

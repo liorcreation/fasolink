@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BriefcaseBusiness, Home, Store, UserRound, type LucideIcon } from "lucide-react";
+import { BriefcaseBusiness, Home, PackageSearch, Store, UserRound, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -17,6 +17,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { href: "/", label: "Accueil", icon: Home, match: (path) => path === "/" },
   { href: "/boutiques", label: "Boutiques", icon: Store, match: (path) => path.startsWith("/boutiques") },
+  { href: "/produits", label: "Produits", icon: PackageSearch, match: (path) => path.startsWith("/produits") },
   { href: "/vendeur/inscription", label: "Vendre", icon: BriefcaseBusiness, match: (path) => path.startsWith("/vendeur"), accent: true },
   { href: "/profil", label: "Profil", icon: UserRound, match: (path) => path.startsWith("/profil") || path.startsWith("/connexion") || path.startsWith("/inscription") },
 ];
@@ -28,7 +29,7 @@ export function BottomNav() {
       aria-label="Navigation rapide"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-clay-100/80 bg-white/92 pb-safe shadow-[0_-12px_35px_-24px_rgba(26,17,9,0.5)] backdrop-blur-xl lg:hidden"
     >
-      <ul className="mx-auto grid max-w-xl grid-cols-4 px-2">
+      <ul className="mx-auto grid max-w-xl grid-cols-5 px-1 sm:px-2">
         {ITEMS.map((item) => {
           const active = item.match(pathname);
           const Icon = item.icon;
