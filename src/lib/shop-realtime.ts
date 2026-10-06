@@ -2,6 +2,60 @@ import { app, COLLECTIONS, isFirebaseConfigured } from "@/lib/firebase";
 import type { Product, Review, ShopStatus, ShopWithProducts } from "@/lib/database.types";
 import type { DocumentData, QuerySnapshot } from "firebase/firestore";
 
+const SHOP_STATUS_EVENT = "fasolink:shop-status";
+
+export type ShopStatusEvent = {
+  shopId: string;
+  status: ShopStatus;
+  at: number;
+};
+
+/** Diffuse immédiatement un changement aux autres onglets du même navigateur. */
+export function publishShopStatus(shopId: string, status: ShopStatus) {
+  if (typeof window === "undefined") return;
+  const event: ShopStatusEvent = { shopId, status, at: Date.now() };
+  window.dispatchEvent(new CustomEvent<ShopStatusEvent>(SHOP_STATUS_EVENT, { detail: event }));
+  try {
+    const channel = new BroadcastChannel(SHOP_STATUS_EVENT);
+    channel.postMessage(event);
+    channel.close();
+  } catch {
+    // BroadcastChannel peut être indisponible dans certains WebViews iOS.
+  }
+  try {
+    window.localStorage.setItem(SHOP_STATUS_EVENT, JSON.stringify(event));
+  } catch {
+    // Le temps réel Firestore reste la source de vérité si le stockage local est bloqué.
+  }
+}
+
+/** Écoute la propagation locale instantanée entre les onglets ouverts. */
+export function subscribeToShopStatusEvents(
+  onEvent: (event: ShopStatusEvent) => void,
+): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const onCustomEvent = (event: Event) => {
+    onEvent((event as CustomEvent<ShopStatusEvent>).detail);
+  };
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== SHOP_STATUS_EVENT || !event.newValue) return;
+    try {
+      onEvent(JSON.parse(event.newValue) as ShopStatusEvent);
+    } catch {
+      // Ignore une valeur locale corrompue.
+    }
+  };
+  const channel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(SHOP_STATUS_EVENT) : null;
+  window.addEventListener(SHOP_STATUS_EVENT, onCustomEvent);
+  window.addEventListener("storage", onStorage);
+  channel?.addEventListener("message", (event: MessageEvent<ShopStatusEvent>) => onEvent(event.data));
+  return () => {
+    window.removeEventListener(SHOP_STATUS_EVENT, onCustomEvent);
+    window.removeEventListener("storage", onStorage);
+    channel?.close();
+  };
+}
+
 /** Écoute uniquement côté navigateur pour garder Firestore Lite sur les routes Edge. */
 export function subscribeToShopStatus(
   shopId: string,

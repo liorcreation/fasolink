@@ -13,6 +13,7 @@ import {
   reviewVerification,
   updateShopStatus,
 } from "@/lib/admin-data";
+import { publishShopStatus } from "@/lib/shop-realtime";
 import { SuperAdminLicenses } from "@/components/admin/SuperAdminLicenses";
 
 export function AdminDashboard() {
@@ -96,12 +97,14 @@ export function AdminDashboard() {
     // Mise à jour optimiste : le Super Admin voit le statut changer au clic,
     // pendant que Firestore confirme l'écriture en arrière-plan.
     setShops((current) => current.map((shop) => shop.id === shopId ? { ...shop, status } : shop));
+    publishShopStatus(shopId, status);
     setBusyId(shopId);
     setError(null);
     try {
       await updateShopStatus(shopId, status);
     } catch (cause) {
       setShops((current) => current.map((shop) => shop.id === shopId ? { ...shop, status: previousStatus } : shop));
+      publishShopStatus(shopId, previousStatus);
       setError(cause instanceof Error ? cause.message : "Action impossible.");
     } finally {
       setBusyId(null);
