@@ -348,6 +348,7 @@ def build_story():
           ["Portefeuille vendeur", "La page /vendeur/boutiques regroupe toutes les vitrines du compte connecté, avec recherche, statuts, produits, contacts et accès direct à Modifier / Voir la vitrine.", "Fait"],
           ["Sélecteur dashboard fluide", "La boutique active est choisie en état local sans navigation ni rechargement ; le dashboard et ProductManager se réinitialisent immédiatement sur le shop_id choisi.", "Fait"],
           ["Synchronisation automatique", "Navigation interne sans rechargement forcé ; mise à jour locale immédiate du catalogue et synchronisation douce des pages après reconnexion, retour dans l'onglet ou attente prolongée.", "Fait"],
+          ["Catalogue public temps réel", "Accueil et Boutiques écoutent Firestore en direct : une boutique suspendue disparaît immédiatement des listes, sans attendre un rafraîchissement manuel.", "Fait"],
           ["Périmètre tech", "Nettoyage de production effectué : seules Faso Mobile et Rachedel Store électronique sont conservées ; les anciennes catégories et Apple Store sont exclues du catalogue et du Super Admin.", "Fait"],
           ["Avis visiteurs", "Les visiteurs ayant contacté la boutique peuvent publier un avis ; le propriétaire ne voit pas le formulaire et Firestore bloque aussi toute auto-évaluation.", "Fait"],
         ["Route dédiée", "/boutiques/[id]/parametres, responsive mobile, tablette et desktop, publiée en Edge Runtime Cloudflare.", "Fait"],

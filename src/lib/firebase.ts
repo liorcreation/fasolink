@@ -15,8 +15,9 @@ import { firebasePublicConfig } from "@/lib/firebase-public-config";
  *   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
  *   NEXT_PUBLIC_FIREBASE_APP_ID
  *
- * Firestore utilise le SDK **lite** (REST, compatible runtime Edge / Cloudflare
- * Pages) — pas de listeners temps réel, ce dont FasoLink n'a pas besoin.
+ * Les routes serveur utilisent Firestore **lite** (REST, compatible runtime
+ * Edge / Cloudflare Pages). Les écrans navigateur qui ont besoin du direct
+ * chargent dynamiquement le SDK Firestore complet pour leurs listeners.
  */
 
 const firebaseConfig = {

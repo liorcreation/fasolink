@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SearchExplorer } from "@/components/home/SearchExplorer";
+import { RealtimeBoutiques } from "@/components/shops/RealtimeBoutiques";
 import { fetchShops } from "@/lib/shops";
 
 export const metadata: Metadata = {
@@ -18,17 +18,5 @@ export default async function BoutiquesPage({
 }) {
   const shops = (await fetchShops()).filter((shop) => shop.category === "electronique");
 
-  return (
-    <SearchExplorer
-      key={`electronique:${searchParams?.q ?? ""}`}
-      shops={shops}
-      initialCategory="electronique"
-      initialQuery={searchParams?.q?.slice(0, 100) ?? ""}
-      sectionId="boutiques"
-      electronicsOnly
-      eyebrow="L’annuaire tech FasoLink"
-      heading="La tech du Faso, tout près de vous"
-      description="Trouvez téléphones, ordinateurs, audio et accessoires auprès des vendeurs tech. Filtrez par ville ou proximité, puis découvrez leur vitrine."
-    />
-  );
+  return <RealtimeBoutiques initialShops={shops} initialQuery={searchParams?.q?.slice(0, 100) ?? ""} />;
 }
