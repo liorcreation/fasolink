@@ -108,10 +108,10 @@ def story():
         ["Paiement", "Checkout CinetPay heberge; montant et forfait verifies sur le serveur; aucune collecte de PIN.", "Code integre, secrets manquants"],
         ["Confirmation", "Le serveur consulte l'API CinetPay avant activation; abonnement et boutique changent ensemble.", "A tester avec le compte marchand"],
         ["Essai gratuit", "14 jours; attribution serveur; un essai par boutique; ecriture atomique.", "Code integre"],
-        ["Acces catalogue", "Boutiques actives et produits associes publics; boutique suspendue masquee.", "Regles a publier"],
-        ["Roles", "Creation boutique en attente; abonnement payant non creatable par le navigateur; fichiers prives reserves au proprietaire/Super Admin.", "Regles a publier"],
-        ["Qualite", "Next 16.3.8, bundle OpenNext et preview local passes; lint sans erreur; audit production: 0.", "Validation de production et paiement marchand requis"],
-    ], [28*mm, 103*mm, 39*mm]), Spacer(1, 7*mm), P("Environnement", "H2x"), P("Travaux effectues dans un worktree isole construit depuis origin/main. Ces changements ne sont pas encore deployes sur fasolink.pages.dev. Le depot principal contient des changements locaux preexistants qui ont ete preserves."), P("Decision", "H2x"), P("FasoLink ne doit pas encore etre declare pret a encaisser en production. Les identifiants CinetPay, les variables Cloudflare, la publication des regles et un test marchand controle sont indispensables.", "Calloutx"), PageBreak()]
+        ["Acces catalogue", "Boutiques actives et produits associes publics; boutique suspendue masquee.", "Regles Firestore publiees"],
+        ["Roles", "Creation boutique en attente; abonnement payant non creatable par le navigateur; fichiers prives reserves au proprietaire/Super Admin.", "Firestore publie; Storage a activer"],
+        ["Qualite", "Next 16.3.8, bundle OpenNext et preview local passes; lint sans erreur; audit production: 0.", "Worker de preproduction publie; paiement marchand requis"],
+    ], [28*mm, 103*mm, 39*mm]), Spacer(1, 7*mm), P("Environnement", "H2x"), P("Worker de preproduction publie sur fasolink.jurisia-api.workers.dev; fasolink.pages.dev reste inchange. Les regles Firestore sont publiees, mais Firebase Storage n'est pas initialise. Les secrets Cloudflare CinetPay/Firebase ne sont pas configures."), P("Decision", "H2x"), P("FasoLink ne doit pas encore etre declare pret a encaisser en production. Les identifiants CinetPay, les secrets Cloudflare, l'activation de Storage et un test marchand controle sont indispensables.", "Calloutx"), PageBreak()]
 
     s += header("2. Ce qui a ete implemente", "Le parcours de paiement n'utilise plus de simulation ni d'ecran de saisie PIN.")
     s += [table([
@@ -130,12 +130,12 @@ def story():
         ["Priorite", "Action", "Responsable"],
         ["P0", "Creer/valider le compte marchand CinetPay FasoLink et activer les canaux burkinabe autorises (Orange Money, Moov Money selon l'eligibilite).", "Client"],
         ["P0", "Valider le preview OpenNext en CI Linux avant bascule du domaine; le preview local Windows passe maintenant les tests des routes principales.", "Technique"],
-        ["P0", "Choisir l'URL Workers publique (workers.dev ou domaine client); fasolink.pages.dev ne se transfere pas tel quel; adapter Firebase Auth et CinetPay.", "Client + technique"],
+        ["P0", "Confirmer l'URL finale. Le Worker de test est sur fasolink.jurisia-api.workers.dev; fasolink.pages.dev reste inchange. Adapter Firebase Auth et CinetPay a l'URL retenue.", "Client + technique"],
         ["P0", "Reconsulter l'avis officiel Next.js apres le 14 octobre 2026 et appliquer les correctifs pertinents avant ouverture.", "Technique"],
         ["P0", "Configurer dans Cloudflare les secrets CINETPAY_API_KEY, CINETPAY_SITE_ID, FIREBASE_SERVICE_ACCOUNT et les variables APP_BASE_URL, CRON_SECRET.", "Client + technique"],
-        ["P0", "Publier les regles Firestore et Storage mises a jour; verifier les roles Super Admin et les acces vendeurs dans Firebase.", "Technique + proprietaire Firebase"],
+        ["P0", "Regles Firestore deja publiees. Activer Storage, puis publier ses regles et tester les acces prive/public.", "Technique + proprietaire Firebase"],
         ["P0", "Activer Firebase Storage et verifier les couts du forfait Blaze, alertes et quotas avant d'y stocker des fichiers.", "Client"],
-        ["P0", "Deployer d'abord le Worker de preproduction; verifier pages, auth, PWA et APIs avant toute bascule de Pages vers Workers.", "Technique"],
+        ["P0", "Worker de preproduction deja publie; recetter pages, auth, PWA et APIs avant toute bascule de Pages vers Workers.", "Technique"],
         ["P0", "Recette CinetPay acceptee/refusee/annulee, notification doublee, retour navigateur, montant incorrect, boutique suspendue.", "Client + technique"],
         ["P1", "Configurer le rate limit Cloudflare pour initialisation paiement, verification et cron; verifier les quotas et la supervision.", "Technique"],
         ["P1", "Completer les informations legales officielles et faire relire les textes par le client/conseil juridique.", "Client"],
@@ -163,7 +163,7 @@ def story():
         ["5. Exploitation", "Cron teste; alertes et rate limiting configures; procedure remboursement, support et rapprochement connue."],
         ["6. Contenus", "Coordonnees legales, support, prix, boutiques et produits valides par le client."],
         ["7. Livraison", "Commit/version production, deployment, PV de recette, documentation et acces transmis par canal securise."],
-    ], [31*mm, 139*mm]), Spacer(1, 7*mm), P("Conclusion", "H2x"), P("Le code de paiement, les controles Firestore et le socle Next.js 16.3.8/OpenNext sont prepares dans un worktree isole. Build, bundle et preview Worker repondent aux tests locaux. Il faut deployer sur l'URL cible, configurer les secrets CinetPay/Firebase, publier les regles et executer une recette de paiement avant la bascule commerciale. Aucun paiement reel n'a ete execute.", "Calloutx"), Spacer(1, 8*mm), P("Validation de reception", "H2x"), table([["Pour FasoLink", "Pour le client"], ["Nom : ___________________________<br/><br/>Date : ___________________________<br/><br/>Signature : _______________________", "Nom : ___________________________<br/><br/>Date : ___________________________<br/><br/>Signature : _______________________"]], [85*mm, 85*mm])]
+    ], [31*mm, 139*mm]), Spacer(1, 7*mm), P("Conclusion", "H2x"), P("Le Worker de preproduction est en ligne sur fasolink.jurisia-api.workers.dev et les regles Firestore sont publiees. L'ancien site fasolink.pages.dev n'a pas ete remplace. Avant la commercialisation: configurer les secrets Cloudflare, activer Firebase Storage et publier ses regles, choisir/confirmer l'URL finale, puis effectuer la recette de paiement CinetPay. Aucun paiement reel n'a ete execute.", "Calloutx"), Spacer(1, 8*mm), P("Validation de reception", "H2x"), table([["Pour FasoLink", "Pour le client"], ["Nom : ___________________________<br/><br/>Date : ___________________________<br/><br/>Signature : _______________________", "Nom : ___________________________<br/><br/>Date : ___________________________<br/><br/>Signature : _______________________"]], [85*mm, 85*mm])]
     return s
 
 if __name__ == "__main__":

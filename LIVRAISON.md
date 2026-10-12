@@ -5,11 +5,10 @@ Dernière mise à jour : 12 octobre 2026
 ## État exécutif
 
 FasoLink est une marketplace web responsive pour les vendeurs de produits
-électroniques au Burkina Faso. Les améliorations décrites dans cette version
-ont été réalisées dans un checkout de préparation isolé depuis `origin/main`.
-Elles ne sont pas encore publiées sur le site de production et ne doivent pas
-être considérées comme actives tant que la livraison Cloudflare/Firebase n'a
-pas été effectuée et vérifiée.
+électroniques au Burkina Faso. Les changements sont publiés dans un Worker
+Cloudflare de préproduction : `https://fasolink.jurisia-api.workers.dev`.
+L'ancien site `https://fasolink.pages.dev` n'a pas été remplacé. Les secrets
+CinetPay/Firebase ne sont pas configurés; le paiement réel n'est donc pas prêt.
 
 ## Avancement technique de cette étape
 
@@ -66,6 +65,12 @@ pas été effectuée et vérifiée.
   inconnue répond HTTP 404. L'endpoint d'initialisation appelé en GET répond
   HTTP 405, comme attendu. Le test a été fait sous Windows; OpenNext recommande
   toujours Linux/WSL pour une validation de production.
+- Worker Cloudflare `fasolink` déployé avec le commit `ef05c63`; les routes
+  publiques principales ont ensuite répondu HTTP 200 et une route inconnue 404.
+- Les règles Firestore ont été publiées sur `fasolink-d6e77` avec succès.
+- Les règles Storage n'ont pas été publiées : Firebase Storage n'est pas encore
+  activé sur le projet. `wrangler secret list` est vide; les secrets applicatifs
+  restent à configurer.
 - Aucun paiement réel ni test marchand n'a été exécuté; les identifiants
   CinetPay ne sont pas configurés dans ce checkout.
 
@@ -78,10 +83,10 @@ pas été effectuée et vérifiée.
    Moov Money selon l'éligibilité du compte).
 2. Fournir les identifiants API CinetPay et le Site ID. Ne jamais les envoyer
    dans un message, une capture d'écran ou un dépôt Git.
-3. Choisir l'URL publique de la cible Cloudflare Workers. Le domaine technique
-   `fasolink.pages.dev` appartient à Pages et ne se transfère pas tel quel à un
-   Worker : utiliser `workers.dev` ou un domaine personnalisé du client, puis
-   mettre à jour Firebase Authorized Domains et les URLs CinetPay.
+3. Décider si l'URL de préproduction `fasolink.jurisia-api.workers.dev` convient
+   ou configurer un domaine personnalisé. `fasolink.pages.dev` reste sur Pages;
+   mettre à jour Firebase Authorized Domains et les URLs CinetPay pour l'URL
+   finale convenue avec le client.
 4. Ajouter dans les variables/secrets Cloudflare Workers :
    `CINETPAY_API_KEY`, `CINETPAY_SITE_ID`, `APP_BASE_URL` et
    `FIREBASE_SERVICE_ACCOUNT`. Conserver aussi `CRON_SECRET` pour le traitement
@@ -102,12 +107,13 @@ pas été effectuée et vérifiée.
    une validation Linux/CI reste recommandée avant bascule du domaine.
 3. Reconsulter les avis officiels Next.js après le 14 octobre 2026 et appliquer
    toute mise à jour pertinente avant l'ouverture commerciale.
-4. Publier les règles Firestore et Storage mises à jour, puis les vérifier dans
-   Firebase Console.
-5. Déployer le Worker de préproduction sur la nouvelle URL et vérifier toutes
-   les routes, le PWA, l'authentification et le webhook; ne pas remplacer Pages
-   tant que la recette n'est pas validée.
-6. Déployer l'application Cloudflare avec ses variables de production.
+4. Les règles Firestore sont déjà publiées. Activer Firebase Storage depuis la
+   console, vérifier le budget/forfait, puis publier les règles Storage.
+5. Le Worker de préproduction est déployé. Recetter l'authentification, le PWA,
+   les endpoints et les secrets avant de remplacer Pages; ce Worker n'est pas
+   encore l'URL de production commerciale.
+6. Ajouter et vérifier les secrets/variables de production Cloudflare avant le
+   déploiement final.
 7. Configurer l'URL de notification CinetPay exactement sur
    `/api/webhooks/payment` et l'URL de retour sur l'application publiée.
 8. Avec le compte marchand et un faible montant autorisé, tester le parcours
