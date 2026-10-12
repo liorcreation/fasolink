@@ -27,12 +27,21 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
     }
 
+    function shopIsPublic(shopId) {
+      return exists(/databases/$(database)/documents/shops/$(shopId))
+        && get(/databases/$(database)/documents/shops/$(shopId)).data.status == 'active';
+    }
+
     // ── shops : lecture publique, écriture par le propriétaire ──
     match /shops/{shopId} {
-      allow read: if true;
+      allow read: if isAdmin() || resource.data.status == 'active'
+        || (isSignedIn() && resource.data.owner_id == request.auth.uid);
       allow create: if isSignedIn()
         && request.auth.token.firebase.sign_in_provider != 'anonymous'
         && request.resource.data.owner_id == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.verification_status == 'unverified'
+        && request.resource.data.is_featured == false
         && request.resource.data.whatsapp is string
         && request.resource.data.whatsapp.matches('^\\+226[0-9]{8}$');
       // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
@@ -59,20 +68,6 @@ service cloud.firestore {
           && request.resource.data.whatsapp is string
           && request.resource.data.whatsapp.matches('^\\+226[0-9]{8}$')
           && request.resource.data.updated_at is string)
-        // L'essai gratuit peut publier la boutique, mais seulement après la
-        // création de son abonnement d'essai dédié. Aucun autre statut ne peut
-        // être changé par le propriétaire.
-        || (isSignedIn()
-          && resource.data.owner_id == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'status', 'updated_at'
-          ])
-          && resource.data.status == 'pending'
-          && request.resource.data.status == 'active'
-          && exists(/databases/$(database)/documents/subscriptions/$(shopId))
-          && get(/databases/$(database)/documents/subscriptions/$(shopId)).data.shop_id == shopId
-          && get(/databases/$(database)/documents/subscriptions/$(shopId)).data.status == 'trialing'
-          && request.resource.data.updated_at is string)
         // Dépôt d'un dossier de vérification : le vendeur peut seulement
         // passer à pending et renseigner sa localisation.
         || (isSignedIn()
@@ -90,9 +85,12 @@ service cloud.firestore {
 
     // ── products : lecture publique, écriture par le propriétaire de la boutique ──
     match /products/{productId} {
-      allow read: if true;
+      allow read: if isAdmin() || ownsShop(resource.data.shop_id)
+        || shopIsPublic(resource.data.shop_id);
       allow create: if ownsShop(request.resource.data.shop_id);
-      allow update, delete: if isAdmin() || ownsShop(resource.data.shop_id);
+      allow update: if isAdmin() || (ownsShop(resource.data.shop_id)
+        && request.resource.data.shop_id == resource.data.shop_id);
+      allow delete: if isAdmin() || ownsShop(resource.data.shop_id);
     }
 
     // ── subscriptions : gérées par le propriétaire de la boutique ──
@@ -100,9 +98,9 @@ service cloud.firestore {
     //  pour écrire ici en production)
     match /subscriptions/{subId} {
       allow read: if isAdmin() || ownsShop(resource.data.shop_id);
-      allow create: if ownsShop(request.resource.data.shop_id)
-        && request.resource.data.status in ['pending', 'trialing']
-        || (isSuperAdmin()
+      // Les abonnements payants sont créés exclusivement par le serveur
+      // après authentification du propriétaire et initialisation CinetPay.
+      allow create: if isSuperAdmin()
           && request.resource.data.status == 'active'
           && request.resource.data.gateway == 'manual_superadmin'
           && request.resource.data.granted_by == request.auth.uid
@@ -110,15 +108,14 @@ service cloud.firestore {
           && request.resource.data.amount >= 0
           && request.resource.data.expires_at is string
           && request.resource.data.grant_reason is string
-          && request.resource.data.grant_reason.size() >= 8);
+          && request.resource.data.grant_reason.size() >= 8;
       allow update: if isSuperAdmin()
         && request.resource.data.shop_id == resource.data.shop_id
         && request.resource.data.status in ['active', 'trialing', 'expired', 'cancelled']
         && request.resource.data.updated_at is string;
       // Les licences ne sont jamais supprimées : leur cycle se termine par
       // une révocation historisée afin de préserver la piste d'audit.
-      allow delete: if ownsShop(resource.data.shop_id)
-        && resource.data.status == 'pending';
+      allow delete: if false;
     }
 
     match /admin_audit_logs/{logId} {

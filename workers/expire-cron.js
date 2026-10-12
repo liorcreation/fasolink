@@ -1,4 +1,4 @@
-export default {
+const expiryCronWorker = {
   async scheduled(_event, env) {
     const response = await fetch(`${env.API_URL}/api/cron/expire`, {
       method: "POST",
@@ -9,3 +9,5 @@ export default {
     }
   },
 };
+
+export default expiryCronWorker;

@@ -16,25 +16,20 @@ import {
   storage,
 } from "@/lib/firebase";
 import type {
-  PaymentProvider,
   ProductAvailability,
   Product,
   ShopCategory,
-  SubscriptionPlan,
   VerificationDocumentType,
 } from "@/lib/database.types";
-import { PAYMENT_GATEWAY, TRIAL_DAYS } from "@/lib/constants";
 import { STANDARD_HOURS } from "@/lib/hours";
 import { normalizeBurkinaPhone, slugify } from "@/lib/utils";
 
 /**
- * Couche « écriture vendeur » : création de boutique + activation d'abonnement.
+ * Couche d'écriture vendeur : création de boutique, catalogue et vérification.
  * Utilisée par les composants clients de /vendeur/inscription et /vendeur/paiement.
  *
- * Auth : l'app n'a pas de tunnel de connexion classique. On ouvre une session
- * Firebase **anonyme** (à activer dans Firebase Console → Authentication →
- * Sign-in method → Anonymous) pour identifier le propriétaire (`owner_id`) et
- * satisfaire les règles de sécurité Firestore / Storage.
+ * La création de boutique exige une session utilisateur non anonyme. Les
+ * abonnements et essais sont traités par des routes serveur dédiées.
  */
 
 export interface ShopDraft {
@@ -64,7 +59,7 @@ export class VendorError extends Error {
   }
 }
 
-/** Renvoie l'uid courant, en ouvrant une session anonyme au besoin. */
+/** Renvoie l'UID courant, avec une session anonyme de repli pour les parcours legacy. */
 export async function ensureSession(): Promise<string> {
   if (auth.currentUser) return auth.currentUser.uid;
   try {
@@ -436,93 +431,4 @@ export async function submitVerificationRequest(
     longitude: input.longitude ?? null,
     updated_at: now,
   });
-}
-
-export interface ActivationInput {
-  shopId: string;
-  plan: SubscriptionPlan;
-  months: number;
-  amount: number;
-  provider: PaymentProvider;
-  phone?: string;
-  reference?: string;
-  trial?: boolean;
-}
-
-export interface ActivationResult {
-  reference: string;
-  startedAt: string;
-  expiresAt: string;
-  trial: boolean;
-  status: "trialing" | "pending";
-}
-
-/**
- * Après validation du paiement Mobile Money :
- * Essai : publie immédiatement la boutique.
- * Paiement réel : crée uniquement une demande `pending`; la publication est
- * effectuée par le webhook signé de la passerelle après confirmation.
- */
-export async function activateSubscription(
-  input: ActivationInput,
-): Promise<ActivationResult> {
-  if (!isFirebaseConfigured) {
-    throw new VendorError("config", "Firebase n'est pas configuré.");
-  }
-  await ensureSession();
-
-  const now = new Date();
-  const expires = new Date(now);
-  if (input.trial) {
-    expires.setDate(expires.getDate() + TRIAL_DAYS);
-  } else {
-    // Fin d'abonnement : +30 jours par mois de formule (mensuel = +30 j).
-    expires.setDate(expires.getDate() + input.months * 30);
-  }
-
-  const reference =
-    input.reference ??
-    "FL-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-
-  try {
-    const subscriptionRef = input.trial
-      ? doc(db, COLLECTIONS.subscriptions, input.shopId)
-      : doc(collection(db, COLLECTIONS.subscriptions));
-
-    await setDoc(subscriptionRef, {
-      shop_id: input.shopId,
-      plan: input.plan,
-      status: input.trial ? "trialing" : "pending",
-      provider: input.provider,
-      gateway: PAYMENT_GATEWAY.name,
-      amount: input.trial ? 0 : input.amount,
-      phone: input.phone ?? null,
-      reference,
-      trial_ends_at: input.trial ? expires.toISOString() : null,
-      started_at: now.toISOString(),
-      expires_at: expires.toISOString(),
-      created_at: now.toISOString(),
-      updated_at: now.toISOString(),
-    });
-
-    if (input.trial) {
-      await updateDoc(doc(db, COLLECTIONS.shops, input.shopId), {
-        status: "active",
-        updated_at: now.toISOString(),
-      });
-    }
-  } catch (error) {
-    throw new VendorError(
-      "insert",
-      error instanceof Error ? error.message : "L'activation a échoué.",
-    );
-  }
-
-  return {
-    reference,
-    startedAt: now.toISOString(),
-    expiresAt: expires.toISOString(),
-    trial: Boolean(input.trial),
-    status: input.trial ? "trialing" : "pending",
-  };
 }

@@ -29,14 +29,19 @@ export async function fetchOwnedShops(ownerId: string): Promise<ShopWithProducts
 
   if (!shops.length) return [];
 
-  const products = (
-    await getDocs(collection(db, COLLECTIONS.products))
-  ).docs.map(fromDoc<Product>);
+  const productsByShop = new Map<string, Product[]>();
+  await Promise.all(shops.map(async (shop) => {
+    const products = await getDocs(query(
+      collection(db, COLLECTIONS.products),
+      where("shop_id", "==", shop.id),
+    ));
+    productsByShop.set(shop.id, products.docs.map(fromDoc<Product>));
+  }));
 
   return shops
     .map((shop) => ({
       ...shop,
-      products: products.filter((product) => product.shop_id === shop.id),
+      products: productsByShop.get(shop.id) ?? [],
     }))
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }

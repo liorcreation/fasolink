@@ -194,41 +194,8 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
 
 export const TRIAL_DAYS = 14;
 
-export interface PaymentProviderMeta {
-  id: "orange_money" | "moov_money" | "wave";
-  label: string;
-  color: string;
-  hint: string;
-  ussd: string;
-}
-
-export const PAYMENT_PROVIDERS: PaymentProviderMeta[] = [
-  {
-    id: "orange_money",
-    label: "Orange Money",
-    color: "#FF7900",
-    hint: "Vous recevrez un push de confirmation",
-    ussd: "#144#",
-  },
-  {
-    id: "moov_money",
-    label: "Moov Money",
-    color: "#0072CE",
-    hint: "Validez avec votre code secret Moov",
-    ussd: "*555#",
-  },
-  {
-    id: "wave",
-    label: "Wave",
-    color: "#1DC4FF",
-    hint: "Confirmez le paiement dans l'app Wave",
-    ussd: "app Wave",
-  },
-];
-
-/** Passerelle d'agrégation Mobile Money (validation par webhook). */
+/** Passerelle de paiement Mobile Money. */
 export const PAYMENT_GATEWAY = {
   name: "CinetPay",
-  alt: "PayDunya",
   webhookPath: "/api/webhooks/payment",
 } as const;

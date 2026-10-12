@@ -15,15 +15,15 @@ import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string; produit: string };
+  params: Promise<{ id: string; produit: string }>;
 }): Promise<Metadata> {
-  const data = await fetchProduct(params.id, params.produit);
+  const { id, produit } = await params;
+  const data = await fetchProduct(id, produit);
   if (!data) return { title: "Produit introuvable" };
   return {
     title: `${data.product.name} — ${data.shop.name}`,
@@ -40,9 +40,10 @@ export async function generateMetadata({
 export default async function ProduitPage({
   params,
 }: {
-  params: { id: string; produit: string };
+  params: Promise<{ id: string; produit: string }>;
 }) {
-  const data = await fetchProduct(params.id, params.produit);
+  const { id, produit } = await params;
+  const data = await fetchProduct(id, produit);
   if (!data) notFound();
   const { shop, product } = data;
   const cat = CATEGORY_MAP[shop.category];

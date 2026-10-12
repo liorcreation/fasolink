@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { firestoreBase, firestoreString, getEdgeServiceAccount, getFirestoreAccessToken, patchFirestoreDocument, runFirestoreQuery } from "@/lib/firestore-edge-admin";
 
-export const runtime = "edge";
 
 function valueOf(value: Record<string, unknown>) {
   if ("stringValue" in value) return value.stringValue;

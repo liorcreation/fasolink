@@ -21,17 +21,16 @@ import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/shops/FavoriteButton";
 import { OwnerShopActions } from "@/components/shops/OwnerShopActions";
 
-// Cloudflare Pages : rendu Edge à la demande — les boutiques créées après le
-// déploiement (via /vendeur/inscription) ont immédiatement leur page, fraîche.
-export const runtime = "edge";
+// Rendu à la demande : une boutique fraîchement créée est visible sans redeploy.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const shop = await fetchShopById(params.id);
+  const { id } = await params;
+  const shop = await fetchShopById(id);
   if (!shop) return { title: "Boutique introuvable" };
   return {
     title: shop.name,
@@ -47,9 +46,10 @@ export async function generateMetadata({
 export default async function BoutiquePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const shop = await fetchShopById(params.id);
+  const { id } = await params;
+  const shop = await fetchShopById(id);
   if (!shop) notFound();
 
   const cat = CATEGORY_MAP[shop.category];

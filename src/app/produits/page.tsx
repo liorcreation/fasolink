@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   description: "Parcourez tous les téléphones, ordinateurs et accessoires proposés par les boutiques tech de FasoLink.",
 };
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {

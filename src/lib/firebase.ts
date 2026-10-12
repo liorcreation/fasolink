@@ -16,7 +16,7 @@ import { firebasePublicConfig } from "@/lib/firebase-public-config";
  *   NEXT_PUBLIC_FIREBASE_APP_ID
  *
  * Les routes serveur utilisent Firestore **lite** (REST, compatible runtime
- * Edge / Cloudflare Pages). Les écrans navigateur qui ont besoin du direct
+ * Node.js / Cloudflare Workers). Les écrans navigateur qui ont besoin du direct
  * chargent dynamiquement le SDK Firestore complet pour leurs listeners.
  */
 
@@ -35,7 +35,6 @@ export const isFirebaseConfigured = Boolean(
 );
 
 if (!isFirebaseConfigured && process.env.NODE_ENV === "development") {
-  // eslint-disable-next-line no-console
   console.warn(
     "[FasoLink] Firebase non configuré — mode démo (données de mock-data.ts). " +
       "Copiez .env.local.example vers .env.local et renseignez vos clés Firebase.",

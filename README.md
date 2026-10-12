@@ -8,7 +8,8 @@ mobile-first, contact WhatsApp direct.
 
 | Couche      | Technologie                                             |
 | ----------- | ------------------------------------------------------- |
-| Framework   | Next.js 14 (App Router) + TypeScript                    |
+| Framework   | Next.js 16 (App Router) + TypeScript                    |
+| Hébergement | OpenNext sur Cloudflare Workers                         |
 | Style / UI  | Tailwind CSS · Lucide React · Framer Motion             |
 | Backend     | Firebase (Firestore · Auth · Storage)                   |
 | Utilitaires | clsx · tailwind-merge · qrcode                          |
@@ -41,20 +42,20 @@ npm run dev
    `firebase deploy --only firestore:rules,storage`
    (ou copier/coller `firestore.rules` / `storage.rules` dans la console).
 
-Firestore est utilisé via le SDK **lite** (REST) — compatible runtime Edge /
-Cloudflare Pages, pas de listeners temps réel (non nécessaires ici).
+Firestore est utilisé via le SDK **lite** (REST). Le rendu serveur fonctionne
+sur le runtime Node.js de Cloudflare Workers via OpenNext.
 
 ### Flux vendeur connecté (`src/lib/vendor.ts`)
 
 | Étape | Action Firebase |
 | ----- | --------------- |
-| `/vendeur/inscription` — soumission | `signInAnonymously()` → `setDoc` `shops/<slug>` (statut `pending`) → `uploadBytes` logo + photos vers `shops/<id>/…` → `getDownloadURL` → `updateDoc` `shops/<id>` (`logo_url` / `cover_url` / `gallery`) → redirection `/vendeur/paiement?shop=<id>` |
-| `/vendeur/paiement` — demande de paiement | `addDoc` `subscriptions` (`status` `pending`) → publication après webhook signé |
-| Essai 14 j | même flux, `status` = `trialing`, `trial_ends_at` = +14 j, montant 0 |
+| `/vendeur/inscription` — soumission | Compte FasoLink authentifie obligatoire → `setDoc` `shops/<slug>` (statut `pending`) → medias Storage → redirection `/vendeur/paiement?shop=<id>` |
+| `/vendeur/paiement` — paiement reel | `/api/payments/cinetpay/initialize` authentifie le compte, verifie la propriete, cree le paiement cote serveur puis redirige vers CinetPay |
+| Essai 14 j | `/api/payments/trial` attribue un essai cote serveur, une seule fois, et active boutique/licence atomiquement |
 
-> Le webhook `/api/webhooks/payment` reste compatible Cloudflare Edge : il
-> utilise Firestore REST avec un JWT signé par `FIREBASE_SERVICE_ACCOUNT` et ne
-> publie qu'après vérification HMAC, référence et montant.
+> Le webhook `/api/webhooks/payment` utilise Firestore REST avec le compte de
+> service cote serveur. Il re-verifie chaque transaction aupres de CinetPay et
+> compare la reference, le montant et la devise avant toute activation.
 
 ## Structure
 
@@ -133,8 +134,8 @@ src/
   tags de disponibilité et « Ouvert actuellement » calculés en direct.
 - **Conversion WhatsApp** : lien pré-rempli au niveau du produit (nom + prix + réf.),
   tracking des clics (`shops.whatsapp_clicks` / `contact_events`) affiché au vendeur.
-- **Onboarding vendeur** : essai gratuit 14 jours sans carte, multi-opérateurs
-  (Orange Money / Moov Money / Wave via CinetPay-PayDunya + webhook), générateur
+- **Onboarding vendeur** : essai gratuit 14 jours sans carte, checkout Mobile
+  Money CinetPay (Orange Money et Moov Money selon l'activation marchande) + webhook, générateur
   de QR Code boutique téléchargeable (affiche PNG brandée).
 - **Trust Engine** : badge doré « Vendeur Vérifié » (CNIB/NIF + géoloc), dossiers
   privés Storage, décision admin et avis rattachés à une session.
@@ -172,8 +173,9 @@ npm run start        # serveur production
 npm run lint         # ESLint
 npm run seed         # injecte mock-data dans Firestore (firebase-admin)
 npm run admin:set -- admin@client.bf  # ajoute le custom claim admin
-npm run pages:build  # build Cloudflare Pages (.vercel/output/static)
-npm run pages:deploy # build + wrangler pages deploy
+npm run preview      # build OpenNext + preview local Wrangler (Linux/WSL conseillé)
+npm run deploy       # build + déploiement Cloudflare Workers
+npm run upload       # téléverse une version sans la servir immédiatement
 ```
 
 ## Administrateur et production
@@ -206,17 +208,18 @@ se reconnecter. Ne publiez pas la clé de service dans le dépôt ou dans un
 document client. Toute modification des règles Firestore doit être déployée avec
 `firebase deploy --only firestore:rules`.
 
-Le webhook de paiement est compatible Cloudflare Edge. Ajoutez
-`FIREBASE_SERVICE_ACCOUNT` comme secret Pages avec le JSON du compte de service
-et `PAYMENT_WEBHOOK_SECRET` comme secret partagé avec l'agrégateur. Ajoutez
-également `CRON_SECRET` et appelez `/api/cron/expire` une fois par jour depuis
-un planificateur sécurisé.
+Le paiement passe par le checkout heberge CinetPay. Ajoutez `CINETPAY_API_KEY`,
+`CINETPAY_SITE_ID`, `APP_BASE_URL` et `FIREBASE_SERVICE_ACCOUNT` comme secrets/
+variables Cloudflare Workers cote serveur. La notification est reverifiee aupres
+de CinetPay avant activation. Ajoutez egalement `CRON_SECRET` et appelez
+`/api/cron/expire` une fois par jour depuis un planificateur securise. Voir
+`LIVRAISON.md` pour les actions de production qui restent a effectuer.
 
 ## Déploiement
 
-Voir **[DEPLOY.md](./DEPLOY.md)** — Cloudflare Pages (`@cloudflare/next-on-pages`,
-runtime Edge) + Firebase, avec la liste des variables d'environnement et le
-flag de compatibilité `nodejs_compat`.
+Voir **[DEPLOY.md](./DEPLOY.md)** — Cloudflare Workers via OpenNext + Firebase,
+avec les variables et secrets de production, la migration d'URL et les tests
+requis avant la bascule depuis Cloudflare Pages.
 
 ---
 

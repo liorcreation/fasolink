@@ -40,11 +40,10 @@ export async function fetchShops(): Promise<ShopWithProducts[]> {
   if (!isFirebaseConfigured) return MOCK_SHOPS.filter((shop) => shop.category === "electronique");
 
   try {
-    const [shopSnap, productSnap, reviewSnap] = await Promise.all([
+    const [shopSnap, reviewSnap] = await Promise.all([
       getDocs(
         query(collection(db, COLLECTIONS.shops), where("status", "==", "active")),
       ),
-      getDocs(collection(db, COLLECTIONS.products)),
       getDocs(collection(db, COLLECTIONS.reviews)),
     ]);
 
@@ -52,13 +51,21 @@ export async function fetchShops(): Promise<ShopWithProducts[]> {
     // boutiques de démonstration (notamment après suspension de toutes les boutiques).
     if (shopSnap.empty) return [];
 
-    const productsByShop = groupBy(productSnap.docs.map(fromDoc<Product>));
     const reviewsByShop = groupBy(reviewSnap.docs.map(fromDoc<Review>));
 
-    return shopSnap.docs
+    const shops = shopSnap.docs
       .map(fromDoc<Shop>)
-      .filter((shop) => shop.category === "electronique")
-      .map((shop) => ({
+      .filter((shop) => shop.category === "electronique");
+    const productsByShop = new Map<string, Product[]>();
+    await Promise.all(shops.map(async (shop) => {
+      const productSnap = await getDocs(query(
+        collection(db, COLLECTIONS.products),
+        where("shop_id", "==", shop.id),
+      ));
+      productsByShop.set(shop.id, productSnap.docs.map(fromDoc<Product>));
+    }));
+
+    return shops.map((shop) => ({
         ...shop,
         products: productsByShop.get(shop.id) ?? [],
         reviews: reviewsByShop.get(shop.id) ?? [],
@@ -89,7 +96,11 @@ export async function fetchShopById(
       shop = { id: byId.id, ...byId.data() } as unknown as Shop;
     } else {
       const bySlug = await getDocs(
-        query(collection(db, COLLECTIONS.shops), where("slug", "==", id)),
+        query(
+          collection(db, COLLECTIONS.shops),
+          where("slug", "==", id),
+          where("status", "==", "active"),
+        ),
       );
       if (!bySlug.empty) shop = fromDoc<Shop>(bySlug.docs[0]);
     }

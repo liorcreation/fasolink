@@ -69,7 +69,7 @@ export async function runFirestoreQuery(account: EdgeServiceAccount, accessToken
     body: JSON.stringify({ structuredQuery }),
   });
   if (!response.ok) throw new Error("Firestore query failed");
-  return (await response.json()) as Array<{ document?: { name: string; fields: FirestoreFields } }>;
+  return (await response.json()) as Array<{ document?: { name: string; updateTime?: string; fields: FirestoreFields } }>;
 }
 
 export async function patchFirestoreDocument(documentName: string, fields: FirestoreFields, accessToken: string) {
@@ -81,4 +81,43 @@ export async function patchFirestoreDocument(documentName: string, fields: Fires
     body: JSON.stringify({ fields }),
   });
   if (!response.ok) throw new Error("Firestore document update failed");
+}
+
+export async function getFirestoreDocument(documentName: string, accessToken: string) {
+  const response = await fetch(`https://firestore.googleapis.com/v1/${documentName}`, {
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error("Firestore document read failed");
+  return await response.json() as { name: string; updateTime: string; fields: FirestoreFields };
+}
+
+export async function createFirestoreDocument(
+  collectionPath: string,
+  documentId: string,
+  fields: FirestoreFields,
+  accessToken: string,
+) {
+  const url = new URL(`https://firestore.googleapis.com/v1/${collectionPath}`);
+  url.searchParams.set("documentId", documentId);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" },
+    body: JSON.stringify({ fields }),
+  });
+  if (!response.ok) throw new Error("Firestore document creation failed");
+  return await response.json() as { name: string; updateTime: string; fields: FirestoreFields };
+}
+
+export async function commitFirestoreWrites(
+  projectId: string,
+  writes: Array<Record<string, unknown>>,
+  accessToken: string,
+) {
+  const response = await fetch(`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/(default)/documents:commit`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" },
+    body: JSON.stringify({ writes }),
+  });
+  if (!response.ok) throw new Error("Firestore atomic commit failed");
 }

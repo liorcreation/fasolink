@@ -5,31 +5,35 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function isSuperAdmin() {
+      return request.auth != null && request.auth.token.superAdmin == true;
+    }
+
     // Logos & photos produits : shops/<shopId>/<fichier>
     match /shops/{shopId}/{fileName} {
       allow read: if true;
       allow write: if ((request.auth != null
         && exists(/databases/(default)/documents/shops/$(shopId))
         && get(/databases/(default)/documents/shops/$(shopId)).data.owner_id == request.auth.uid)
-        || (request.auth != null && request.auth.token.admin == true))
+        || isSuperAdmin())
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
       allow delete: if (request.auth != null
         && exists(/databases/(default)/documents/shops/$(shopId))
         && get(/databases/(default)/documents/shops/$(shopId)).data.owner_id == request.auth.uid)
-        || (request.auth != null && request.auth.token.admin == true);
+        || isSuperAdmin();
     }
 
     // Pièces d'identité : aucun accès public.
     match /verification_requests/{ownerId}/{requestId}/{fileName} {
       allow read: if request.auth != null
-        && (request.auth.uid == ownerId || request.auth.token.admin == true);
+        && (request.auth.uid == ownerId || isSuperAdmin());
       allow write: if request.auth != null
         && request.auth.uid == ownerId
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
       allow delete: if request.auth != null
-        && (request.auth.uid == ownerId || request.auth.token.admin == true);
+        && (request.auth.uid == ownerId || isSuperAdmin());
     }
   }
 }
