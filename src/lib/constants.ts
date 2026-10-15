@@ -9,6 +9,7 @@ import {
 import type {
   ProductAvailability,
   ShopCategory,
+  ShopSubcategory,
   SubscriptionPlan,
 } from "@/lib/database.types";
 
@@ -64,6 +65,21 @@ export const CATEGORY_MAP: Record<ShopCategory, CategoryMeta> =
     (acc, c) => ({ ...acc, [c.id]: c }),
     {} as Record<ShopCategory, CategoryMeta>,
   );
+
+export const ELECTRONICS_SUBCATEGORIES: { id: ShopSubcategory; label: string; description: string }[] = [
+  { id: "telephonie", label: "Téléphonie", description: "Smartphones, tablettes & téléphones" },
+  { id: "informatique", label: "Informatique", description: "Ordinateurs, imprimantes & réseau" },
+  { id: "audio", label: "Audio", description: "Casques, enceintes & sonorisation" },
+  { id: "television", label: "TV & vidéo", description: "Téléviseurs, vidéo & projecteurs" },
+  { id: "gaming", label: "Gaming", description: "Consoles, jeux & accessoires gaming" },
+  { id: "accessoires", label: "Accessoires tech", description: "Chargeurs, câbles & périphériques" },
+  { id: "electromenager", label: "Électroménager", description: "Appareils électriques du quotidien" },
+  { id: "photo_video", label: "Photo & vidéo", description: "Appareils photo & matériel vidéo" },
+];
+
+export const ELECTRONICS_SUBCATEGORY_MAP = Object.fromEntries(
+  ELECTRONICS_SUBCATEGORIES.map((item) => [item.id, item]),
+) as Record<ShopSubcategory, (typeof ELECTRONICS_SUBCATEGORIES)[number]>;
 
 /** Principales villes du Burkina Faso pour les filtres & formulaires. */
 export const BURKINA_CITIES = [

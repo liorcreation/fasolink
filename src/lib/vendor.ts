@@ -19,6 +19,7 @@ import type {
   ProductAvailability,
   Product,
   ShopCategory,
+  ShopSubcategory,
   VerificationDocumentType,
 } from "@/lib/database.types";
 import { STANDARD_HOURS } from "@/lib/hours";
@@ -35,6 +36,7 @@ import { normalizeBurkinaPhone, slugify } from "@/lib/utils";
 export interface ShopDraft {
   name: string;
   category: ShopCategory;
+  subcategory: ShopSubcategory | null;
   city: string;
   neighborhood: string | null;
   whatsapp: string;
@@ -136,6 +138,7 @@ export async function createShopWithAssets(
       name: draft.name.trim(),
       slug,
       category: draft.category,
+      subcategory: draft.subcategory,
       description: draft.description.trim(),
       city: draft.city,
       neighborhood: draft.neighborhood?.trim() || null,

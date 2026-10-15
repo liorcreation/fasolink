@@ -17,8 +17,8 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import type { ShopCategory } from "@/lib/database.types";
-import { BURKINA_CITIES, CATEGORY_MAP } from "@/lib/constants";
+import type { ShopCategory, ShopSubcategory } from "@/lib/database.types";
+import { BURKINA_CITIES, CATEGORY_MAP, ELECTRONICS_SUBCATEGORIES } from "@/lib/constants";
 import { cn, isValidBurkinaPhone } from "@/lib/utils";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { createShopWithAssets, VendorError } from "@/lib/vendor";
@@ -28,6 +28,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 interface FormState {
   name: string;
   category: ShopCategory | "";
+  subcategory: ShopSubcategory | "";
   city: string;
   neighborhood: string;
   whatsapp: string;
@@ -37,6 +38,7 @@ interface FormState {
 const initial: FormState = {
   name: "",
   category: "electronique",
+  subcategory: "",
   city: "",
   neighborhood: "",
   whatsapp: "",
@@ -78,13 +80,14 @@ export function ShopRegistrationForm() {
   const valid =
     form.name.trim().length > 1 &&
     form.category !== "" &&
+    (form.category !== "electronique" || form.subcategory !== "") &&
     form.city !== "" &&
     isValidBurkinaPhone(form.whatsapp) &&
     form.description.trim().length > 20;
   const category = CATEGORY_MAP.electronique;
   const completedFields = [
     form.name.trim().length > 1,
-    Boolean(form.category),
+    Boolean(form.category) && (form.category !== "electronique" || Boolean(form.subcategory)),
     Boolean(form.city),
     isValidBurkinaPhone(form.whatsapp),
     form.description.trim().length > 20,
@@ -103,6 +106,7 @@ export function ShopRegistrationForm() {
           {
             name: form.name,
             category: form.category as ShopCategory,
+            subcategory: form.category === "electronique" ? form.subcategory as ShopSubcategory : null,
             city: form.city,
             neighborhood: form.neighborhood || null,
             whatsapp: form.whatsapp,
@@ -207,7 +211,7 @@ export function ShopRegistrationForm() {
             // eslint-disable-next-line @next/next/no-img-element -- Local object URL preview.
             <img src={logoPreview} alt="" className="h-full w-full object-cover" />
           ) : <Building2 className="h-4 w-4" />}</span><span className="min-w-0"><span className="block text-[9px] font-extrabold uppercase tracking-[.16em] text-white/45">Aperçu de la vitrine</span><span className="mt-0.5 block truncate text-sm font-extrabold text-white">{form.name.trim() || "Nom de votre boutique"}</span></span></div>
-          <div className="mt-4 flex flex-wrap gap-2"><span className="rounded-full border border-white/10 bg-white/[.06] px-2.5 py-1 text-[10px] font-bold text-white/75">{category?.label ?? "Catégorie"}</span><span className="rounded-full border border-white/10 bg-white/[.06] px-2.5 py-1 text-[10px] font-bold text-white/75">{form.city || "Votre ville"}</span></div>
+          <div className="mt-4 flex flex-wrap gap-2"><span className="rounded-full border border-white/10 bg-white/[.06] px-2.5 py-1 text-[10px] font-bold text-white/75">{category?.label ?? "Catégorie"}</span>{form.subcategory && <span className="rounded-full border border-faso-gold/30 bg-faso-gold/10 px-2.5 py-1 text-[10px] font-bold text-[#F3D88E]">{ELECTRONICS_SUBCATEGORIES.find((item) => item.id === form.subcategory)?.label}</span>}<span className="rounded-full border border-white/10 bg-white/[.06] px-2.5 py-1 text-[10px] font-bold text-white/75">{form.city || "Votre ville"}</span></div>
           <p className="mt-4 line-clamp-3 min-h-[3.75rem] text-xs leading-5 text-white/55">{form.description.trim() || "Votre description donnera aux clients un premier aperçu de votre activité et de votre savoir-faire."}</p>
           <div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4"><span className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 text-white/65"><Phone className="h-3.5 w-3.5" /></span><span className="truncate text-[11px] font-semibold text-white/75">{form.whatsapp || "Votre contact WhatsApp"}</span></div>
         </section>
@@ -239,9 +243,45 @@ export function ShopRegistrationForm() {
         <Field label="Univers de la boutique">
           <div className="flex items-center gap-3 rounded-2xl border border-faso-green/15 bg-faso-green-soft/20 p-4">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-faso-green-dark shadow-sm"><Smartphone className="h-5 w-5" /></span>
-            <span><span className="block text-sm font-extrabold text-ink">Téléphonie & informatique</span><span className="mt-0.5 block text-xs leading-5 text-ink-muted">FasoLink accueille désormais les boutiques de produits électroniques.</span></span>
+            <span><span className="block text-sm font-extrabold text-ink">Produits électroniques</span><span className="mt-0.5 block text-xs leading-5 text-ink-muted">Choisissez maintenant la spécialité principale de votre boutique.</span></span>
           </div>
         </Field>
+
+        {form.category === "electronique" && (
+          <Field label="Votre spécialité tech" required hint="Choisissez le domaine principal de votre boutique. Vous pourrez toujours proposer plusieurs types de produits.">
+            <div className="grid gap-2 sm:grid-cols-2">
+              {ELECTRONICS_SUBCATEGORIES.map((item, index) => {
+                const selected = form.subcategory === item.id;
+                return (
+                  <motion.button
+                    type="button"
+                    key={item.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.025 }}
+                    aria-pressed={selected}
+                    onClick={() => update("subcategory", item.id)}
+                    className={cn(
+                      "group flex min-h-[4.5rem] items-center gap-3 rounded-2xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold",
+                      selected
+                        ? "border-faso-gold bg-faso-gold-soft/25 shadow-[0_8px_24px_rgba(244,169,60,.14)]"
+                        : "border-clay-200/80 bg-white hover:-translate-y-0.5 hover:border-faso-gold/70 hover:shadow-sm",
+                    )}
+                  >
+                    <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-black transition-colors", selected ? "bg-faso-gradient text-white" : "bg-clay-100 text-ink-soft group-hover:bg-faso-gold-soft/50")}>
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-extrabold text-ink">{item.label}</span>
+                      <span className="mt-0.5 block text-[11px] leading-4 text-ink-muted">{item.description}</span>
+                    </span>
+                    {selected && <CircleCheck className="h-5 w-5 shrink-0 text-faso-green" />}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </Field>
+        )}
 
         <Field label="Description" required hint="Minimum 20 caractères">
           <textarea

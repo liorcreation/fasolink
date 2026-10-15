@@ -20,6 +20,15 @@ export type ShopCategory =
   | "electronique"
   | "artisanat"
   | "services";
+export type ShopSubcategory =
+  | "telephonie"
+  | "informatique"
+  | "audio"
+  | "television"
+  | "gaming"
+  | "accessoires"
+  | "electromenager"
+  | "photo_video";
 export type ShopStatus = "pending" | "active" | "suspended";
 export type VerificationStatus = "unverified" | "pending" | "verified";
 export type ProductAvailability = "in_stock" | "on_order" | "out_of_stock";
@@ -57,6 +66,8 @@ export interface Shop {
   name: string;
   slug: string;
   category: ShopCategory;
+  /** Précision de la catégorie générale, notamment la spécialité électronique. */
+  subcategory?: ShopSubcategory | null;
   description: string;
   city: string;
   neighborhood: string | null;

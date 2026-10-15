@@ -247,6 +247,7 @@ def build_story():
         ["Navigation et responsive", "Navbar desktop, bottom navigation mobile, affichage tablette, logo, splash screen et interactions Framer Motion.", "Fait"],
         ["Compte utilisateur", "Inscription, connexion Email/Password, profil, favoris persistants et états d'accès.", "Fait"],
         ["Espace vendeur", "Création de boutique, médias, dashboard, catalogue produits, disponibilité, statistiques de contacts et QR Code.", "Fait"],
+        ["Spécialité boutique", "Choix parmi téléphonie, informatique, audio, TV/vidéo, gaming, accessoires, électroménager et photo/vidéo.", "Fait"],
         ["Confiance et modération", "Dossier CNIB/NIF, géolocalisation, badge vendeur vérifié et back-office administrateur protégé.", "Fait"],
         ["Monétisation préparée", "Essai gratuit 14 jours, demandes d'abonnement, validation webhook signée et expiration automatique.", "Préparé"],
         ["PWA et disponibilité", "Manifest, service worker, page offline et prompt d'installation.", "Fait"],

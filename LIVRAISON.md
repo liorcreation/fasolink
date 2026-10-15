@@ -1,6 +1,6 @@
 # FasoLink — dossier de finalisation et préparation commerciale
 
-Dernière mise à jour : 12 octobre 2026
+Dernière mise à jour : 15 octobre 2026.
 
 ## État exécutif
 
@@ -137,6 +137,19 @@ CinetPay/Firebase ne sont pas configurés; le paiement réel n'est donc pas prê
 - Prévoir la surveillance des transactions, les rapprochements Mobile Money,
   la gestion des remboursements et le traitement des paiements réussis si une
   boutique a été suspendue entre l'initialisation et la notification.
+
+## Mise à jour produit — 15 octobre 2026
+
+- Le formulaire de création permet maintenant de préciser la spécialité d'une
+  boutique électronique : téléphonie, informatique, audio, TV/vidéo, gaming,
+  accessoires, électroménager ou photo/vidéo.
+- Cette spécialité est enregistrée dans Firestore, apparaît sur les cartes et
+  la vitrine de boutique, et est imposée par les règles Firestore pour toute
+  nouvelle boutique électronique. Les anciennes boutiques sans spécialité
+  restent compatibles.
+- Les tests TypeScript et la compilation Workers sont exécutés avant publication.
+- Les règles sont mises à jour, mais leur test automatique dépend du démarrage
+  réussi de l'émulateur Firestore; vérifier ce point lors de la recette.
 
 ## Coûts à prévoir
 

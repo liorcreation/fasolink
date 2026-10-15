@@ -32,18 +32,175 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/shops/$(shopId)).data.status == 'active';
     }
 
-    // ── shops : lecture publique, écriture par le propriétaire ──
+    function canReadShop(shopId) {
+      let shopPath = /databases/$(database)/documents/shops/$(shopId);
+      return isSuperAdmin()
+        || (shopId is string && exists(shopPath)
+          && (get(shopPath).data.status == 'active'
+            || (isSignedIn() && get(shopPath).data.owner_id == request.auth.uid)));
+    }
+
+    function validCoordinates(data) {
+      return (data.latitude == null || (data.latitude is number && data.latitude >= -90 && data.latitude <= 90))
+        && (data.longitude == null || (data.longitude is number && data.longitude >= -180 && data.longitude <= 180));
+    }
+
+    function validShopCategory(data) {
+      return data.category in ['alimentation', 'habillement', 'electronique', 'artisanat', 'services']
+        && ((data.category == 'electronique'
+          && data.subcategory in [
+            'telephonie', 'informatique', 'audio', 'television',
+            'gaming', 'accessoires', 'electromenager', 'photo_video'
+          ])
+          || (data.category != 'electronique' && data.get('subcategory', null) == null));
+    }
+
+    function validVerificationAfter(shopId) {
+      let requestId = request.resource.data.verification_request_id;
+      let path = /databases/$(database)/documents/verification_requests/$(requestId);
+      return request.resource.data.verification_status == 'pending'
+        && requestId is string
+        && requestId != resource.data.get('verification_request_id', '')
+        && resource.data.get('verification_status', 'unverified') == 'unverified'
+        && !exists(path)
+        && existsAfter(path)
+        && getAfter(path).data.owner_id == request.auth.uid
+        && getAfter(path).data.shop_id == shopId
+        && getAfter(path).data.status == 'pending';
+    }
+
+    function validOwnerShopUpdate(shopId) {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return isSignedIn()
+        && resource.data.owner_id == request.auth.uid
+        && changed.hasOnly([
+          'name', 'category', 'description', 'city', 'neighborhood', 'latitude',
+          'subcategory', 'longitude', 'opening_hours', 'whatsapp', 'logo_url', 'cover_url',
+          'gallery', 'verification_status', 'verification_request_id', 'updated_at'
+        ])
+        && request.resource.data.owner_id == resource.data.owner_id
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.is_featured == resource.data.is_featured
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.rating_count == resource.data.rating_count
+        && request.resource.data.whatsapp_clicks == resource.data.whatsapp_clicks
+        && request.resource.data.created_at == resource.data.created_at
+        && (!changed.hasAny(['category', 'subcategory']) || validShopCategory(request.resource.data))
+        && (request.resource.data.get('verification_request_id', null)
+          == resource.data.get('verification_request_id', null)
+          || validVerificationAfter(shopId))
+        && (request.resource.data.verification_status == resource.data.get('verification_status', 'unverified')
+          || validVerificationAfter(shopId))
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 3000
+        && request.resource.data.city is string
+        && request.resource.data.city.size() > 0
+        && request.resource.data.city.size() <= 100
+        && request.resource.data.whatsapp is string
+        && request.resource.data.whatsapp.size() <= 40
+        && validCoordinates(request.resource.data)
+        && request.resource.data.updated_at is string;
+    }
+
+    function validNewShop(shopId) {
+      let data = request.resource.data;
+      return isSignedIn()
+        && data.keys().hasAll([
+          'owner_id', 'name', 'slug', 'category', 'subcategory', 'description', 'city', 'neighborhood',
+          'latitude', 'longitude', 'opening_hours', 'whatsapp', 'logo_url', 'cover_url',
+          'gallery', 'status', 'verification_status',
+          'is_featured', 'rating', 'rating_count', 'whatsapp_clicks', 'created_at', 'updated_at'
+        ])
+        && data.keys().hasOnly([
+          'owner_id', 'name', 'slug', 'category', 'subcategory', 'description', 'city', 'neighborhood',
+          'latitude', 'longitude', 'opening_hours', 'whatsapp', 'logo_url', 'cover_url',
+          'gallery', 'status', 'verification_status', 'verification_request_id',
+          'is_featured', 'rating', 'rating_count', 'whatsapp_clicks', 'created_at', 'updated_at'
+        ])
+        && data.owner_id == request.auth.uid
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.slug is string && data.slug.size() > 0 && data.slug.size() <= 160
+        && validElectronicsSubcategory(data)
+        && data.description is string && data.description.size() <= 3000
+        && data.city is string && data.city.size() > 0 && data.city.size() <= 100
+        && (data.neighborhood == null || (data.neighborhood is string && data.neighborhood.size() <= 100))
+        && validCoordinates(data)
+        && data.opening_hours is map
+        && data.whatsapp is string && data.whatsapp.size() <= 40
+        && data.logo_url == null && data.cover_url == null
+        && data.gallery is list && data.gallery.size() == 0
+        && data.status == 'pending'
+        && data.verification_status == 'unverified'
+        && data.get('verification_request_id', null) == null
+        && data.is_featured == false
+        && data.rating == 0 && data.rating_count == 0 && data.whatsapp_clicks == 0
+        && data.created_at is string && data.updated_at is string;
+    }
+
+    function validProduct(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 120
+        && (data.description == null || (data.description is string && data.description.size() <= 3000))
+        && data.price is number && data.price >= 0 && data.price <= 1000000000
+        && data.currency == 'FCFA'
+        && (data.image_url == null || (data.image_url is string && data.image_url.size() <= 2048))
+        && data.availability in ['in_stock', 'on_order', 'out_of_stock']
+        && data.created_at is string && data.updated_at is string;
+    }
+
+    function validVerificationDocument(requestId, data) {
+      return data.keys().hasOnly([
+          'shop_id', 'owner_id', 'document_type', 'document_number', 'full_name',
+          'recto_path', 'verso_path', 'latitude', 'longitude', 'status',
+          'rejection_reason', 'created_at', 'updated_at'
+        ])
+        && data.shop_id is string
+        && data.owner_id == request.auth.uid
+        && data.document_type in ['cnib', 'passeport', 'nif']
+        && data.document_number is string && data.document_number.size() >= 3 && data.document_number.size() <= 80
+        && data.full_name is string && data.full_name.size() >= 2 && data.full_name.size() <= 120
+        && data.recto_path is string
+        && data.recto_path.matches('^verification_requests/' + request.auth.uid + '/' + requestId + '/recto\\.[a-z0-9]{2,5}$')
+        && (data.verso_path == null || (data.verso_path is string
+          && data.verso_path.matches('^verification_requests/' + request.auth.uid + '/' + requestId + '/verso\\.[a-z0-9]{2,5}$')))
+        && validCoordinates(data)
+        && data.status == 'pending'
+        && data.rejection_reason == null
+        && data.created_at is string && data.updated_at is string;
+    }
+
+    function validContactEvent(eventId, data) {
+      let shopPath = /databases/$(database)/documents/shops/$(data.shop_id);
+      return isSignedIn()
+        && data.keys().hasOnly(['shop_id', 'product_id', 'actor_uid', 'channel', 'created_at'])
+        && data.shop_id is string
+        && eventId == request.auth.uid + '_' + data.shop_id
+        && data.actor_uid == request.auth.uid
+        && data.channel == 'whatsapp'
+        && data.created_at is string
+        && exists(shopPath)
+        && get(shopPath).data.status == 'active'
+        && (data.product_id == null || (data.product_id is string
+          && exists(/databases/$(database)/documents/products/$(data.product_id))
+          && get(/databases/$(database)/documents/products/$(data.product_id)).data.shop_id == data.shop_id));
+    }
+
+    function validElectronicsSubcategory(data) {
+      return data.category == 'electronique'
+        && data.subcategory in [
+          'telephonie', 'informatique', 'audio', 'television',
+          'gaming', 'accessoires', 'electromenager', 'photo_video'
+        ];
+    }
+
+    // ── Boutiques : création toujours en attente, champs privilégiés immuables ──
     match /shops/{shopId} {
       allow read: if isAdmin() || resource.data.status == 'active'
         || (isSignedIn() && resource.data.owner_id == request.auth.uid);
-      allow create: if isSignedIn()
-        && request.auth.token.firebase.sign_in_provider != 'anonymous'
-        && request.resource.data.owner_id == request.auth.uid
-        && request.resource.data.status == 'pending'
-        && request.resource.data.verification_status == 'unverified'
-        && request.resource.data.is_featured == false
-        && request.resource.data.whatsapp is string
-        && request.resource.data.whatsapp.matches('^\\+226[0-9]{8}$');
+      allow create: if validNewShop(shopId)
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
       // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
       // de contacts WhatsApp (increment).
       allow update: if isAdmin()

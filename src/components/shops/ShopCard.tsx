@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { MapPin, Navigation, Star } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
-import { CATEGORY_MAP } from "@/lib/constants";
+import { CATEGORY_MAP, ELECTRONICS_SUBCATEGORY_MAP } from "@/lib/constants";
 import { cn, formatCFA } from "@/lib/utils";
 import { formatDistance } from "@/lib/geo";
 import { Badge } from "@/components/ui/Badge";
@@ -57,6 +57,11 @@ export function ShopCard({
               <Icon className="h-3.5 w-3.5" />
               {cat.label}
             </Badge>
+            {shop.subcategory && (
+              <Badge className="border border-white/30 bg-ink/55 text-white backdrop-blur-md">
+                {ELECTRONICS_SUBCATEGORY_MAP[shop.subcategory]?.label ?? shop.subcategory}
+              </Badge>
+            )}
           </div>
           {shop.verification_status === "verified" && (
             <VerifiedBadge className="absolute right-3 top-3 bg-white/90 backdrop-blur-md" />

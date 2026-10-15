@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, BadgeCheck, Camera, Heart, MapPin, MessageCircle, Package, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { fetchShopById } from "@/lib/shops";
-import { CATEGORY_MAP } from "@/lib/constants";
+import { CATEGORY_MAP, ELECTRONICS_SUBCATEGORY_MAP } from "@/lib/constants";
 import { buildWhatsAppLink, formatPhoneBF } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { WhatsAppButton } from "@/components/shops/WhatsAppButton";
@@ -109,6 +109,7 @@ export default async function BoutiquePage({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={`${cat.accent} rounded-full px-3 py-1.5`}><CatIcon className="h-3.5 w-3.5" />{cat.label}</Badge>
+                {shop.subcategory && <Badge className="rounded-full border border-faso-gold/30 bg-faso-gold-soft/30 px-3 py-1.5 text-ink">{ELECTRONICS_SUBCATEGORY_MAP[shop.subcategory]?.label ?? shop.subcategory}</Badge>}
                 {shop.verification_status === "verified" && <VerifiedBadge label="Adresse vérifiée" />}
                 <OpenStatus hours={shop.opening_hours} />
               </div>
