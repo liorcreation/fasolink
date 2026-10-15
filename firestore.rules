@@ -55,6 +55,14 @@ service cloud.firestore {
           || (data.category != 'electronique' && data.get('subcategory', null) == null));
     }
 
+    function validElectronicsSubcategory(data) {
+      return data.category == 'electronique'
+        && data.subcategory in [
+          'telephonie', 'informatique', 'audio', 'television',
+          'gaming', 'accessoires', 'electromenager', 'photo_video'
+        ];
+    }
+
     function validVerificationAfter(shopId) {
       let requestId = request.resource.data.verification_request_id;
       let path = /databases/$(database)/documents/verification_requests/$(requestId);
@@ -185,14 +193,6 @@ service cloud.firestore {
         && (data.product_id == null || (data.product_id is string
           && exists(/databases/$(database)/documents/products/$(data.product_id))
           && get(/databases/$(database)/documents/products/$(data.product_id)).data.shop_id == data.shop_id));
-    }
-
-    function validElectronicsSubcategory(data) {
-      return data.category == 'electronique'
-        && data.subcategory in [
-          'telephonie', 'informatique', 'audio', 'television',
-          'gaming', 'accessoires', 'electromenager', 'photo_video'
-        ];
     }
 
     // ── Boutiques : création toujours en attente, champs privilégiés immuables ──
