@@ -15,6 +15,7 @@ import {
 } from "@/lib/admin-data";
 import { publishShopStatus } from "@/lib/shop-realtime";
 import { SuperAdminLicenses } from "@/components/admin/SuperAdminLicenses";
+import { AdminFinanceOverview } from "@/components/admin/AdminFinanceOverview";
 
 export function AdminDashboard() {
   const { user, loading: authLoading, isConfigured } = useAuth();
@@ -26,6 +27,7 @@ export function AdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [media, setMedia] = useState<{ recto: string; verso: string | null } | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [financeRefreshKey, setFinanceRefreshKey] = useState(0);
 
   const load = useCallback(async () => {
     if (!user || !isConfigured) {
@@ -163,13 +165,15 @@ export function AdminDashboard() {
         </div>
       </section>
 
+      <AdminFinanceOverview shops={shops} refreshKey={financeRefreshKey} />
+
       <nav aria-label="Sections d’administration" className="sticky top-2 z-20 -mx-1 flex gap-1 overflow-x-auto rounded-2xl border border-clay-200/80 bg-white/90 p-1.5 shadow-[0_8px_26px_rgba(51,37,23,.07)] backdrop-blur-xl sm:mx-0 sm:w-fit sm:gap-2 sm:p-2">
         <AdminNavItem href="#admin-licenses" icon={<KeyRound className="h-3.5 w-3.5" />} label="Licences" />
         <AdminNavItem href="#admin-verifications" icon={<BadgeCheck className="h-3.5 w-3.5" />} label="Vérifications" count={pending.length} />
         <AdminNavItem href="#admin-shops" icon={<Store className="h-3.5 w-3.5" />} label="Boutiques" />
       </nav>
 
-      <div id="admin-licenses" className="scroll-mt-24">{isSuperAdmin && <SuperAdminLicenses shops={shops} onChanged={() => void load()} />}</div>
+      <div id="admin-licenses" className="scroll-mt-24">{isSuperAdmin && <SuperAdminLicenses shops={shops} onChanged={() => { void load(); setFinanceRefreshKey((key) => key + 1); }} />}</div>
 
       <motion.section id="admin-verifications" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="card-premium scroll-mt-24 overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-clay-100 px-5 py-5 md:px-7">

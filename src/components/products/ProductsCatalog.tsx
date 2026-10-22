@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   AudioLines,
+  ArrowLeftRight,
   Check,
   Laptop,
   MapPin,
@@ -13,13 +14,15 @@ import {
   Smartphone,
   Sparkles,
   Store,
+  Trash2,
   Watch,
   X,
 } from "lucide-react";
-import type { Product, ShopWithProducts } from "@/lib/database.types";
+import type { Product, ProductCondition, ShopWithProducts } from "@/lib/database.types";
 import { ProductCard } from "@/components/shops/ProductCard";
+import { BottomSheet } from "@/components/ui/BottomSheet";
 import { usePublicShopsRealtime } from "@/components/shops/PublicShopsRealtime";
-import { cn } from "@/lib/utils";
+import { cn, formatCFA } from "@/lib/utils";
 
 const FILTERS = [
   { id: "all", label: "Tout le catalogue", icon: Sparkles },
@@ -31,10 +34,12 @@ const FILTERS = [
 
 type ProductFamily = (typeof FILTERS)[number]["id"];
 type AvailabilityFilter = "all" | Product["availability"];
+type ConditionFilter = "all" | ProductCondition;
+type SortOrder = "recommended" | "price-asc" | "price-desc" | "newest";
 type ProductHit = { product: Product; shop: ShopWithProducts };
 
 function getProductFamily(product: Product): Exclude<ProductFamily, "all"> {
-  const text = `${product.name} ${product.description ?? ""}`.toLocaleLowerCase("fr");
+  const text = `${product.name} ${product.description ?? ""} ${product.specifications?.brand ?? ""} ${product.specifications?.model ?? ""}`.toLocaleLowerCase("fr");
   if (/téléphone|telephone|smartphone|iphone|galaxy|redmi|pixel|tecno|infinix/.test(text)) return "telephone";
   if (/ordinateur|portable|laptop|macbook|pc |imprimante|tablette|chromebook/.test(text)) return "ordinateur";
   if (/écouteur|ecouteur|casque|enceinte|bluetooth|audio|micro|airpods/.test(text)) return "audio";
@@ -55,6 +60,11 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
   const [family, setFamily] = useState<ProductFamily>("all");
   const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const [shopId, setShopId] = useState("all");
+  const [brand, setBrand] = useState("all");
+  const [condition, setCondition] = useState<ConditionFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("recommended");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   const catalog = useMemo<ProductHit[]>(() => shops
     .flatMap((shop) => shop.products.map((product) => ({ product, shop })))
@@ -64,23 +74,63 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
     .filter((shop) => shop.products.length > 0)
     .sort((a, b) => a.name.localeCompare(b.name, "fr")), [shops]);
 
+  const brandOptions = useMemo(() => Array.from(new Set(catalog
+    .map(({ product }) => product.specifications?.brand?.trim())
+    .filter((value): value is string => Boolean(value))))
+    .sort((a, b) => a.localeCompare(b, "fr")), [catalog]);
+
+  const compareItems = useMemo(() => compareIds
+    .map((id) => catalog.find(({ product, shop }) => `${shop.id}:${product.id}` === id))
+    .filter((item): item is ProductHit => Boolean(item)), [catalog, compareIds]);
+
+  const toggleCompare = (key: string) => {
+    setCompareIds((current) => {
+      if (current.includes(key)) return current.filter((id) => id !== key);
+      if (current.length >= 3) return current;
+      return [...current, key];
+    });
+  };
+
+  const comparisonRows = [
+    { label: "Prix affiché", value: ({ product }: ProductHit) => formatCFA(product.price) },
+    { label: "Boutique", value: ({ shop }: ProductHit) => shop.name },
+    { label: "Ville", value: ({ shop }: ProductHit) => shop.city || "Non précisée" },
+    { label: "Marque", value: ({ product }: ProductHit) => product.specifications?.brand || "Non précisée" },
+    { label: "Modèle", value: ({ product }: ProductHit) => product.specifications?.model || "Non précisé" },
+    { label: "État", value: ({ product }: ProductHit) => conditionLabel(product.specifications?.condition) },
+    { label: "Mémoire vive", value: ({ product }: ProductHit) => product.specifications?.ram || "Non précisée" },
+    { label: "Stockage", value: ({ product }: ProductHit) => product.specifications?.storage || "Non précisé" },
+    { label: "Disponibilité", value: ({ product }: ProductHit) => availabilityLabel(product.availability) },
+    { label: "Garantie déclarée", value: ({ product }: ProductHit) => product.specifications?.warranty || "Non précisée" },
+  ];
+
   const visible = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("fr");
-    return catalog.filter(({ product, shop }) => {
-      const matchesQuery = !normalizedQuery || `${product.name} ${product.description ?? ""} ${shop.name} ${shop.city}`.toLocaleLowerCase("fr").includes(normalizedQuery);
+    const filtered = catalog.filter(({ product, shop }) => {
+      const specs = product.specifications;
+      const matchesQuery = !normalizedQuery || `${product.name} ${product.description ?? ""} ${specs?.brand ?? ""} ${specs?.model ?? ""} ${specs?.ram ?? ""} ${specs?.storage ?? ""} ${shop.name} ${shop.city}`.toLocaleLowerCase("fr").includes(normalizedQuery);
       const matchesFamily = family === "all" || getProductFamily(product) === family;
       const matchesAvailability = availability === "all" || product.availability === availability;
       const matchesShop = shopId === "all" || shop.id === shopId;
-      return matchesQuery && matchesFamily && matchesAvailability && matchesShop;
+      const matchesBrand = brand === "all" || specs?.brand?.trim() === brand;
+      const matchesCondition = condition === "all" || specs?.condition === condition;
+      return matchesQuery && matchesFamily && matchesAvailability && matchesShop && matchesBrand && matchesCondition;
     });
-  }, [availability, catalog, family, query, shopId]);
+    if (sortOrder === "price-asc") return filtered.sort((a, b) => a.product.price - b.product.price);
+    if (sortOrder === "price-desc") return filtered.sort((a, b) => b.product.price - a.product.price);
+    if (sortOrder === "newest") return filtered.sort((a, b) => b.product.updated_at.localeCompare(a.product.updated_at));
+    return filtered;
+  }, [availability, brand, catalog, condition, family, query, shopId, sortOrder]);
 
-  const hasFilters = Boolean(query.trim()) || family !== "all" || availability !== "all" || shopId !== "all";
+  const hasFilters = Boolean(query.trim()) || family !== "all" || availability !== "all" || shopId !== "all" || brand !== "all" || condition !== "all" || sortOrder !== "recommended";
   const clearFilters = () => {
     setQuery("");
     setFamily("all");
     setAvailability("all");
     setShopId("all");
+    setBrand("all");
+    setCondition("all");
+    setSortOrder("recommended");
   };
 
   return (
@@ -108,22 +158,43 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
 
       <section className="relative -mt-6 px-3 sm:-mt-8 sm:px-8 lg:px-14" aria-label="Rechercher dans les produits">
         <div className="rounded-[1.5rem] border border-clay-100 bg-[#fffdfa]/95 p-3 shadow-premium-lg backdrop-blur-xl sm:rounded-[2rem] sm:p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="flex flex-col gap-3">
             <label className="relative flex min-h-12 flex-1 items-center rounded-xl border border-clay-200 bg-white px-4 transition-colors focus-within:border-faso-gold focus-within:ring-2 focus-within:ring-faso-gold/15">
               <Search className="mr-3 h-5 w-5 shrink-0 text-ink-muted" aria-hidden="true" />
               <span className="sr-only">Rechercher</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un téléphone, un ordinateur, une boutique..." className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-ink-muted/70" />
               {query && <button type="button" onClick={() => setQuery("")} aria-label="Effacer la recherche" className="grid h-8 w-8 place-items-center rounded-full text-ink-muted transition hover:bg-clay-50 hover:text-ink"><X className="h-4 w-4" /></button>}
             </label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex">
+            <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3">
               <label className="sr-only" htmlFor="product-availability">Disponibilité</label>
-              <select id="product-availability" value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)} className="min-h-11 rounded-xl border border-clay-200 bg-white px-3 text-xs font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15">
+              <select id="product-availability" value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
                 {(["all", "in_stock", "on_order", "out_of_stock"] as const).map((value) => <option key={value} value={value}>{availabilityLabel(value)}</option>)}
               </select>
               <label className="sr-only" htmlFor="product-shop">Boutique</label>
-              <select id="product-shop" value={shopId} onChange={(event) => setShopId(event.target.value)} className="min-h-11 min-w-0 rounded-xl border border-clay-200 bg-white px-3 text-xs font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:max-w-48">
+              <select id="product-shop" value={shopId} onChange={(event) => setShopId(event.target.value)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
                 <option value="all">Toutes les boutiques</option>
                 {shopOptions.map((shop) => <option key={shop.id} value={shop.id}>{shop.name}</option>)}
+              </select>
+              {brandOptions.length > 0 && <>
+                <label className="sr-only" htmlFor="product-brand">Marque</label>
+                <select id="product-brand" value={brand} onChange={(event) => setBrand(event.target.value)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+                  <option value="all">Toutes les marques</option>
+                  {brandOptions.map((value) => <option key={value} value={value}>{value}</option>)}
+                </select>
+              </>}
+              <label className="sr-only" htmlFor="product-condition">État</label>
+              <select id="product-condition" value={condition} onChange={(event) => setCondition(event.target.value as ConditionFilter)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+                <option value="all">Tous les états</option>
+                <option value="new">Neuf</option>
+                <option value="used">Occasion</option>
+                <option value="refurbished">Reconditionné</option>
+              </select>
+              <label className="sr-only" htmlFor="product-sort">Trier les produits</label>
+              <select id="product-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+                <option value="recommended">Tri recommandé</option>
+                <option value="price-asc">Prix : croissant</option>
+                <option value="price-desc">Prix : décroissant</option>
+                <option value="newest">Plus récents</option>
               </select>
               {hasFilters && <button type="button" onClick={clearFilters} className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-xs font-extrabold text-white transition hover:bg-faso-green-dark sm:col-span-1"><X className="h-3.5 w-3.5" /> Réinitialiser</button>}
             </div>
@@ -150,7 +221,10 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
         <AnimatePresence mode="wait" initial={false}>
           {visible.length > 0 ? (
             <motion.div key="results" initial={reduceMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -8 }} className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-              {visible.map(({ product, shop }, index) => <ProductCard key={`${shop.id}-${product.id}`} product={product} shopName={shop.name} shopId={shop.id} whatsapp={shop.whatsapp} index={index} />)}
+              {visible.map(({ product, shop }, index) => {
+                const key = `${shop.id}:${product.id}`;
+                return <ProductCard key={key} product={product} shopName={shop.name} shopId={shop.id} whatsapp={shop.whatsapp} index={index} compareSelected={compareIds.includes(key)} compareLimitReached={compareIds.length >= 3 && !compareIds.includes(key)} onCompareToggle={() => toggleCompare(key)} />;
+              })}
             </motion.div>
           ) : (
             <motion.div key="empty" initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="mt-6 rounded-[2rem] border border-dashed border-clay-200 bg-clay-50/70 px-6 py-16 text-center">
@@ -163,8 +237,62 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
         </AnimatePresence>
       </section>
 
+      <AnimatePresence>
+        {compareItems.length > 0 && (
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: 24 }}
+            className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] mx-auto max-w-2xl sm:bottom-6"
+          >
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-ink px-4 py-3 text-white shadow-premium-lg sm:px-5">
+              <div className="min-w-0">
+                <p className="text-sm font-extrabold">Comparateur FasoLink</p>
+                <p className="text-xs text-white/65">{compareItems.length}/3 appareil{compareItems.length > 1 ? "s" : ""} sélectionné{compareItems.length > 1 ? "s" : ""}</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button type="button" onClick={() => setCompareIds([])} className="grid h-10 w-10 place-items-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white" aria-label="Effacer la sélection"><Trash2 className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setCompareOpen(true)} disabled={compareItems.length < 2} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-faso-gold px-4 text-xs font-extrabold text-ink transition hover:bg-faso-gold-soft disabled:cursor-not-allowed disabled:opacity-50"><ArrowLeftRight className="h-4 w-4" /> Comparer</button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <BottomSheet open={compareOpen} onClose={() => setCompareOpen(false)} title="Comparer les appareils">
+        <p className="mb-4 text-sm leading-6 text-ink-muted">Les caractéristiques sont celles renseignées par les vendeurs. Contactez la boutique pour confirmer le stock, l’état et la garantie avant achat.</p>
+        <div className="space-y-3 pb-4">
+          {compareItems.map(({ product, shop }) => (
+            <article key={`${shop.id}:${product.id}`} className="rounded-2xl border border-clay-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-ink">{product.name}</h3>
+                  <p className="mt-1 text-xs font-semibold text-ink-muted">{shop.name} · {shop.city || "Burkina Faso"}</p>
+                </div>
+                <Link href={`/boutiques/${shop.id}/produits/${product.id}`} onClick={() => setCompareOpen(false)} className="shrink-0 rounded-full bg-ink px-3 py-2 text-xs font-bold text-white">Voir l’offre</Link>
+              </div>
+              <dl className="mt-4 grid grid-cols-2 gap-2">
+                {comparisonRows.filter((row) => row.label !== "Boutique" && row.label !== "Ville").map((row) => (
+                  <div key={row.label} className="rounded-xl bg-clay-50 px-3 py-2">
+                    <dt className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{row.label}</dt>
+                    <dd className="mt-1 break-words text-xs font-extrabold text-ink">{row.value({ product, shop })}</dd>
+                  </div>
+                ))}
+              </dl>
+            </article>
+          ))}
+        </div>
+      </BottomSheet>
+
       <div className="mb-4 flex items-center justify-center gap-2 text-center text-xs font-semibold text-ink-muted"><MapPin className="h-4 w-4 text-faso-red" /> Des vendeurs tech proches de vous, au Burkina Faso.</div>
       <Link href="/boutiques" className="mx-auto mb-12 flex w-fit items-center gap-2 rounded-full border border-clay-200 bg-white px-5 py-3 text-sm font-extrabold text-ink transition hover:-translate-y-0.5 hover:border-faso-gold hover:shadow-premium">Voir les boutiques <Store className="h-4 w-4" /></Link>
     </div>
   );
+}
+
+function conditionLabel(condition?: string | null) {
+  if (condition === "new") return "Neuf";
+  if (condition === "used") return "Occasion";
+  if (condition === "refurbished") return "Reconditionné";
+  return "Non précisé";
 }

@@ -11,6 +11,7 @@ import { AvailabilityBadge } from "@/components/shops/AvailabilityBadge";
 import { VerifiedBadge } from "@/components/shops/VerifiedBadge";
 import { OpenStatus } from "@/components/shops/OpenStatus";
 import { WhatsAppButton } from "@/components/shops/WhatsAppButton";
+import { ShareProductButton } from "@/components/shops/ShareProductButton";
 import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
@@ -102,7 +103,10 @@ export default async function ProduitPage({
 
         {/* Infos */}
         <Reveal delay={0.05} className="flex flex-col lg:pt-2">
-          <Link href={`/boutiques/${shop.id}`} className="group inline-flex w-fit items-center gap-2 rounded-full border border-clay-200 bg-white px-3.5 py-2 text-[11px] font-bold text-ink-soft shadow-sm transition hover:border-faso-gold hover:text-ink"><ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />Retour à la boutique</Link>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Link href={`/boutiques/${shop.id}`} className="group inline-flex min-h-10 items-center gap-2 rounded-full border border-clay-200 bg-white px-3.5 py-2 text-[11px] font-bold text-ink-soft shadow-sm transition hover:border-faso-gold hover:text-ink"><ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />Retour à la boutique</Link>
+            <ShareProductButton title={product.name} shopName={shop.name} />
+          </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-faso-red-soft/35 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-faso-red-dark"><cat.icon className="h-3.5 w-3.5" />{cat.label}</span>
@@ -114,8 +118,23 @@ export default async function ProduitPage({
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2 text-[10px] font-bold text-ink-soft shadow-sm"><CheckCircle2 className="h-3.5 w-3.5 text-faso-green" />Échange direct</span>
           </div>
 
+          {product.specifications && Object.values(product.specifications).some(Boolean) && (
+            <section aria-labelledby="product-specifications" className="mt-5 rounded-[1.5rem] border border-clay-200/75 bg-white p-5 shadow-[0_8px_26px_rgba(51,37,23,.035)] sm:p-6">
+              <div className="flex items-end justify-between gap-3"><div><p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-red">Fiche produit</p><h2 id="product-specifications" className="mt-1 text-lg font-black tracking-tight text-ink">Caractéristiques annoncées</h2></div><span className="rounded-full bg-clay-50 px-2.5 py-1 text-[9px] font-bold text-ink-muted">Déclarées par le vendeur</span></div>
+              <dl className="mt-4 grid grid-cols-2 gap-2.5">
+                {product.specifications.brand && <Specification label="Marque" value={product.specifications.brand} />}
+                {product.specifications.model && <Specification label="Modèle" value={product.specifications.model} />}
+                {product.specifications.condition && <Specification label="État" value={conditionLabel(product.specifications.condition)} />}
+                {product.specifications.ram && <Specification label="Mémoire vive" value={product.specifications.ram} />}
+                {product.specifications.storage && <Specification label="Stockage" value={product.specifications.storage} />}
+                {product.specifications.warranty && <Specification label="Garantie annoncée" value={product.specifications.warranty} />}
+              </dl>
+              {product.specifications.warranty && <p className="mt-3 text-[10px] leading-5 text-ink-muted">La garantie est renseignée par le vendeur. Confirmez ses conditions directement avec lui avant l’achat.</p>}
+            </section>
+          )}
+
           <div className="mt-5 rounded-[1.5rem] border border-clay-200/75 bg-white p-5 shadow-[0_8px_26px_rgba(51,37,23,.035)] sm:p-6">
-            <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-red">Caractéristiques & détails</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-red">Description & détails complémentaires</p>
             <p className="mt-2 whitespace-pre-line text-sm leading-7 text-ink-soft">{product.description || "Demandez au vendeur les caractéristiques complètes, l’état exact de l’appareil, les accessoires inclus et les conditions de garantie avant votre achat."}</p>
           </div>
 
@@ -190,6 +209,17 @@ export default async function ProduitPage({
 
 function ProductPromise({ icon, title, detail }: { icon: ReactNode; title: string; detail: string }) {
   return <div className="flex items-center gap-2.5 rounded-2xl border border-clay-200/65 bg-white/80 p-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-faso-green-soft/35 text-faso-green-dark">{icon}</span><span className="min-w-0"><span className="block truncate text-[10px] font-extrabold text-ink sm:text-xs">{title}</span><span className="mt-0.5 block truncate text-[9px] text-ink-muted sm:text-[10px]">{detail}</span></span></div>;
+}
+
+function Specification({ label, value }: { label: string; value: string }) {
+  return <div className="min-w-0 rounded-xl bg-clay-50/80 px-3 py-2.5"><dt className="text-[9px] font-bold uppercase tracking-[.1em] text-ink-muted">{label}</dt><dd className="mt-1 break-words text-xs font-extrabold text-ink">{value}</dd></div>;
+}
+
+function conditionLabel(condition: string) {
+  if (condition === "new") return "Neuf";
+  if (condition === "used") return "Occasion";
+  if (condition === "refurbished") return "Reconditionné";
+  return condition;
 }
 
 function ArrowUpRightIcon() {

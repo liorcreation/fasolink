@@ -109,6 +109,12 @@ service cloud.firestore {
         && request.resource.data.city.size() <= 100
         && request.resource.data.whatsapp is string
         && request.resource.data.whatsapp.size() <= 40
+        && (request.resource.data.logo_url == null
+          || (request.resource.data.logo_url is string && request.resource.data.logo_url.size() <= 2048))
+        && (request.resource.data.cover_url == null
+          || (request.resource.data.cover_url is string && request.resource.data.cover_url.size() <= 2048))
+        && request.resource.data.gallery is list
+        && request.resource.data.gallery.size() <= 6
         && validCoordinates(request.resource.data)
         && request.resource.data.updated_at is string;
     }
@@ -148,12 +154,41 @@ service cloud.firestore {
         && data.created_at is string && data.updated_at is string;
     }
 
+    function optionalText(data, key, maxLength) {
+      return data.get(key, null) == null
+        || (data.get(key, null) is string && data.get(key, null).size() <= maxLength);
+    }
+
+    function validProductSpecifications(data) {
+      let specs = data.get('specifications', null);
+      return specs == null || (specs is map
+        && specs.keys().hasOnly(['brand', 'model', 'condition', 'ram', 'storage', 'warranty'])
+        && optionalText(specs, 'brand', 60)
+        && optionalText(specs, 'model', 80)
+        && (specs.get('condition', null) == null
+          || specs.get('condition', null) in ['new', 'used', 'refurbished'])
+        && optionalText(specs, 'ram', 40)
+        && optionalText(specs, 'storage', 40)
+        && optionalText(specs, 'warranty', 100));
+    }
+
     function validProduct(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 120
+      return data.keys().hasOnly([
+          'shop_id', 'name', 'description', 'price', 'currency', 'image_url',
+          'image_credit', 'image_source_url', 'image_license', 'image_license_url',
+          'availability', 'specifications', 'created_at', 'updated_at'
+        ])
+        && data.shop_id is string && data.shop_id.size() > 0
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 120
         && (data.description == null || (data.description is string && data.description.size() <= 3000))
         && data.price is number && data.price >= 0 && data.price <= 1000000000
         && data.currency == 'FCFA'
         && (data.image_url == null || (data.image_url is string && data.image_url.size() <= 2048))
+        && optionalText(data, 'image_credit', 180)
+        && optionalText(data, 'image_source_url', 2048)
+        && optionalText(data, 'image_license', 80)
+        && optionalText(data, 'image_license_url', 2048)
+        && validProductSpecifications(data)
         && data.availability in ['in_stock', 'on_order', 'out_of_stock']
         && data.created_at is string && data.updated_at is string;
     }
@@ -203,39 +238,7 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
       // update : le propriétaire, OU un visiteur qui ne modifie que le compteur
       // de contacts WhatsApp (increment).
-      allow update: if isAdmin()
-        // Le propriétaire ne peut modifier que l'identité publique de sa
-        // boutique. Les champs sensibles restent sous contrôle plateforme.
-        || (isSignedIn()
-          && resource.data.owner_id == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'name', 'description', 'city', 'neighborhood', 'whatsapp',
-            'logo_url', 'cover_url', 'gallery', 'updated_at'
-          ])
-          && request.resource.data.owner_id == resource.data.owner_id
-          && request.resource.data.slug == resource.data.slug
-          && request.resource.data.status == resource.data.status
-          && request.resource.data.verification_status == resource.data.verification_status
-          && request.resource.data.name is string
-          && request.resource.data.name.size() >= 2
-          && request.resource.data.description is string
-          && request.resource.data.description.size() >= 20
-          && request.resource.data.city is string
-          && request.resource.data.city.size() >= 2
-          && request.resource.data.whatsapp is string
-          && request.resource.data.whatsapp.matches('^\\+226[0-9]{8}$')
-          && request.resource.data.updated_at is string)
-        // Dépôt d'un dossier de vérification : le vendeur peut seulement
-        // passer à pending et renseigner sa localisation.
-        || (isSignedIn()
-          && resource.data.owner_id == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'verification_status', 'latitude', 'longitude', 'updated_at'
-          ])
-          && request.resource.data.verification_status == 'pending'
-          && request.resource.data.updated_at is string)
-        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['whatsapp_clicks'])
-          && request.resource.data.whatsapp_clicks == resource.data.whatsapp_clicks + 1);
+      allow update: if isAdmin() || validOwnerShopUpdate(shopId);
       allow delete: if isAdmin()
         || (isSignedIn() && resource.data.owner_id == request.auth.uid);
     }
@@ -244,9 +247,12 @@ service cloud.firestore {
     match /products/{productId} {
       allow read: if isAdmin() || ownsShop(resource.data.shop_id)
         || shopIsPublic(resource.data.shop_id);
-      allow create: if ownsShop(request.resource.data.shop_id);
+      allow create: if ownsShop(request.resource.data.shop_id)
+        && validProduct(request.resource.data);
       allow update: if isAdmin() || (ownsShop(resource.data.shop_id)
-        && request.resource.data.shop_id == resource.data.shop_id);
+        && request.resource.data.shop_id == resource.data.shop_id
+        && request.resource.data.created_at == resource.data.created_at
+        && validProduct(request.resource.data));
       allow delete: if isAdmin() || ownsShop(resource.data.shop_id);
     }
 
@@ -309,12 +315,13 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // ── contact_events : création libre (journalisation), lecture par le vendeur ──
+    // ── contact_events : un événement par visiteur et boutique, immuable ──
     match /contact_events/{eventId} {
-      allow read, delete: if isAdmin() || ownsShop(resource.data.shop_id);
-      allow create: if request.resource.data.shop_id is string
-        && exists(/databases/$(database)/documents/shops/$(request.resource.data.shop_id))
-        && request.resource.data.channel == 'whatsapp';
+      allow read: if isAdmin() || ownsShop(resource.data.shop_id)
+        || (isSignedIn() && resource.data.actor_uid == request.auth.uid);
+      allow create: if validContactEvent(eventId, request.resource.data)
+        && get(/databases/$(database)/documents/shops/$(request.resource.data.shop_id)).data.owner_id != request.auth.uid;
+      allow update, delete: if false;
     }
 
     // ── profiles : privé à chaque utilisateur ──
@@ -328,8 +335,11 @@ service cloud.firestore {
       allow read: if isAdmin()
         || (isSignedIn() && resource.data.owner_id == request.auth.uid);
       allow create: if isSignedIn()
-        && request.resource.data.owner_id == request.auth.uid
-        && request.resource.data.status == 'pending';
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && ownsShop(request.resource.data.shop_id)
+        && get(/databases/$(database)/documents/shops/$(request.resource.data.shop_id)).data.status != 'suspended'
+        && get(/databases/$(database)/documents/shops/$(request.resource.data.shop_id)).data.verification_status == 'unverified'
+        && validVerificationDocument(requestId, request.resource.data);
       allow update: if isAdmin();
       allow delete: if isAdmin()
         || (isSignedIn() && resource.data.owner_id == request.auth.uid);

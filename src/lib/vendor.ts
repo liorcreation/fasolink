@@ -6,6 +6,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore/lite";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {
@@ -18,6 +19,7 @@ import {
 import type {
   ProductAvailability,
   Product,
+  ProductSpecifications,
   ShopCategory,
   ShopSubcategory,
   VerificationDocumentType,
@@ -260,6 +262,7 @@ export interface ProductDraft {
   description: string;
   price: number;
   availability: ProductAvailability;
+  specifications: ProductSpecifications;
   image_url?: string | null;
   image_credit?: string | null;
   image_source_url?: string | null;
@@ -302,6 +305,7 @@ export async function createProduct(
     image_license: input.image_license ?? null,
     image_license_url: input.image_license_url ?? null,
     availability: input.availability,
+    specifications: normalizeSpecifications(input.specifications),
     created_at: now,
     updated_at: now,
   });
@@ -318,6 +322,7 @@ export async function createProduct(
     image_license: input.image_license ?? null,
     image_license_url: input.image_license_url ?? null,
     availability: input.availability,
+    specifications: normalizeSpecifications(input.specifications),
     created_at: now,
     updated_at: now,
   };
@@ -336,6 +341,7 @@ export async function updateProduct(
     description: input.description.trim() || null,
     price: Math.max(0, Number(input.price)),
     availability: input.availability,
+    specifications: normalizeSpecifications(input.specifications),
     image_url: input.image_url ?? null,
     image_credit: input.image_credit ?? null,
     image_source_url: input.image_source_url ?? null,
@@ -343,6 +349,13 @@ export async function updateProduct(
     image_license_url: input.image_license_url ?? null,
     updated_at: new Date().toISOString(),
   });
+}
+
+function normalizeSpecifications(specifications: ProductSpecifications): ProductSpecifications | null {
+  const normalized = Object.fromEntries(
+    Object.entries(specifications).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]),
+  ) as ProductSpecifications;
+  return Object.values(normalized).some(Boolean) ? normalized : null;
 }
 
 export async function deleteProduct(productId: string): Promise<void> {
@@ -412,7 +425,8 @@ export async function submitVerificationRequest(
     ? await uploadVerificationFile(ownerId, requestRef.id, "verso", input.verso)
     : null;
 
-  await setDoc(requestRef, {
+  const batch = writeBatch(db);
+  batch.set(requestRef, {
     shop_id: input.shopId,
     owner_id: ownerId,
     document_type: input.documentType,
@@ -428,10 +442,12 @@ export async function submitVerificationRequest(
     updated_at: now,
   });
 
-  await updateDoc(doc(db, COLLECTIONS.shops, input.shopId), {
+  batch.update(doc(db, COLLECTIONS.shops, input.shopId), {
     verification_status: "pending",
+    verification_request_id: requestRef.id,
     latitude: input.latitude ?? null,
     longitude: input.longitude ?? null,
     updated_at: now,
   });
+  await batch.commit();
 }

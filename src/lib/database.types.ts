@@ -32,6 +32,7 @@ export type ShopSubcategory =
 export type ShopStatus = "pending" | "active" | "suspended";
 export type VerificationStatus = "unverified" | "pending" | "verified";
 export type ProductAvailability = "in_stock" | "on_order" | "out_of_stock";
+export type ProductCondition = "new" | "used" | "refurbished";
 export type SubscriptionPlan = "mensuel" | "trimestriel" | "annuel";
 export type SubscriptionStatus =
   | "trialing"
@@ -101,8 +102,19 @@ export interface Product {
   image_license?: string | null;
   image_license_url?: string | null;
   availability: ProductAvailability;
+  /** Fiche technique facultative; les anciennes annonces restent compatibles. */
+  specifications?: ProductSpecifications | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProductSpecifications {
+  brand?: string | null;
+  model?: string | null;
+  condition?: ProductCondition | null;
+  ram?: string | null;
+  storage?: string | null;
+  warranty?: string | null;
 }
 
 export interface Subscription {

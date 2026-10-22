@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test:firebase-rules": "firebase emulators:exec --project demo-fasolink-rules --only firestore,storage \"node scripts/test-firebase-rules.mjs\"",
     "seed": "tsx scripts/seed.ts",
     "verify": "node --env-file=.env.local scripts/verify-firebase.mjs",
     "admin:set": "node --env-file=.env.local scripts/set-admin.mjs",
@@ -30,6 +31,7 @@
     "tailwind-merge": "2.5.4"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@opennextjs/cloudflare": "1.20.10",
     "@types/node": "20.16.11",
     "@types/qrcode": "^1.5.5",
@@ -39,6 +41,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "16.3.8",
     "firebase-admin": "^13.0.0",
+    "firebase-tools": "^15.34.1",
     "postcss": "8.4.47",
     "tailwindcss": "3.4.14",
     "tsx": "^4.19.1",

@@ -1,14 +1,13 @@
+import { signInAnonymously } from "firebase/auth";
 import {
-  addDoc,
   collection,
   doc,
   getDocs,
-  increment,
   query,
-  updateDoc,
+  setDoc,
   where,
 } from "firebase/firestore/lite";
-import { COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
+import { auth, COLLECTIONS, db, isFirebaseConfigured } from "@/lib/firebase";
 
 const STORE_KEY = "fasolink:contact-events";
 
@@ -37,8 +36,7 @@ function writeLocal(events: LocalEvent[]) {
 
 /**
  * Enregistre un clic « Contacter sur WhatsApp ».
- * - Firebase configuré → document dans `contact_events` + incrément
- *   `shops/<id>.whatsapp_clicks`.
+ * - Firebase configuré → un événement unique et immuable par visiteur/boutique.
  * - Toujours            → compteur local (localStorage) pour le dashboard.
  * Ne bloque jamais la navigation (fire-and-forget).
  */
@@ -50,17 +48,17 @@ export function trackContact(shopId: string, productId?: string | null) {
   if (isFirebaseConfigured) {
     void (async () => {
       try {
-        await addDoc(collection(db, COLLECTIONS.contactEvents), {
+        const user = auth.currentUser ?? (await signInAnonymously(auth)).user;
+        await setDoc(doc(db, COLLECTIONS.contactEvents, `${user.uid}_${shopId}`), {
           shop_id: shopId,
           product_id: productId ?? null,
+          actor_uid: user.uid,
           channel: "whatsapp",
           created_at: new Date().toISOString(),
         });
-        await updateDoc(doc(db, COLLECTIONS.shops, shopId), {
-          whatsapp_clicks: increment(1),
-        });
       } catch (error) {
-        console.warn("[FasoLink] trackContact:", error);
+        // Échec attendu si le même visiteur revient (l'événement est immuable).
+        console.warn("[FasoLink] tracking contact unavailable:", error);
       }
     })();
   }

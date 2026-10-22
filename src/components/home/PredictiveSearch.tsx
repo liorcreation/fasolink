@@ -37,9 +37,9 @@ function buildIndex(shops: ShopWithProducts[]): Hit[] {
       hits.push({
         type: "product",
         id: p.id,
-        href: `/boutiques/${s.id}`,
+        href: `/boutiques/${s.id}/produits/${p.id}`,
         title: p.name,
-        subtitle: s.name,
+        subtitle: [p.specifications?.brand, p.specifications?.model, s.name].filter(Boolean).join(" · "),
         image: p.image_url,
         price: p.price,
       });

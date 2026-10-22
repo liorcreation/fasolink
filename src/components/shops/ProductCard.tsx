@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MessageCircle, Smartphone } from "lucide-react";
+import { ArrowLeftRight, Check, MessageCircle, Smartphone } from "lucide-react";
 import type { Product } from "@/lib/database.types";
 import { buildWhatsAppLink, formatCFA } from "@/lib/utils";
 import { trackContact } from "@/lib/tracking";
@@ -16,12 +16,18 @@ export function ProductCard({
   shopId,
   whatsapp,
   index = 0,
+  compareSelected = false,
+  compareLimitReached = false,
+  onCompareToggle,
 }: {
   product: Product;
   shopName: string;
   shopId: string;
   whatsapp: string;
   index?: number;
+  compareSelected?: boolean;
+  compareLimitReached?: boolean;
+  onCompareToggle?: () => void;
 }) {
   const soldOut = product.availability === "out_of_stock";
   const message = whatsappMessage({
@@ -72,6 +78,11 @@ export function ProductCard({
           <h3 className="text-sm font-bold text-ink group-hover:text-faso-red">
             {product.name}
           </h3>
+          {(product.specifications?.brand || product.specifications?.model || product.specifications?.condition) && (
+            <p className="mt-1 line-clamp-1 text-[10px] font-semibold text-ink-muted">
+              {[product.specifications.brand, product.specifications.model, conditionLabel(product.specifications.condition)].filter(Boolean).join(" · ")}
+            </p>
+          )}
           {product.description && (
             <p className="mt-0.5 line-clamp-2 text-xs text-ink-muted">
               {product.description}
@@ -94,7 +105,26 @@ export function ProductCard({
             {soldOut ? "Demander" : "Commander"}
           </a>
         </div>
+        {onCompareToggle && (
+          <button
+            type="button"
+            onClick={onCompareToggle}
+            aria-pressed={compareSelected}
+            disabled={compareLimitReached}
+            className={`mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-extrabold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${compareSelected ? "border-faso-green bg-faso-green/10 text-faso-green-dark" : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink"}`}
+          >
+            {compareSelected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden="true" />}
+            {compareSelected ? "Ajouté au comparatif" : compareLimitReached ? "3 appareils maximum" : "Comparer"}
+          </button>
+        )}
       </div>
     </motion.div>
   );
+}
+
+function conditionLabel(condition?: string | null) {
+  if (condition === "new") return "Neuf";
+  if (condition === "used") return "Occasion";
+  if (condition === "refurbished") return "Reconditionné";
+  return null;
 }

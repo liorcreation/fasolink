@@ -156,7 +156,13 @@ export function SearchExplorer({
         shop.description,
         shop.city,
         shop.neighborhood ?? "",
-        ...shop.products.map((p) => p.name),
+        ...shop.products.flatMap((p) => [
+          p.name,
+          p.specifications?.brand ?? "",
+          p.specifications?.model ?? "",
+          p.specifications?.ram ?? "",
+          p.specifications?.storage ?? "",
+        ]),
       ]
         .join(" ")
         .toLowerCase();

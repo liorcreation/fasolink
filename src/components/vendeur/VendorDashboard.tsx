@@ -60,7 +60,7 @@ export function VendorDashboard({
         if (mounted) setStats(next);
       } catch (error) {
         console.warn("[FasoLink] dashboard stats:", error);
-        if (mounted) setStats({ ...getLocalContactStats(shop.id), total: shop.whatsapp_clicks });
+        if (mounted) setStats(getLocalContactStats(shop.id));
       }
     };
     void load();
