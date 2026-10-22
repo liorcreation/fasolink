@@ -1,3 +1,7 @@
+if (typeof window !== "undefined") {
+  throw new Error("Security Violation: Firebase Edge Admin service account must never be accessed in browser context.");
+}
+
 export interface EdgeServiceAccount {
   project_id: string;
   client_email: string;

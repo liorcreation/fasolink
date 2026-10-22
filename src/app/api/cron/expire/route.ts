@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { firestoreBase, firestoreString, getEdgeServiceAccount, getFirestoreAccessToken, patchFirestoreDocument, runFirestoreQuery } from "@/lib/firestore-edge-admin";
-
+import { timingSafeEqualString } from "@/lib/payments/cinetpay";
 
 function valueOf(value: Record<string, unknown>) {
   if ("stringValue" in value) return value.stringValue;
@@ -10,8 +10,16 @@ function valueOf(value: Record<string, unknown>) {
 
 function authorized(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  return request.headers.get("x-cron-secret") === secret || request.headers.get("authorization") === `Bearer ${secret}`;
+  if (!secret || secret.trim().length < 16) return false;
+
+  const cronHeader = request.headers.get("x-cron-secret") ?? "";
+  const authHeader = request.headers.get("authorization") ?? "";
+  const bearerToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+  return (
+    timingSafeEqualString(cronHeader, secret) ||
+    timingSafeEqualString(bearerToken, secret)
+  );
 }
 
 async function querySubscriptions(token: string, account: ReturnType<typeof getEdgeServiceAccount>, status: "trialing" | "active", now: string) {

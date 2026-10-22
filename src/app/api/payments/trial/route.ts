@@ -9,7 +9,7 @@ import {
   getFirestoreAccessToken,
   getFirestoreDocument,
 } from "@/lib/firestore-edge-admin";
-
+import { validateTrialPayload, ValidationError } from "@/lib/validation";
 
 function field(fields: Record<string, Record<string, unknown>>, name: string) {
   const value = fields[name];
@@ -18,13 +18,18 @@ function field(fields: Record<string, Record<string, unknown>>, name: string) {
 
 export async function POST(request: Request) {
   try {
-    const { idToken, shopId, plan } = await request.json() as { idToken?: string; shopId?: string; plan?: string };
-    if (!idToken || !shopId || !/^[a-zA-Z0-9_-]{1,128}$/.test(shopId)) {
-      return NextResponse.json({ error: "Connexion ou boutique invalide." }, { status: 400 });
+    const rawBody = await request.json();
+    let validated;
+    try {
+      validated = validateTrialPayload(rawBody);
+    } catch (valErr) {
+      return NextResponse.json(
+        { error: valErr instanceof ValidationError ? valErr.message : "Données de requête invalides." },
+        { status: 400 },
+      );
     }
-    if (!SUBSCRIPTION_PLANS.some((item) => item.id === plan)) {
-      return NextResponse.json({ error: "Formule invalide." }, { status: 400 });
-    }
+    const { idToken, shopId, plan } = validated;
+
     const identityResponse = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(firebasePublicConfig.apiKey)}`, {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ idToken }),
     });
