@@ -7,9 +7,6 @@ export const metadata: Metadata = {
   description: "Parcourez tous les téléphones, ordinateurs et accessoires proposés par les boutiques tech de FasoLink.",
 };
 
-// Revalidation ISR 60s pour la stabilité et la vitesse de chargement sur Cloudflare Workers
-export const revalidate = 60;
-
 export default async function ProductsPage() {
   const shops = await fetchShops();
   return (

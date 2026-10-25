@@ -17,7 +17,8 @@ import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
 
 // Revalidation ISR 60s pour la stabilité et la vitesse de chargement sur Cloudflare Workers
-export const revalidate = 60;
+// La fiche dépend d'identifiants inconnus au build : rendu à la demande.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

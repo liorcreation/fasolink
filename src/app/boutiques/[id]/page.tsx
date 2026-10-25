@@ -21,8 +21,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { FavoriteButton } from "@/components/shops/FavoriteButton";
 import { OwnerShopActions } from "@/components/shops/OwnerShopActions";
 
-// Revalidation ISR 60s pour la stabilité et la vitesse de chargement sur Cloudflare Workers
-export const revalidate = 60;
+// La vitrine dépend d'un identifiant inconnu au build : elle reste rendue à la demande.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
