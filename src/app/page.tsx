@@ -1,8 +1,10 @@
 import { fetchShops } from "@/lib/shops";
 import { RealtimeHomeContent } from "@/components/home/RealtimeHomeContent";
 
-// Cloudflare Pages : rendu à la demande (données Firestore fraîches à chaque visite).
-export const dynamic = "force-dynamic";
+// ISR (Incremental Static Regeneration) : revalidation en arrière-plan toutes les 60 secondes.
+// Permet un affichage instantané (<100ms) sans surcoût CPU sur Cloudflare Workers (protection Erreur 1102).
+// Les mises à jour en direct côté navigateur restent gérées en temps réel par RealtimeHomeContent.
+export const revalidate = 60;
 
 export default async function HomePage() {
   const shops = await fetchShops();

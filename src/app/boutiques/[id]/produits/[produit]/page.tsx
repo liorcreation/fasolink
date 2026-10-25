@@ -16,7 +16,8 @@ import { StickyContactBar } from "@/components/shops/StickyContactBar";
 import { ShopStatusWatcher } from "@/components/shops/ShopStatusWatcher";
 import { Reveal } from "@/components/ui/Reveal";
 
-export const dynamic = "force-dynamic";
+// Revalidation ISR 60s pour la stabilité et la vitesse de chargement sur Cloudflare Workers
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,

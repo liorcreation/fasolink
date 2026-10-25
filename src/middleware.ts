@@ -7,25 +7,17 @@ import {
   type RateLimitConfig,
 } from "@/lib/rate-limit";
 
-// Chemins exemptés de filtrage (assets statiques, manifest, images publiques)
-const PUBLIC_FILE_EXTENSIONS = /\.(.*)$/;
-
+/**
+ * Middleware de sécurité et Rate Limiting — FasoLink
+ *
+ * Optimisé pour Cloudflare Workers : s'exécute uniquement sur les routes sensibles
+ * nécessitant une protection active contre les attaques par force brute (connexion,
+ * inscription) et le spam de transactions ou requêtes API.
+ * Les en-têtes de sécurité généraux sont désormais appliqués nativement via next.config.mjs.
+ */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Ignorer les fichiers statiques internes Next.js et assets
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.startsWith("/icon") ||
-    PUBLIC_FILE_EXTENSIONS.test(pathname)
-  ) {
-    return NextResponse.next();
-  }
-
-  const clientIp = getClientIp(request);
-
-  // ─── 1. Rate Limiting sur les routes critiques ─────────────────────────────
   let rateLimitConfig: RateLimitConfig | null = null;
   let rateLimitCategory = "general";
 
@@ -46,10 +38,10 @@ export function middleware(request: NextRequest) {
     rateLimitCategory = "api";
   }
 
-  let rateLimitResult = null;
   if (rateLimitConfig) {
+    const clientIp = getClientIp(request);
     const key = `${rateLimitCategory}:${clientIp}`;
-    rateLimitResult = rateLimiter.check(key, rateLimitConfig);
+    const rateLimitResult = rateLimiter.check(key, rateLimitConfig);
 
     if (!rateLimitResult.success) {
       console.warn(
@@ -73,52 +65,21 @@ export function middleware(request: NextRequest) {
         },
       );
     }
-  }
 
-  // ─── 2. Application des En-têtes de Sécurité (Hardening Pro-Grade) ─────────
-  const response = NextResponse.next();
-
-  // En-têtes Rate Limit
-  if (rateLimitResult) {
+    const response = NextResponse.next();
     response.headers.set("X-RateLimit-Limit", String(rateLimitResult.limit));
     response.headers.set("X-RateLimit-Remaining", String(rateLimitResult.remaining));
     response.headers.set("X-RateLimit-Reset", String(rateLimitResult.resetTime));
+    return response;
   }
 
-  // Protection contre le détournement de clic (Clickjacking)
-  response.headers.set("X-Frame-Options", "DENY");
-
-  // Protection contre le reniflage de type MIME (MIME-Sniffing)
-  response.headers.set("X-Content-Type-Options", "nosniff");
-
-  // Politique de référent stricte
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-  // Protection XSS pour les navigateurs historiques
-  response.headers.set("X-XSS-Protection", "1; mode=block");
-
-  // Isolation des fonctionnalités navigateur non désirées
-  response.headers.set(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(self), payment=*",
-  );
-
-  // HSTS (Strict Transport Security) — Forcer HTTPS pendant 2 ans
-  if (process.env.NODE_ENV === "production") {
-    response.headers.set(
-      "Strict-Transport-Security",
-      "max-age=63072000; includeSubDomains; preload",
-    );
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Intercepte toutes les requêtes sauf les fichiers statiques
-     */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/connexion",
+    "/inscription",
+    "/api/:path*",
   ],
 };

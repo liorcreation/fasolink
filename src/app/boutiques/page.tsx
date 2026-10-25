@@ -8,7 +8,8 @@ export const metadata: Metadata = {
     "Découvrez les boutiques de téléphonie et d’informatique au Burkina Faso. Trouvez téléphones, ordinateurs et accessoires sur FasoLink.",
 };
 
-export const dynamic = "force-dynamic";
+// ISR 60s pour un affichage instantané et zéro surcharge CPU edge
+export const revalidate = 60;
 
 export default async function BoutiquesPage({
   searchParams,
