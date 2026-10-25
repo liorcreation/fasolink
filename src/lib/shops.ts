@@ -1,4 +1,3 @@
-import { cache } from "react";
 import {
   collection,
   doc,
@@ -19,9 +18,15 @@ import type {
 import { MOCK_SHOPS, getMockShop } from "@/lib/mock-data";
 
 /**
- * Couche d'accès aux données (Firestore) optimisée pour Cloudflare Workers.
- * Intègre un cache mémoire ultra-rapide (TTL 60s) pour éviter l'épuisement des
- * quotas CPU (Erreur 1102) et réduire la latence à moins de 1ms pour les visiteurs.
+ * Couche d'accès aux données (Firestore) isomorphique (Serveur + Client).
+ * IMPORTANT : Ce module est importé à la fois par des Server Components
+ * et des Client Components ("use client" comme PublicShopsRealtime, OwnedShopsLoader).
+ * Ne JAMAIS importer `cache` depuis "react" ici car React.cache est strictement
+ * serveur et provoque une erreur fatale dans le navigateur ("t.cache is not a function")
+ * causant une page blanche.
+ *
+ * Le cache en mémoire avec TTL de 60s protège contre la saturation CPU
+ * Cloudflare Workers (Erreur 1102) tout en restant 100% compatible navigateur.
  */
 
 function fromDoc<T>(d: QueryDocumentSnapshot<DocumentData>): T {
@@ -38,7 +43,7 @@ function groupBy<T extends { shop_id: string }>(items: T[]): Map<string, T[]> {
   return map;
 }
 
-// ─── Cache Mémoire Edge / Serverless ──────────────────────────────────────────
+// ─── Cache Mémoire Isomorphique (Edge, Worker, Browser) ──────────────────────
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -48,7 +53,7 @@ const CACHE_TTL_MS = 60_000; // 60 secondes
 let cachedShopsList: CacheEntry<ShopWithProducts[]> | null = null;
 const cachedShopDetails = new Map<string, CacheEntry<ShopWithProducts | null>>();
 
-async function fetchShopsInternal(): Promise<ShopWithProducts[]> {
+export async function fetchShops(): Promise<ShopWithProducts[]> {
   const now = Date.now();
   if (cachedShopsList && now - cachedShopsList.timestamp < CACHE_TTL_MS) {
     return cachedShopsList.data;
@@ -102,7 +107,7 @@ async function fetchShopsInternal(): Promise<ShopWithProducts[]> {
           products: productsByShop.get(shop.id) ?? [],
           reviews: reviewsByShop.get(shop.id) ?? [],
         };
-        // Pré-peuple le cache individuel
+        // Pré-remplit le cache individuel pour chaque boutique
         cachedShopDetails.set(shop.id, { data: fullShop, timestamp: now });
         if (shop.slug) {
           cachedShopDetails.set(shop.slug, { data: fullShop, timestamp: now });
@@ -117,12 +122,12 @@ async function fetchShopsInternal(): Promise<ShopWithProducts[]> {
     cachedShopsList = { data: result, timestamp: now };
     return result;
   } catch (error) {
-    console.warn("[FasoLink] fetchShopsInternal:", error);
+    console.warn("[FasoLink] fetchShops:", error);
     return cachedShopsList?.data ?? [];
   }
 }
 
-async function fetchShopByIdInternal(
+export async function fetchShopById(
   id: string,
 ): Promise<ShopWithProducts | null> {
   const now = Date.now();
@@ -187,28 +192,28 @@ async function fetchShopByIdInternal(
 
     return result;
   } catch (error) {
-    console.warn("[FasoLink] fetchShopByIdInternal:", error);
+    console.warn("[FasoLink] fetchShopById:", error);
     return cached?.data ?? null;
   }
 }
 
-/**
- * Fonctions exportées avec déduplication React cache() par requête :
- * Si generateMetadata et Page invoquent fetchShopById sur la même URL,
- * une seule exécution a lieu.
- */
-export const fetchShops = cache(fetchShopsInternal);
-export const fetchShopById = cache(fetchShopByIdInternal);
+export async function fetchProduct(shopId: string, productId: string) {
+  const shop = await fetchShopById(shopId);
+  if (!shop) return null;
+  const product = shop.products.find((p) => p.id === productId);
+  if (!product) return null;
+  return { shop, product };
+}
 
-export const fetchProduct = cache(
-  async (shopId: string, productId: string) => {
-    const shop = await fetchShopById(shopId);
-    if (!shop) return null;
-    const product = shop.products.find((p) => p.id === productId);
-    if (!product) return null;
-    return { shop, product };
-  },
-);
+/** Invalidation manuelle du cache (ex: après ajout de produit ou modification de boutique) */
+export function invalidateShopsCache(shopId?: string) {
+  cachedShopsList = null;
+  if (shopId) {
+    cachedShopDetails.delete(shopId);
+  } else {
+    cachedShopDetails.clear();
+  }
+}
 
 /** Estimation de l'impact économique local (panier moyen × contacts estimés). */
 export function estimateLocalImpact(
