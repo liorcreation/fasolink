@@ -13,44 +13,32 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
  * composant ne vit que le temps du montage racine (chargement complet).
  */
 const EASE = [0.22, 1, 0.36, 1] as const;
-// Versionné pour que la nouvelle ouverture de marque soit rejouée une fois
-// après cette mise à jour, puis reste absente pendant les navigations internes.
-const SPLASH_SESSION_KEY = "fasolink:splash-seen:v3";
-const SPLASH_COOKIE_KEY = "fasolink_splash_seen";
-let splashBootChecked = false;
 
 export function SplashScreen() {
-  // SSR must never place the full-screen splash over every freshly loaded route.
-  // We only reveal it after the browser confirms this is a new app session.
-  const [visible, setVisible] = useState(false);
+  // Le splash existe dès le HTML serveur : l'intérieur ne peut donc pas
+  // apparaître avant l'animation, même si l'hydratation est lente.
+  const [visible, setVisible] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
   const reduced = useReducedMotion() === true;
 
   useEffect(() => {
-    // Le latch module protège aussi des remontages du layout pendant la même
-    // vie JavaScript, notamment en PWA et sous React Strict Mode.
-    if (splashBootChecked) return;
-    splashBootChecked = true;
-
-    let alreadySeen = false;
-    try {
-      alreadySeen = window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "1";
-      if (!alreadySeen) window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
-    } catch {
-      // Safari privé / webviews : utiliser un cookie de session comme second
-      // garde-fou, pour qu'un rechargement de route ne rejoue pas le splash.
-      alreadySeen = document.cookie.split(";").some((part) => part.trim() === `${SPLASH_COOKIE_KEY}=1`);
-      if (!alreadySeen) document.cookie = `${SPLASH_COOKIE_KEY}=1; Path=/; SameSite=Lax`;
+    setHydrated(true);
+    const boot = window as Window & { __fasolinkSplashShouldPlay?: boolean };
+    // Le script synchrone du layout a déjà lu le stockage avant le premier
+    // affichage. Le même résultat est partagé ici, sans flash d'hydratation.
+    if (boot.__fasolinkSplashShouldPlay === false) {
+      document.documentElement.dataset.fasolinkSplashSeen = "true";
+      setVisible(false);
+      return;
     }
 
-    if (alreadySeen) return;
-
     document.body.style.overflow = "hidden";
-    setVisible(true);
     const holdMs = reduced ? 900 : 2000;
-    // Do not cancel on Strict Mode's simulated effect cleanup: the root layout
-    // remains mounted during app navigation and this timer owns the first-run
-    // dismissal for this document.
-    window.setTimeout(() => setVisible(false), holdMs);
+    const timer = window.setTimeout(() => setVisible(false), holdMs);
+    return () => {
+      window.clearTimeout(timer);
+      document.body.style.overflow = "";
+    };
   }, [reduced]);
 
   const timing = reduced
@@ -66,7 +54,8 @@ export function SplashScreen() {
       {visible && (
         <motion.div
           key="splash"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#15100A]"
+          className="fasolink-splash fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#15100A]"
+          style={{ backgroundColor: "#15100A" }}
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
           transition={{ duration: 0.6, ease: EASE }}
@@ -113,12 +102,27 @@ export function SplashScreen() {
             />
           )}
 
+          {/* Logo statique visible dans le HTML avant le chargement de JavaScript. */}
+          <div
+            className={`absolute flex flex-col items-center transition-opacity duration-300 ${hydrated ? "pointer-events-none opacity-0" : "opacity-100"}`}
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 48 48" width="104" height="104" className="relative">
+              <path d="M8 6h16l4 4v2H14v4h10v6H14v10H8z" fill="#F4EEE2" />
+              <path d="M24 22h6v14h8v2l-4 4h-10z" fill="#F4EEE2" />
+              <path d="m24 17 5 5-5 5-5-5z" fill="#FBC66A" />
+            </svg>
+            <div className="relative mt-4 font-display text-[1.4rem] leading-none tracking-[-0.03em] text-[#F4EEE2]">
+              <span className="font-medium">Faso</span>
+              <span className="font-extrabold">Link</span>
+            </div>
+          </div>
+
           <svg
             viewBox="0 0 48 48"
             width="104"
             height="104"
-            role="img"
-            aria-label="FasoLink"
+            aria-hidden="true"
             className="relative"
           >
             <defs>

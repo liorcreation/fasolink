@@ -9,6 +9,21 @@
   --foreground: #1a1109;
 }
 
+/* Le splash est rendu dans le HTML initial pour éviter tout flash du contenu.
+   Le petit délai de secours le masque si JavaScript ne termine pas l'hydratation. */
+.fasolink-splash {
+  animation: fasolink-splash-safety 12s steps(1, end) forwards;
+}
+
+html[data-fasolink-splash-seen="true"] .fasolink-splash {
+  display: none !important;
+}
+
+@keyframes fasolink-splash-safety {
+  0%, 99.99% { visibility: visible; }
+  100% { visibility: hidden; }
+}
+
 @layer base {
   * {
     @apply border-clay-200;

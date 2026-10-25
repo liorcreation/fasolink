@@ -72,7 +72,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${sora.variable}`}>
+    <html lang="fr" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(()=>{var key="fasolink:splash-seen:v4",cookie="fasolink_splash_seen",seen=false;try{seen=sessionStorage.getItem(key)==="1";if(!seen)sessionStorage.setItem(key,"1")}catch(e){try{seen=document.cookie.split(";").some(function(p){return p.trim()===cookie+"=1"});if(!seen)document.cookie=cookie+"=1; Path=/; SameSite=Lax"}catch(_){seen=false}}window.__fasolinkSplashShouldPlay=!seen;if(seen)document.documentElement.dataset.fasolinkSplashSeen="true"})()`,
+          }}
+        />
+      </head>
       <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav lg:pb-0">
         <AuthProvider>
           <SplashScreen />
