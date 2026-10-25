@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, ChevronRight, MapPin, MessageCircle, ShieldCheck, Sparkles, Star, Store } from "lucide-react";
 import { fetchProduct } from "@/lib/shops";

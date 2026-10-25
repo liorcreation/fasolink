@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";

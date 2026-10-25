@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, BadgeCheck, Camera, Heart, MapPin, MessageCircle, Package, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { fetchShopById } from "@/lib/shops";

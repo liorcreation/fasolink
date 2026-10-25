@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import Image from "next/image";
 import { ArrowRight, MapPin, Star } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";

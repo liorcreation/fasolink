@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { ArrowDown, ArrowRight, AudioLines, BadgeCheck, Laptop, MapPin, Smartphone, Sparkles } from "lucide-react";

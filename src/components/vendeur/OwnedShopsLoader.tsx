@@ -18,7 +18,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ButtonLink } from "@/components/ui/Button";

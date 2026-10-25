@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { BriefcaseBusiness, Home, PackageSearch, Store, UserRound, type LucideIcon } from "lucide-react";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import {
   ArrowLeft,
   ArrowRight,

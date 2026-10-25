@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { motion } from "framer-motion";
 import { ArrowLeftRight, Check, MessageCircle, Smartphone } from "lucide-react";
 import type { Product } from "@/lib/database.types";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { ArrowRight, AudioLines, Laptop, Smartphone, Sparkles, Watch } from "lucide-react";
 import type { Product, ShopWithProducts } from "@/lib/database.types";
 import { ProductCard } from "@/components/shops/ProductCard";

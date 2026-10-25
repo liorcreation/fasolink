@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { Settings2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 

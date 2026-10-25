@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { ArrowRight, Heart, MapPin, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { AuthForm } from "@/components/auth/AuthForm";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { AppLink as Link } from "@/components/site/AppLink";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Heart, LoaderCircle, RefreshCw, Store } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
