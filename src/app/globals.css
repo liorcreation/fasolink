@@ -656,4 +656,4 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
 @media (prefers-reduced-motion: reduce) {
   .profile-hero-orb { animation: none !important; }
   .profile-shortcut,.profile-create-shop,.profile-edit-link,.profile-hero-button { transition-duration: .01ms !important; }
-}\n
+}
