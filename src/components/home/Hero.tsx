@@ -1,140 +1,17 @@
 "use client";
 
 import { AppLink as Link } from "@/components/site/AppLink";
+import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowRight, Play, Store } from "lucide-react";
+import { ArrowDown, ArrowRight, BadgeCheck, Sparkles, Store } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { ButtonLink } from "@/components/ui/Button";
 import { PredictiveSearch } from "@/components/home/PredictiveSearch";
-
-const HERO_VIDEO_SOURCES = Array.from({ length: 8 }, (_, index) =>
-  `/videos/hero/clip-${String(index + 1).padStart(2, "0")}.mp4`,
-);
-const HERO_VIDEO_POSTER = "/videos/hero/poster.jpg";
 
 const reveal = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0 },
 };
-
-function HeroVideoBackdrop({ reducedMotion }: { reducedMotion: boolean }) {
-  const [enabled, setEnabled] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [needsTap, setNeedsTap] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const failedClips = useRef(new Set<number>());
-
-  useEffect(() => {
-    if (reducedMotion) {
-      setEnabled(false);
-      return;
-    }
-    const connection = (navigator as Navigator & {
-      connection?: { saveData?: boolean; effectiveType?: string };
-    }).connection;
-    if (connection?.saveData || connection?.effectiveType === "2g" || connection?.effectiveType === "slow-2g") {
-      setEnabled(false);
-      return;
-    }
-    setEnabled(true);
-  }, [reducedMotion]);
-
-  const attemptPlayback = useCallback(() => {
-    const video = videoRef.current;
-    if (!enabled || !video || document.hidden) return;
-    // iOS Safari requires these to be set on the element before play().
-    video.muted = true;
-    video.playsInline = true;
-    void video.play().catch((error: unknown) => {
-      if (error instanceof Error && error.name === "AbortError") return;
-      // Some mobile browsers require a user gesture for media playback.
-      // Keep the poster visible and offer an explicit, accessible retry.
-      setPlaying(false);
-      setNeedsTap(true);
-    });
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        videoRef.current?.pause();
-        setPlaying(false);
-      } else {
-        attemptPlayback();
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("pageshow", attemptPlayback);
-    attemptPlayback();
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("pageshow", attemptPlayback);
-    };
-  }, [attemptPlayback, currentIndex, enabled]);
-
-  const handleError = () => {
-    setPlaying(false);
-    setNeedsTap(false);
-    failedClips.current.add(currentIndex);
-    const nextIndex = HERO_VIDEO_SOURCES.findIndex((_, index) => !failedClips.current.has(index));
-    if (nextIndex === -1) setEnabled(false);
-    else setCurrentIndex(nextIndex);
-  };
-
-  return (
-    <>
-      <div aria-hidden="true" className="hero-video-fallback" />
-      {enabled && (
-        <>
-          <video
-            ref={videoRef}
-            aria-hidden="true"
-            className={`hero-video-layer${playing ? " is-playing" : ""}`}
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            poster={HERO_VIDEO_POSTER}
-            src={HERO_VIDEO_SOURCES[currentIndex]}
-            tabIndex={-1}
-            disablePictureInPicture
-            onPlaying={() => {
-              setPlaying(true);
-              setNeedsTap(false);
-            }}
-            onWaiting={() => setPlaying(false)}
-            onCanPlay={attemptPlayback}
-            onEnded={() => {
-              setPlaying(false);
-              setCurrentIndex((index) => {
-                for (let offset = 1; offset <= HERO_VIDEO_SOURCES.length; offset += 1) {
-                  const next = (index + offset) % HERO_VIDEO_SOURCES.length;
-                  if (!failedClips.current.has(next)) return next;
-                }
-                return index;
-              });
-            }}
-            onError={handleError}
-          />
-          {needsTap && (
-            <button
-              type="button"
-              aria-label="Lancer l'animation vidéo"
-              title="Lancer l'animation vidéo"
-              onClick={attemptPlayback}
-              className="absolute right-5 top-1/2 z-[3] grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full border border-[#f2bd65]/70 bg-[#101a24]/80 text-[#ffe0a8] shadow-xl backdrop-blur-md transition hover:scale-105 hover:bg-[#101a24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2bd65]"
-            >
-              <Play className="ml-0.5 h-5 w-5 fill-current" aria-hidden="true" />
-            </button>
-          )}
-        </>
-      )}
-    </>
-  );
-}
 
 export function Hero({ shops }: { shops: ShopWithProducts[] }) {
   const reduce = useReducedMotion();
@@ -142,12 +19,10 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
   const cityCount = new Set(shops.map((shop) => shop.city).filter(Boolean)).size;
 
   return (
-    <section className="hero-cinematic relative isolate overflow-hidden bg-[#05070b] text-white">
-      <HeroVideoBackdrop reducedMotion={Boolean(reduce)} />
-      <div aria-hidden="true" className="hero-cinematic-shade pointer-events-none absolute inset-0 z-[1]" />
-      <div aria-hidden="true" className="hero-cinematic-glow pointer-events-none absolute inset-0 z-[2]" />
+    <section className="hero-cinematic relative isolate overflow-hidden text-white">
+      <div aria-hidden="true" className="hero-cinematic-glow pointer-events-none absolute inset-0" />
 
-      <div className="container-faso relative z-10 flex min-h-[min(760px,calc(100svh-5rem))] flex-col justify-center py-12 sm:py-16 lg:py-20">
+      <div className="container-faso relative z-10 grid min-h-[min(760px,calc(100svh-5rem))] items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.02fr_.98fr] lg:gap-12 lg:py-20 xl:gap-16">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -155,7 +30,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             hidden: {},
             visible: { transition: { staggerChildren: reduce ? 0 : 0.09, delayChildren: 0.08 } },
           }}
-          className="max-w-[760px]"
+          className="relative z-10 max-w-[760px]"
         >
           <motion.div variants={reveal} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>
             <span className="hero-cinematic-pill inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold tracking-wide shadow-lg backdrop-blur-xl">
@@ -233,9 +108,49 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           </motion.dl>
         </motion.div>
 
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 24, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="hero-showcase-wrap relative mx-auto w-full max-w-[570px] lg:ml-auto"
+        >
+          <div aria-hidden="true" className="hero-showcase-aura" />
+          <motion.div
+            whileHover={reduce ? undefined : { y: -8, rotateX: 1.5, rotateY: -1.5, scale: 1.012 }}
+            transition={{ type: "spring", stiffness: 170, damping: 20 }}
+            className="hero-showcase-card"
+          >
+            <div className="hero-showcase-topline">
+              <span className="hero-showcase-mark"><Sparkles aria-hidden="true" /> Sélection FasoLink</span>
+              <span className="hero-showcase-status"><span /> Tech locale</span>
+            </div>
+            <div className="hero-showcase-image-wrap">
+              <Image
+                src="/tech-showcase.webp"
+                alt="Sélection d’appareils et accessoires technologiques proposés sur FasoLink"
+                width={1254}
+                height={1254}
+                sizes="(max-width: 639px) 88vw, (max-width: 1023px) 76vw, 44vw"
+                className="hero-showcase-image"
+                priority
+                unoptimized
+              />
+            </div>
+            <div className="hero-showcase-caption">
+              <div>
+                <span className="hero-showcase-eyebrow">LE MEILLEUR DE LA TECH, PRÈS DE VOUS</span>
+                <p>Le bon choix commence ici.</p>
+              </div>
+              <span className="hero-showcase-seal"><BadgeCheck aria-hidden="true" /></span>
+            </div>
+          </motion.div>
+          <div className="hero-showcase-float hero-showcase-float-top" aria-hidden="true"><span className="hero-float-dot" /> Vendeurs d’ici</div>
+          <div className="hero-showcase-float hero-showcase-float-bottom" aria-hidden="true"><Sparkles /> <span>La tech du Faso</span></div>
+        </motion.div>
+
         <Link
           href="#produits"
-          className="hero-cinematic-scroll absolute bottom-6 right-10 hidden items-center gap-2 text-[10px] font-bold uppercase tracking-[.18em] text-white/55 transition-colors hover:text-white lg:flex"
+          className="hero-cinematic-scroll absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-[10px] font-bold uppercase tracking-[.18em] text-white/55 transition-colors hover:text-white lg:flex"
         >
           Défilez pour découvrir <ArrowDown className="h-4 w-4" />
         </Link>

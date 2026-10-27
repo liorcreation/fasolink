@@ -9,8 +9,8 @@
   --foreground: #1a1109;
 }
 
-/* Le splash est rendu dans le HTML initial pour éviter tout flash du contenu.
-   Le petit délai de secours le masque si JavaScript ne termine pas l'hydratation. */
+/* Le splash est rendu dans le HTML initial pour Ã©viter tout flash du contenu.
+   Le petit dÃ©lai de secours le masque si JavaScript ne termine pas l'hydratation. */
 .fasolink-splash {
   animation: fasolink-splash-safety 12s steps(1, end) forwards;
 }
@@ -32,9 +32,9 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    /* Le site n'a qu'un thème clair : évite que les contrôles natifs du
-       navigateur (select, scrollbar, input file…) passent en sombre sur un
-       appareil réglé en mode sombre système, ce qui jurerait avec le design. */
+    /* Le site n'a qu'un thÃ¨me clair : Ã©vite que les contrÃ´les natifs du
+       navigateur (select, scrollbar, input fileâ€¦) passent en sombre sur un
+       appareil rÃ©glÃ© en mode sombre systÃ¨me, ce qui jurerait avec le design. */
     color-scheme: light;
   }
 
@@ -127,7 +127,7 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
     mask-image: linear-gradient(to right, black 80%, transparent 100%);
   }
 
-  /* Défilement tactile magnétique (scroll-snap horizontal) */
+  /* DÃ©filement tactile magnÃ©tique (scroll-snap horizontal) */
   .snap-row {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -138,7 +138,7 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
     scroll-snap-align: start;
   }
 
-  /* Zones sûres iOS (encoche + barre d'accueil) */
+  /* Zones sÃ»res iOS (encoche + barre d'accueil) */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -153,7 +153,7 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   }
 }
 
-/* Auth: parcours d’entrée distinctif, avec l’identité FasoLink au premier plan. */
+/* Auth: parcours dâ€™entrÃ©e distinctif, avec lâ€™identitÃ© FasoLink au premier plan. */
 .auth-page-shell {
   position: relative;
   isolation: isolate;
@@ -414,31 +414,48 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   .tech-story-scroll-cue svg { animation: none !important; }
 }
 
-/* Hero d'accueil : vidéo produit cinématique, sans défilement scénarisé. */
-.hero-cinematic { min-height: clamp(660px,calc(100svh - 4.5rem),900px); }
-.hero-cinematic-video { object-position: 0% center; filter: brightness(1.2) saturate(.96) contrast(1.04); }
-.hero-cinematic-shade { background: linear-gradient(90deg,#05070b 0%,rgba(5,7,11,.96) 27%,rgba(5,7,11,.76) 48%,rgba(5,7,11,.23) 100%),linear-gradient(0deg,rgba(5,7,11,.88) 0%,transparent 34%,rgba(5,7,11,.2) 100%); }
-.hero-cinematic-glow { background: radial-gradient(ellipse at 78% 48%,rgba(19,101,87,.18),transparent 33%),radial-gradient(ellipse at 22% 17%,rgba(202,132,41,.09),transparent 28%); }
+/* Hero d'accueil : composition Ã©ditoriale en deux colonnes, visuel produit net. */
+.hero-cinematic { min-height: clamp(660px,calc(100svh - 4.5rem),900px); background: radial-gradient(ellipse at 82% 48%,rgba(0,131,255,.17),transparent 33rem),radial-gradient(ellipse at 10% 95%,rgba(31,146,84,.12),transparent 32rem),linear-gradient(125deg,#090d15 0%,#111a27 55%,#10161e 100%); }
+.hero-cinematic-glow { background: radial-gradient(ellipse at 79% 38%,rgba(24,119,242,.12),transparent 34%),linear-gradient(90deg,rgba(7,11,17,.15),transparent 64%); }
 .hero-cinematic-pill { border-color: rgba(255,255,255,.17); background: rgba(13,17,20,.48); color: rgba(255,255,255,.92); }
 .hero-cinematic-accent { background: linear-gradient(100deg,#f2b64f 8%,#f7dfaa 49%,#8bdda9 100%); background-clip: text; color: transparent; }
 .hero-cinematic-secondary { color: white !important; }
 .hero-cinematic-secondary:hover { color: white !important; }
 .hero-cinematic-stats { border-color: rgba(255,255,255,.16); }
 .hero-cinematic-scroll svg { animation: hero-scroll 1.8s ease-in-out infinite; }
-.hero-cinematic-credit { text-shadow: 0 1px 8px rgba(0,0,0,.65); }
 @keyframes hero-scroll { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+.hero-showcase-wrap { perspective: 1200px; animation: hero-showcase-float 6.8s ease-in-out infinite; }
+.hero-showcase-aura { position: absolute; inset: 12% 9%; border-radius: 3rem; background: linear-gradient(140deg,rgba(42,157,255,.35),rgba(244,169,60,.2)); filter: blur(55px); opacity: .78; }
+.hero-showcase-card { position: relative; overflow: hidden; padding: clamp(.75rem,2vw,1rem); border: 1px solid rgba(255,255,255,.34); border-radius: clamp(1.5rem,3vw,2.4rem); background: linear-gradient(145deg,rgba(255,255,255,.24),rgba(255,255,255,.08) 48%,rgba(255,255,255,.14)); box-shadow: 0 34px 90px -34px rgba(0,0,0,.75),inset 0 1px rgba(255,255,255,.38); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); transform-style: preserve-3d; transition: border-color .35s ease,box-shadow .35s ease; }
+.hero-showcase-card:hover { border-color: rgba(255,255,255,.58); box-shadow: 0 42px 100px -34px rgba(0,0,0,.82),0 0 0 1px rgba(255,255,255,.08),inset 0 1px rgba(255,255,255,.48); }
+.hero-showcase-topline,.hero-showcase-caption { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: .7rem; padding: .55rem .55rem .8rem; }
+.hero-showcase-mark,.hero-showcase-status { display: inline-flex; align-items: center; gap: .4rem; color: rgba(255,255,255,.88); font-size: .7rem; font-weight: 800; letter-spacing: .04em; }
+.hero-showcase-mark svg { width: .9rem; height: .9rem; color: #ffd179; }
+.hero-showcase-status { padding: .36rem .62rem; border: 1px solid rgba(255,255,255,.22); border-radius: 99px; background: rgba(7,13,21,.38); font-size: .62rem; backdrop-filter: blur(12px); }
+.hero-showcase-status span,.hero-float-dot { width: .42rem; height: .42rem; border-radius: 50%; background: #72e0a0; box-shadow: 0 0 12px rgba(114,224,160,.8); }
+.hero-showcase-image-wrap { position: relative; overflow: hidden; aspect-ratio: 1 / 1; border: 1px solid rgba(255,255,255,.36); border-radius: clamp(1.1rem,2vw,1.7rem); background: #087ef0; box-shadow: inset 0 1px 2px rgba(255,255,255,.34),0 15px 35px rgba(0,0,0,.22); }
+.hero-showcase-image { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: auto; transition: transform .7s cubic-bezier(.2,.8,.2,1),filter .7s ease; }
+.hero-showcase-card:hover .hero-showcase-image { transform: scale(1.035); filter: saturate(1.06) contrast(1.02); }
+.hero-showcase-caption { align-items: center; padding: .95rem .45rem .3rem; }
+.hero-showcase-eyebrow { color: rgba(255,255,255,.6); font-size: .57rem; font-weight: 850; letter-spacing: .14em; }
+.hero-showcase-caption p { margin-top: .15rem; color: #fff; font-size: clamp(1rem,2vw,1.35rem); font-weight: 850; letter-spacing: -.04em; }
+.hero-showcase-seal { display: grid; width: 2.6rem; height: 2.6rem; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255,255,255,.22); border-radius: 1rem; background: rgba(255,255,255,.12); color: #a3f0bd; backdrop-filter: blur(10px); }
+.hero-showcase-seal svg { width: 1.2rem; height: 1.2rem; }
+.hero-showcase-float { position: absolute; z-index: 2; display: flex; align-items: center; gap: .5rem; padding: .72rem .9rem; border: 1px solid rgba(255,255,255,.26); border-radius: 1rem; background: rgba(18,27,39,.72); color: white; box-shadow: 0 16px 38px rgba(0,0,0,.28); font-size: .68rem; font-weight: 800; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.hero-showcase-float-top { top: 17%; left: -7%; }
+.hero-showcase-float-bottom { right: -5%; bottom: 17%; color: #ffe0a3; }
+.hero-showcase-float-bottom svg { width: .95rem; height: .95rem; }
+@keyframes hero-showcase-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @media (max-width: 639px) {
   .hero-cinematic { min-height: 0; }
-  .hero-cinematic-video { object-position: center 37%; }
-  .hero-cinematic-shade { background: linear-gradient(180deg,rgba(5,7,11,.28) 0%,rgba(5,7,11,.54) 25%,rgba(5,7,11,.82) 64%,#05070b 100%),linear-gradient(90deg,rgba(5,7,11,.42),rgba(5,7,11,.12)); }
-  .hero-cinematic-glow { background: radial-gradient(ellipse at 50% 15%,rgba(19,101,87,.16),transparent 46%); }
-  .hero-cinematic .container-faso { min-height: max(750px,calc(100svh - 4rem)); padding-bottom: 4.5rem; }
-  .hero-cinematic-credit { bottom: .9rem; }
+  .hero-showcase-wrap { width: min(100%,440px); margin-top: -.25rem; }
+  .hero-showcase-float-top { left: -2%; }
+  .hero-showcase-float-bottom { right: -2%; }
+  .hero-showcase-float { padding: .58rem .72rem; font-size: .62rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-cinematic-video { display: none; }
-  .hero-cinematic { background: #05070b url("https://images.pexels.com/videos/9558109/iphone-rotating-9558109.jpeg?auto=compress&dpr=1&h=750&w=1260") center 40% / cover no-repeat; }
-  .hero-cinematic-shade { background: linear-gradient(90deg,#05070b 0%,rgba(5,7,11,.92) 48%,rgba(5,7,11,.5) 100%),linear-gradient(0deg,rgba(5,7,11,.84),transparent 60%); }
+  .hero-showcase-wrap { animation: none !important; }
+  .hero-showcase-image,.hero-showcase-card { transition: none !important; }
   .hero-cinematic-scroll svg { animation: none !important; }
 }
 
@@ -639,18 +656,4 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
 @media (prefers-reduced-motion: reduce) {
   .profile-hero-orb { animation: none !important; }
   .profile-shortcut,.profile-create-shop,.profile-edit-link,.profile-hero-button { transition-duration: .01ms !important; }
-}
-
-/* Background-only homepage product reel; no Pinterest UI or external embeds. */
-.hero-video-fallback,.hero-video-layer { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hero-video-fallback { z-index: 0; background: #080b10 url("/videos/hero/poster.jpg") center 38% / cover no-repeat; }
-.hero-video-layer { z-index: 0; object-fit: cover; object-position: center 42%; opacity: 0; pointer-events: none; transition: opacity 450ms ease-out; filter: brightness(1.05) saturate(1.04) contrast(1.04); }
-.hero-video-layer.is-playing { opacity: 1; }
-.hero-cinematic-shade { background: linear-gradient(90deg,#05070b 0%,rgba(5,7,11,.94) 27%,rgba(5,7,11,.72) 48%,rgba(5,7,11,.3) 100%),linear-gradient(0deg,rgba(5,7,11,.82) 0%,transparent 38%,rgba(5,7,11,.18) 100%); }
-@media (max-width: 767px) {
-  .hero-video-layer { object-position: center 35%; }
-  .hero-cinematic-shade { background: linear-gradient(180deg,rgba(5,7,11,.38) 0%,rgba(5,7,11,.58) 25%,rgba(5,7,11,.85) 64%,#05070b 100%),linear-gradient(90deg,rgba(5,7,11,.4),rgba(5,7,11,.14)); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-video-layer { transition: none !important; }
-}
+}\n
