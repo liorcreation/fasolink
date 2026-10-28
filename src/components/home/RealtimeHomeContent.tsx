@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, MessageCircle, Search, Sparkles, Store } from "lucide-react";
+import { ArrowRight, MessageCircle, Play, Search, Sparkles, Store } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { Hero } from "@/components/home/Hero";
 import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
@@ -26,6 +26,42 @@ export function RealtimeHomeContent({ initialShops }: { initialShops: ShopWithPr
   return (
     <>
       <Hero shops={shops} />
+      <section aria-labelledby="fasolink-video-title" className="fasolink-video-section relative isolate overflow-hidden py-16 sm:py-20 md:py-24">
+        <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-12 h-72 w-72 rounded-full bg-faso-green/10 blur-[100px]" />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-40 bottom-0 h-80 w-80 rounded-full bg-faso-red/[.07] blur-[110px]" />
+        <div className="container-faso relative">
+          <Reveal className="mx-auto max-w-3xl text-center">
+            <span className="section-kicker"><Play className="h-3.5 w-3.5 fill-current" /> Le film FasoLink</span>
+            <h2 id="fasolink-video-title" className="mt-4 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl md:text-5xl">
+              Découvrez FasoLink en action
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-ink-muted sm:text-base md:text-lg">
+              Explorez les boutiques, comparez les produits et échangez directement avec les vendeurs tech du Burkina Faso.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.12} className="mx-auto mt-9 max-w-6xl sm:mt-12">
+            <div className="fasolink-video-frame">
+              <div className="fasolink-video-inner">
+                <video
+                  className="fasolink-video-player"
+                  controls
+                  preload="none"
+                  playsInline
+                  poster="/fasolink-video-poster.webp"
+                  aria-label="Film de présentation de FasoLink, le catalogue tech du Burkina Faso"
+                >
+                  <source src="/FasoLink_Film_60s_1920x1080_partage.mp4" type="video/mp4" />
+                  Votre navigateur ne prend pas en charge la lecture vidéo.
+                </video>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-xs font-semibold tracking-wide text-ink-muted sm:text-sm">
+              Une minute pour découvrir une nouvelle façon de trouver la tech locale.
+            </p>
+          </Reveal>
+        </div>
+      </section>
       <ElectronicsShowcase shops={shops} />
       <FeaturedCarousel shops={shops} />
       <SearchExplorer shops={shops} initialCategory="electronique" electronicsOnly eyebrow="Le réseau tech burkinabè" heading="Les boutiques tech, près de vous" description="Repérez les vendeurs par ville, vérifiez leurs horaires et ouvrez leur vitrine pour poser vos questions." />

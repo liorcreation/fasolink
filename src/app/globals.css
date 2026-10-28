@@ -438,6 +438,18 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   .hero-showcase-image,.hero-showcase-art { transition: none !important; }
   .hero-cinematic-scroll svg { animation: none !important; }
 }
+.fasolink-video-section { background: #FBF6EF; }
+.fasolink-video-frame { --video-radius: 1.75rem; position: relative; isolation: isolate; overflow: visible; padding: 1.5px; border-radius: var(--video-radius); background: linear-gradient(135deg,rgba(31,146,84,.78),rgba(244,169,60,.42) 48%,rgba(214,40,40,.62)); box-shadow: 0 34px 90px -46px rgba(26,17,9,.5),0 14px 34px -24px rgba(31,146,84,.25); }
+.fasolink-video-frame::before { position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: linear-gradient(110deg,rgba(31,146,84,.52),rgba(214,40,40,.35)); content: ""; filter: blur(18px); opacity: .28; transition: opacity .4s ease,filter .4s ease; }
+.fasolink-video-frame:hover::before { filter: blur(22px); opacity: .48; }
+.fasolink-video-inner { overflow: hidden; border: 1px solid rgba(255,255,255,.78); border-radius: calc(var(--video-radius) - 2px); background: #171412; }
+.fasolink-video-player { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #171412; object-fit: contain; }
+@media (max-width: 639px) {
+  .fasolink-video-frame { --video-radius: 1.25rem; box-shadow: 0 24px 54px -36px rgba(26,17,9,.45),0 10px 26px -20px rgba(31,146,84,.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fasolink-video-frame::before { transition: none; }
+}
 
 /* Profil utilisateur : cockpit personnel adaptatif, distinct du dashboard vendeur. */
 .profile-page { min-height: 76vh; overflow: hidden; background: radial-gradient(ellipse at 95% 5%,rgba(244,169,60,.1),transparent 30rem),linear-gradient(180deg,#fbf6ef 0%,#fffdfa 52%,#fbf6ef 100%); }
