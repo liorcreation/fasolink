@@ -112,7 +112,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           initial={reduce ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="hero-showcase-wrap relative mx-auto w-full max-w-[450px] lg:ml-auto"
+          className="hero-showcase-wrap relative mx-auto hidden w-full max-w-[450px] lg:block lg:ml-auto"
         >
           <motion.div
             whileHover={reduce ? undefined : { y: -8, rotateX: 1.5, rotateY: -1.5, scale: 1.012 }}
@@ -126,7 +126,6 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
               height={1655}
               sizes="(max-width: 639px) 84vw, (max-width: 1023px) 70vw, 38vw"
               className="hero-showcase-image"
-              priority
               unoptimized
             />
           </motion.div>
