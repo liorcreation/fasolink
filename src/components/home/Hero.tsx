@@ -3,7 +3,7 @@
 import { AppLink as Link } from "@/components/site/AppLink";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, BadgeCheck, Sparkles, Store } from "lucide-react";
+import { ArrowDown, ArrowRight, Store } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { ButtonLink } from "@/components/ui/Button";
 import { PredictiveSearch } from "@/components/home/PredictiveSearch";
@@ -45,7 +45,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           <motion.h1
             variants={reveal}
             transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-7 max-w-4xl text-[clamp(2.85rem,7vw,5.5rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-white"
+            className="mt-7 max-w-4xl text-[clamp(2.85rem,7vw,5.5rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-ink"
           >
             La tech
             <br />
@@ -62,7 +62,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           <motion.p
             variants={reveal}
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8"
+            className="mt-6 max-w-xl text-base leading-7 text-ink-soft sm:text-lg sm:leading-8"
           >
             Téléphones, ordinateurs et accessoires : découvrez les vendeurs
             tech près de vous, comparez leurs offres et échangez directement
@@ -114,38 +114,22 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="hero-showcase-wrap relative mx-auto w-full max-w-[570px] lg:ml-auto"
         >
-          <div aria-hidden="true" className="hero-showcase-aura" />
           <motion.div
             whileHover={reduce ? undefined : { y: -8, rotateX: 1.5, rotateY: -1.5, scale: 1.012 }}
             transition={{ type: "spring", stiffness: 170, damping: 20 }}
-            className="hero-showcase-card"
+            className="hero-showcase-art"
           >
-            <div className="hero-showcase-topline">
-              <span className="hero-showcase-mark"><Sparkles aria-hidden="true" /> Sélection FasoLink</span>
-              <span className="hero-showcase-status"><span /> Tech locale</span>
-            </div>
-            <div className="hero-showcase-image-wrap">
-              <Image
-                src="/tech-showcase.webp"
-                alt="Sélection d’appareils et accessoires technologiques proposés sur FasoLink"
-                width={1254}
-                height={1254}
-                sizes="(max-width: 639px) 88vw, (max-width: 1023px) 76vw, 44vw"
-                className="hero-showcase-image"
-                priority
-                unoptimized
-              />
-            </div>
-            <div className="hero-showcase-caption">
-              <div>
-                <span className="hero-showcase-eyebrow">LE MEILLEUR DE LA TECH, PRÈS DE VOUS</span>
-                <p>Le bon choix commence ici.</p>
-              </div>
-              <span className="hero-showcase-seal"><BadgeCheck aria-hidden="true" /></span>
-            </div>
+            <Image
+              src="/tech-showcase-cream.webp"
+              alt="Smartphone, montre connectée, écouteurs et accessoires technologiques"
+              width={1254}
+              height={1254}
+              sizes="(max-width: 639px) 88vw, (max-width: 1023px) 76vw, 44vw"
+              className="hero-showcase-image"
+              priority
+              unoptimized
+            />
           </motion.div>
-          <div className="hero-showcase-float hero-showcase-float-top" aria-hidden="true"><span className="hero-float-dot" /> Vendeurs d’ici</div>
-          <div className="hero-showcase-float hero-showcase-float-bottom" aria-hidden="true"><Sparkles /> <span>La tech du Faso</span></div>
         </motion.div>
 
         <Link
@@ -162,8 +146,8 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div>
-      <dt className="text-xl font-extrabold tracking-tight text-white sm:text-2xl">{value}</dt>
-      <dd className="mt-0.5 text-[11px] font-medium text-white/60 sm:text-xs">{label}</dd>
+      <dt className="text-xl font-extrabold tracking-tight text-ink sm:text-2xl">{value}</dt>
+      <dd className="mt-0.5 text-[11px] font-medium text-ink-muted sm:text-xs">{label}</dd>
     </div>
   );
 }
