@@ -109,10 +109,10 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
         </motion.div>
 
         <motion.div
-          initial={reduce ? false : { opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={reduce ? false : { opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="hero-showcase-wrap relative mx-auto w-full max-w-[570px] lg:ml-auto"
+          className="hero-showcase-wrap relative mx-auto w-full max-w-[450px] lg:ml-auto"
         >
           <motion.div
             whileHover={reduce ? undefined : { y: -8, rotateX: 1.5, rotateY: -1.5, scale: 1.012 }}
@@ -120,11 +120,11 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
             className="hero-showcase-art"
           >
             <Image
-              src="/tech-showcase-cream.webp"
-              alt="Smartphone, montre connectée, écouteurs et accessoires technologiques"
-              width={1254}
-              height={1254}
-              sizes="(max-width: 639px) 88vw, (max-width: 1023px) 76vw, 44vw"
+              src="/hero-mockup-cutout.webp"
+              alt="Un smartphone affichant une boutique FasoLink, tenu dans une main"
+              width={950}
+              height={1655}
+              sizes="(max-width: 639px) 84vw, (max-width: 1023px) 70vw, 38vw"
               className="hero-showcase-image"
               priority
               unoptimized
