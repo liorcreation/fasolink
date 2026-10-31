@@ -112,7 +112,7 @@ src/
 | `/`                    | Hero + recherche prédictive (Ctrl K), explorateur géolocalisé, compteur d'impact |
 | `/inscription`         | Acheteur (gratuit) vs Vendeur (essai 14 j puis 5 000 F/mois)                 |
 | `/connexion`           | Création de compte et connexion Email/Password                              |
-| `/admin`               | Back-office protégé par le custom claim Firebase `admin`                    |
+| `/admin`               | Back-office réservé au custom claim Firebase `superAdmin`                    |
 | `/vendeur/inscription` | Formulaire complet de boutique + téléversement médias                        |
 | `/vendeur/paiement`    | Formules + essai 14 j + demande de paiement, publication via webhook signé   |
 | `/vendeur/dashboard`   | Boutique du propriétaire, catalogue CRUD, contacts, abonnement et QR Code    |
@@ -172,7 +172,7 @@ npm run build        # build production Next.js
 npm run start        # serveur production
 npm run lint         # ESLint
 npm run seed         # injecte mock-data dans Firestore (firebase-admin)
-npm run admin:set -- admin@client.bf  # ajoute le custom claim admin
+  npm run superadmin:set -- proprietaire@domaine.bf  # après configuration sécurisée du compte de service
 npm run preview      # build OpenNext + preview local Wrangler (Linux/WSL conseillé)
 npm run deploy       # build + déploiement Cloudflare Workers
 npm run upload       # téléverse une version sans la servir immédiatement
@@ -180,15 +180,14 @@ npm run upload       # téléverse une version sans la servir immédiatement
 
 ## Administrateur et production
 
-Le back-office `/admin` vérifie le custom claim Firebase `admin` dans le token.
-Après création du compte administrateur, exécutez `npm run admin:set --
-admin@client.bf` avec `FIREBASE_SERVICE_ACCOUNT` configuré, puis reconnectez-vous
-pour renouveler le token.
+Le back-office `/admin` et les règles de gestion sensibles reposent sur le
+custom claim Firebase `superAdmin`. L'ancien claim `admin` ne doit pas être
+considéré comme un accès super administrateur. Après attribution du claim,
+l'utilisateur doit renouveler sa session.
 
 ### Super administrateur et licences
 
-Le rôle super administrateur est distinct du rôle administrateur de modération.
-Il donne accès au panneau **Licences & accès boutiques** de `/admin` pour
+Le rôle super administrateur donne accès au panneau **Licences & accès boutiques** de `/admin` pour
 accorder une durée d'accès, enregistrer une validation manuelle, offrir ou
 révoquer une licence. Chaque décision crée une entrée immuable dans
 `admin_audit_logs`. Les règles Firestore exigent le claim `superAdmin` pour ces
@@ -219,8 +218,6 @@ de CinetPay avant activation. Ajoutez egalement `CRON_SECRET` et appelez
 
 Voir **[DEPLOY.md](./DEPLOY.md)** — Cloudflare Workers via OpenNext + Firebase,
 avec les variables et secrets de production, la migration d'URL et les tests
-requis avant la bascule depuis Cloudflare Pages.
+  requis avant la bascule depuis Cloudflare Pages.
 
 ---
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)

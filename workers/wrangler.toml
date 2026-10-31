@@ -6,4 +6,4 @@ compatibility_date = "2026-09-14"
 crons = ["0 3 * * *"]
 
 [vars]
-API_URL = "https://fasolink.pages.dev"
+API_URL = "https://fasolink.jurisia-api.workers.dev"

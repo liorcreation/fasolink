@@ -10,9 +10,9 @@ import {
 /**
  * Middleware de sécurité et Rate Limiting — FasoLink
  *
- * Optimisé pour Cloudflare Workers : s'exécute uniquement sur les routes sensibles
- * nécessitant une protection active contre les attaques par force brute (connexion,
- * inscription) et le spam de transactions ou requêtes API.
+ * Garde locale par isolate Cloudflare : limite les rafales de requêtes HTTP.
+ * Ne limite pas les appels Firebase Auth emis directement depuis le navigateur
+ * et ne fournit pas de compteur partage entre les isolates/centres Cloudflare.
  * Les en-têtes de sécurité généraux sont désormais appliqués nativement via next.config.mjs.
  */
 export function middleware(request: NextRequest) {

@@ -1,9 +1,10 @@
 /**
- * Module de Rate Limiting In-Memory Pro-Grade — FasoLink
+ * Garde anti-abus locale en memoire — FasoLink
  *
- * Compatible Edge Runtime, Cloudflare Workers et Node.js.
- * Utilise un algorithme Sliding Window pour bloquer les attaques DDoS,
- * les tentatives de brute-force sur l'authentification et le spam de transactions.
+ * Compatible Edge Runtime, Cloudflare Workers et Node.js. Le compteur est local
+ * a chaque isolate et peut repartir a zero lors d'un redemarrage. Il ne remplace
+ * pas une limite Cloudflare partagee. Les tentatives Firebase Auth sont envoyees
+ * directement a Firebase par le navigateur et ne passent pas par ce middleware.
  */
 
 export interface RateLimitConfig {
@@ -87,10 +88,11 @@ class InMemoryRateLimiter {
 export const rateLimiter = new InMemoryRateLimiter();
 
 /**
- * Profils de Rate Limiting prédéfinis pour FasoLink
+ * Profils de limitation locale des requetes HTTP FasoLink.
+ * Ils reduisent les rafales sur une instance, sans garantie de quota global.
  */
 export const RATE_LIMIT_PROFILES = {
-  /** Protection contre le brute-force de connexion et d'inscription */
+  /** Limite les rechargements des pages d'auth; ne filtre pas les appels Firebase Auth */
   AUTH: { limit: 10, windowMs: 60_000 }, // 10 req / min
   /** Protection contre le spam d'initialisation de paiement */
   PAYMENT_INIT: { limit: 6, windowMs: 60_000 }, // 6 req / min

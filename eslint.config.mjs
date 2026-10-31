@@ -14,6 +14,7 @@ export default defineConfig([
   },
   globalIgnores([
     ".next/**",
+    ".vercel/**",
     ".open-next/**",
     ".wrangler/**",
     "out/**",
