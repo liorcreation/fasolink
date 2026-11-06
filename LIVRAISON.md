@@ -10,8 +10,8 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `308abe0` poussé sur `origin/main`. Cette modification du focus
-clavier n'est pas encore déployée. Le Worker reste à la version précédente
+État Git : commit `9bc7aec` poussé sur `origin/main`. Les dernières améliorations
+du focus clavier et du lien de saut ne sont pas encore déployées. Le Worker reste à la version précédente
 `fe8d8a5c-d309-474c-b74f-e67ea4edb682` (commit `0ac8537`); les routes `/`,
 `/boutiques`, `/produits` et `/vendeur/dashboard` y répondaient HTTP 200 lors du
 contrôle précédent. Le déploiement de `308abe0` a été bloqué parce que Wrangler
@@ -41,6 +41,9 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   `outline-none`. Le contraste calculé sur le fond crème est de 4,93:1. Cette
   correction est poussée dans Git mais attend l'authentification Cloudflare
   avant d'être publiée.
+- Un lien clavier « Passer au contenu principal » apparaît au premier Tab,
+  saute la navigation répétitive et focalise le conteneur de page commun. Cette
+  amélioration est poussée dans Git mais attend le même déploiement Cloudflare.
 - Une passe de fondation UI a centralisé les échelles rouge/or, les neutres
   chauds, les couleurs d'état, les rayons, ombres et durées. Geist est utilisé
   pour le texte et Sora pour les titres. Les boutons ont un état de chargement
