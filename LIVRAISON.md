@@ -10,8 +10,8 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `5feac60` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `86c58d78-3bcc-4046-ab0d-afa6c55c3fd8`);
+État Git : commit `cf6be37` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `fdc36526-a108-40e9-9189-c863a4a4fd5a`);
 les routes `/`, `/boutiques` et `/connexion` répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
@@ -64,6 +64,12 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   Worker ont réussi; `/`, `/boutiques` et `/connexion` répondent HTTP 200.
   La recette visuelle sur appareils réels et la publication d’un avis avec un
   compte visiteur restent à faire.
+- La fiche produit ramène maintenant le fil d’Ariane vers la liste des
+  boutiques. Le CTA mobile ouvre WhatsApp avec le nom et le prix du produit,
+  puis demande sa disponibilité ou une prochaine disponibilité selon son état.
+  Le Worker a été redéployé; aucune URL de produit publique n'était présente
+  dans le catalogue accessible pour tester une fiche réelle. Une recette
+  mobile avec un produit et un vendeur existants reste à faire.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
