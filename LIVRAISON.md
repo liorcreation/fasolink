@@ -1,6 +1,6 @@
 # FasoLink — état de finalisation et préparation de livraison
 
-Dernière vérification : 6 novembre 2026.
+Dernière vérification : 6 novembre 2026 (après la passe vitrine).
 
 ## État exécutif
 
@@ -10,10 +10,9 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `8232cb6` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `7ea3213b-15e4-48de-b802-9ce27b5a0353`);
-les routes `/`, `/profil` et plusieurs routes contrôlées lors des étapes
-précédentes répondent HTTP 200.
+État Git : commit `5feac60` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `86c58d78-3bcc-4046-ab0d-afa6c55c3fd8`);
+les routes `/`, `/boutiques` et `/connexion` répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -57,6 +56,14 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   animations des favoris respectent la réduction du mouvement. ESLint,
   TypeScript et le build ont réussi; `/profil` répond HTTP 200. La vérification
   avec un compte authentifié reste à faire.
+- La vitrine boutique améliore l’accès tactile et clavier aux avis et à la
+  galerie : note plus facile à sélectionner, formulaire libellé avec limite et
+  compteur de caractères, état de publication annoncé, fermeture de la photo
+  agrandie avec Échap et retour du focus au bouton d’ouverture. Les animations
+  tiennent compte de `prefers-reduced-motion`. ESLint, TypeScript et le build
+  Worker ont réussi; `/`, `/boutiques` et `/connexion` répondent HTTP 200.
+  La recette visuelle sur appareils réels et la publication d’un avis avec un
+  compte visiteur restent à faire.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
