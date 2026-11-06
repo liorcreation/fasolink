@@ -142,8 +142,10 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   return (
     <dialog
       ref={dialogRef}
+      id="fasolink-command-palette"
       className="fasolink-command-dialog m-auto max-h-[min(84dvh,720px)] w-[calc(100%-1.25rem)] max-w-2xl overflow-hidden rounded-[1.75rem] border border-clay-200 bg-[#fffdfa] p-0 text-ink shadow-[0_32px_100px_-35px_rgba(23,18,14,.5)] backdrop:bg-ink/55 backdrop:backdrop-blur-sm sm:rounded-[2rem]"
       aria-labelledby="command-title"
+      aria-describedby="command-help"
       onCancel={(event) => { event.preventDefault(); close(); }}
       onClose={() => { if (open) close(); }}
       onClick={(event) => { if (event.target === dialogRef.current) close(); }}
@@ -161,7 +163,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           <input ref={inputRef} type="search" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={handleSearchKeyDown} placeholder="Rechercher une page ou une action…" className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:font-normal placeholder:text-ink-muted" aria-label="Rechercher dans les pages et actions FasoLink" />
           <kbd className="hidden rounded-md border border-clay-200 bg-clay-50 px-2 py-1 text-[10px] font-bold text-ink-muted sm:inline">ESC</kbd>
         </label>
-        <p aria-live="polite" className="mt-2 px-1 text-[11px] text-ink-muted">{results.length} résultat{results.length > 1 ? "s" : ""} · ↑↓ pour parcourir, Entrée pour ouvrir</p>
+        <p id="command-help" aria-live="polite" className="mt-2 px-1 text-[11px] text-ink-muted">{results.length} résultat{results.length > 1 ? "s" : ""} · ↑↓ pour parcourir, Entrée pour ouvrir</p>
       </div>
 
       <div className="max-h-[min(56dvh,470px)] overflow-y-auto overscroll-contain p-3 sm:p-4">

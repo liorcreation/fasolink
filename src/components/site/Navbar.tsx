@@ -219,7 +219,7 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-auto">
-          <button type="button" onClick={() => setCommandPaletteOpen(true)} aria-label="Rechercher une page ou une action" title="Recherche rapide · Ctrl K" className="hidden min-h-10 items-center gap-2 rounded-full border border-clay-200 bg-white/90 px-3 text-xs font-semibold text-ink-muted shadow-sm transition hover:border-faso-gold/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red xl:inline-flex">
+          <button type="button" onClick={() => setCommandPaletteOpen(true)} aria-label="Rechercher une page ou une action" aria-haspopup="dialog" aria-controls="fasolink-command-palette" aria-expanded={commandPaletteOpen} aria-keyshortcuts="Control+k Meta+k" title="Recherche rapide · Ctrl/⌘ K" className="hidden min-h-10 items-center gap-2 rounded-full border border-clay-200 bg-white/90 px-3 text-xs font-semibold text-ink-muted shadow-sm transition hover:border-faso-gold/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red xl:inline-flex">
             <Search className="h-4 w-4 text-faso-red" aria-hidden="true" />
             <span>Accès rapide</span>
             <kbd className="rounded-md border border-clay-200 bg-clay-50 px-1.5 py-0.5 text-[10px]">Ctrl K</kbd>
@@ -295,7 +295,7 @@ export function Navbar() {
                 </div>
               </div>
 
-              <button type="button" onClick={() => { closeMenus(); setCommandPaletteOpen(true); }} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-2xl border border-clay-200 bg-white px-4 text-left text-sm font-bold text-ink transition hover:border-faso-gold/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
+              <button type="button" onClick={() => { closeMenus(); setCommandPaletteOpen(true); }} aria-label="Rechercher une page ou une action" aria-haspopup="dialog" aria-controls="fasolink-command-palette" aria-expanded={commandPaletteOpen} aria-keyshortcuts="Control+k Meta+k" className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-2xl border border-clay-200 bg-white px-4 text-left text-sm font-bold text-ink transition hover:border-faso-gold/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
                 <Search className="h-4 w-4 text-faso-red" aria-hidden="true" />
                 <span className="flex-1">Rechercher une page ou une action</span>
                 <kbd className="rounded-md border border-clay-200 bg-clay-50 px-2 py-1 text-[10px] text-ink-muted">Ctrl K</kbd>
