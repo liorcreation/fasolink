@@ -10,10 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `c8fbd80` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `9b1425bf-d0ec-4848-955d-3d5dc98a315c`);
-les routes `/`, `/produits`, `/connexion`, `/inscription` et `/vendeur/dashboard`
-répondent HTTP 200.
+État Git : commit `8232cb6` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `7ea3213b-15e4-48de-b802-9ce27b5a0353`);
+les routes `/`, `/profil` et plusieurs routes contrôlées lors des étapes
+précédentes répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -51,6 +51,12 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   préférence système. ESLint, TypeScript et le build de production ont réussi;
   `/vendeur/dashboard` répond HTTP 200. La recette réelle avec un compte vendeur
   et les données Firebase n’a pas été exécutée.
+- Le Profil utilisateur utilise des placeholders de chargement pour les
+  coordonnées et favoris, des boutons tactiles d’au moins 44 px et des états
+  occupés accessibles pendant l’enregistrement et la déconnexion. Les
+  animations des favoris respectent la réduction du mouvement. ESLint,
+  TypeScript et le build ont réussi; `/profil` répond HTTP 200. La vérification
+  avec un compte authentifié reste à faire.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
