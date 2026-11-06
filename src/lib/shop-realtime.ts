@@ -1,8 +1,13 @@
 import { app, COLLECTIONS, isFirebaseConfigured } from "@/lib/firebase";
-import type { Product, Review, ShopStatus, ShopWithProducts } from "@/lib/database.types";
+import type { Product, Review, Shop, ShopStatus, ShopWithProducts, Subscription } from "@/lib/database.types";
 import type { DocumentData, QuerySnapshot } from "firebase/firestore";
 
 const SHOP_STATUS_EVENT = "fasolink:shop-status";
+
+export type OwnedShopRecord = {
+  shop: ShopWithProducts;
+  subscription: Subscription | null;
+};
 
 export type ShopStatusEvent = {
   shopId: string;
@@ -92,6 +97,107 @@ export function subscribeToShopStatus(
   return () => {
     disposed = true;
     unsubscribe?.();
+  };
+}
+
+/** Suit en direct les boutiques, produits et licences d'un vendeur connecté. */
+export function subscribeToOwnedShopPortfolio(
+  ownerId: string,
+  onRecords: (records: OwnedShopRecord[]) => void,
+  onError?: (error: Error) => void,
+): () => void {
+  if (!isFirebaseConfigured || !ownerId) return () => undefined;
+
+  let disposed = false;
+  let stopShops: (() => void) | undefined;
+  const stopShopDetails = new Map<string, () => void>();
+  const shops = new Map<string, Shop>();
+  const products = new Map<string, Map<string, Product>>();
+  const subscriptions = new Map<string, Map<string, Subscription>>();
+
+  function emit() {
+    if (disposed) return;
+    const records = [...shops.values()]
+      .map((shop) => {
+        const latestSubscription = [...(subscriptions.get(shop.id)?.values() ?? [])]
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+        return {
+          shop: { ...shop, products: [...(products.get(shop.id)?.values() ?? [])] },
+          subscription: latestSubscription,
+        };
+      })
+      .sort((a, b) => b.shop.updated_at.localeCompare(a.shop.updated_at));
+    onRecords(records);
+  }
+
+  void import("firebase/firestore")
+    .then(({ collection, getFirestore, onSnapshot, query, where }) => {
+      if (disposed) return;
+      const realtimeDb = getFirestore(app);
+
+      function listenToShop(shopId: string) {
+        if (stopShopDetails.has(shopId)) return;
+        const stopProducts = onSnapshot(
+          query(collection(realtimeDb, COLLECTIONS.products), where("shop_id", "==", shopId)),
+          (snapshot) => {
+            products.set(shopId, new Map(snapshot.docs.map((document) => [
+              document.id,
+              { id: document.id, ...document.data() } as Product,
+            ])));
+            emit();
+          },
+          (error) => onError?.(error),
+        );
+        const stopSubscriptions = onSnapshot(
+          query(collection(realtimeDb, COLLECTIONS.subscriptions), where("shop_id", "==", shopId)),
+          (snapshot) => {
+            subscriptions.set(shopId, new Map(snapshot.docs.map((document) => [
+              document.id,
+              { id: document.id, ...document.data() } as Subscription,
+            ])));
+            emit();
+          },
+          (error) => onError?.(error),
+        );
+        stopShopDetails.set(shopId, () => {
+          stopProducts();
+          stopSubscriptions();
+        });
+      }
+
+      stopShops = onSnapshot(
+        query(collection(realtimeDb, COLLECTIONS.shops), where("owner_id", "==", ownerId)),
+        (snapshot) => {
+          const nextShops = new Map(snapshot.docs.map((document) => [
+            document.id,
+            { id: document.id, ...document.data() } as Shop,
+          ]));
+          for (const [shopId, stop] of stopShopDetails) {
+            if (nextShops.has(shopId)) continue;
+            stop();
+            stopShopDetails.delete(shopId);
+            products.delete(shopId);
+            subscriptions.delete(shopId);
+          }
+          shops.clear();
+          nextShops.forEach((shop, shopId) => {
+            shops.set(shopId, shop);
+            listenToShop(shopId);
+          });
+          emit();
+        },
+        (error) => onError?.(error),
+      );
+    })
+    .catch((cause: unknown) => {
+      if (!disposed) onError?.(cause instanceof Error ? cause : new Error("Écoute temps réel indisponible."));
+    });
+
+  return () => {
+    disposed = true;
+    stopShops?.();
+    stopShopDetails.forEach((stop) => stop());
+    stopShopDetails.clear();
   };
 }
 
