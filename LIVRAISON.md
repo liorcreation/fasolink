@@ -10,10 +10,12 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `0ac8537` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `fe8d8a5c-d309-474c-b74f-e67ea4edb682`);
-les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondent HTTP 200
-au contrôle HTTP du 6 novembre.
+État Git : commit `308abe0` poussé sur `origin/main`. Cette modification du focus
+clavier n'est pas encore déployée. Le Worker reste à la version précédente
+`fe8d8a5c-d309-474c-b74f-e67ea4edb682` (commit `0ac8537`); les routes `/`,
+`/boutiques`, `/produits` et `/vendeur/dashboard` y répondaient HTTP 200 lors du
+contrôle précédent. Le déploiement de `308abe0` a été bloqué parce que Wrangler
+n'a pas de session Cloudflare ni de jeton d'API dans cet environnement.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -34,6 +36,11 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   `prefers-reduced-motion` : les déplacements décoratifs sont retirés ou
   instantanés lorsque l'utilisateur a demandé moins d'animation. Les parcours
   de navigation n'ont pas été modifiés.
+- Le repère de focus clavier utilise maintenant un doré plus foncé, avec un
+  contour homogène visible aussi sur les contrôles dont les styles contiennent
+  `outline-none`. Le contraste calculé sur le fond crème est de 4,93:1. Cette
+  correction est poussée dans Git mais attend l'authentification Cloudflare
+  avant d'être publiée.
 - Une passe de fondation UI a centralisé les échelles rouge/or, les neutres
   chauds, les couleurs d'état, les rayons, ombres et durées. Geist est utilisé
   pour le texte et Sora pour les titres. Les boutons ont un état de chargement

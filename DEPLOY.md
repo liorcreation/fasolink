@@ -1,16 +1,17 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 6 novembre 2026 (accessibilité des animations partagées).
+Dernière mise à jour : 6 novembre 2026 (focus clavier, publication en attente).
 
 ## Adresses actuellement publiées
 
 - Worker avec les dernières améliorations :
   `https://fasolink.jurisia-api.workers.dev`.
-- Commit du code publié : `0ac8537`; version Worker :
-  `fe8d8a5c-d309-474c-b74f-e67ea4edb682`.
-- Contrôle HTTP du 6 novembre : `/`, `/boutiques`, `/produits` et
-  `/vendeur/dashboard` répondent tous `200`.
-- Ancien site Pages : `https://fasolink.pages.dev` (répond encore mais n'a pas
+- Dernier commit poussé : `308abe0`. Le Worker publié est encore le commit
+  `0ac8537`, version `fe8d8a5c-d309-474c-b74f-e67ea4edb682` : le déploiement
+  du nouveau focus clavier attend une session Wrangler authentifiée.
+- Les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondaient
+  `200` sur cette version précédente au contrôle HTTP du 6 novembre.
+- Site Pages distinct : `https://fasolink.pages.dev` (répond encore mais n'a pas
   les mêmes fichiers ni la section vidéo récente).
 
 Le client doit confirmer l'adresse canonique avant les paiements. Un domaine
@@ -33,6 +34,12 @@ et les variables de déploiement sur cette adresse.
    suite ne réussit pas.
 
 ## Secrets Cloudflare Workers
+
+`npm run deploy` construit correctement l'application, mais la publication de
+`308abe0` est bloquée : Wrangler indique qu'il n'est pas authentifié et qu'aucun
+`CLOUDFLARE_API_TOKEN` n'est défini. Après connexion Cloudflare dans
+l'environnement de déploiement autorisé, relancer `npm run deploy`. Ne jamais
+ajouter le jeton au dépôt ou au PDF.
 
 Le dernier contrôle de `wrangler secret list` pour le Worker applicatif `fasolink`
 a renvoyé une liste vide. Pour le Worker cron, seul un secret nommé `CRON_SECRET`
