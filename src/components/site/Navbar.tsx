@@ -28,6 +28,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/site/Logo";
 import { ButtonLink } from "@/components/ui/Button";
+import { CommandPalette } from "@/components/site/CommandPalette";
 
 const SELLER_LINKS = [
   { href: "/vendeur/dashboard", label: "Tableau de bord", detail: "Pilotez votre boutique", icon: Gauge },
@@ -81,6 +82,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [sellerMenuOpen, setSellerMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const sellerMenuRef = useRef<HTMLDivElement>(null);
 
@@ -217,6 +219,11 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-auto">
+          <button type="button" onClick={() => setCommandPaletteOpen(true)} aria-label="Rechercher une page ou une action" title="Recherche rapide · Ctrl K" className="hidden min-h-10 items-center gap-2 rounded-full border border-clay-200 bg-white/90 px-3 text-xs font-semibold text-ink-muted shadow-sm transition hover:border-faso-gold/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red xl:inline-flex">
+            <Search className="h-4 w-4 text-faso-red" aria-hidden="true" />
+            <span>Accès rapide</span>
+            <kbd className="rounded-md border border-clay-200 bg-clay-50 px-1.5 py-0.5 text-[10px]">Ctrl K</kbd>
+          </button>
           {!user && (
             <Link href="/connexion" className="hidden rounded-full px-3 py-2 text-sm font-bold text-ink-soft transition-colors hover:bg-white hover:text-ink xl:inline-flex">
               Se connecter
@@ -288,6 +295,12 @@ export function Navbar() {
                 </div>
               </div>
 
+              <button type="button" onClick={() => { closeMenus(); setCommandPaletteOpen(true); }} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-2xl border border-clay-200 bg-white px-4 text-left text-sm font-bold text-ink transition hover:border-faso-gold/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red">
+                <Search className="h-4 w-4 text-faso-red" aria-hidden="true" />
+                <span className="flex-1">Rechercher une page ou une action</span>
+                <kbd className="rounded-md border border-clay-200 bg-clay-50 px-2 py-1 text-[10px] text-ink-muted">Ctrl K</kbd>
+              </button>
+
               <div className="mt-5">
                 <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-[.16em] text-ink-muted">Espace vendeur</p>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -322,6 +335,7 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+      <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
     </>
   );
 }
