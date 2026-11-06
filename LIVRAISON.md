@@ -10,8 +10,8 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `9bc7aec` poussé sur `origin/main`. Les dernières améliorations
-du focus clavier et du lien de saut ne sont pas encore déployées. Le Worker reste à la version précédente
+État Git : commit `1f1bd13` poussé sur `origin/main`. Les dernières améliorations
+du clavier et de la palette de commandes ne sont pas encore déployées. Le Worker reste à la version précédente
 `fe8d8a5c-d309-474c-b74f-e67ea4edb682` (commit `0ac8537`); les routes `/`,
 `/boutiques`, `/produits` et `/vendeur/dashboard` y répondaient HTTP 200 lors du
 contrôle précédent. Le déploiement de `308abe0` a été bloqué parce que Wrangler
@@ -44,6 +44,10 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
 - Un lien clavier « Passer au contenu principal » apparaît au premier Tab,
   saute la navigation répétitive et focalise le conteneur de page commun. Cette
   amélioration est poussée dans Git mais attend le même déploiement Cloudflare.
+- La palette de commandes annonce maintenant son aide clavier et ses raccourcis
+  aux technologies d’assistance; ses boutons d’ouverture exposent le dialogue,
+  son état et le raccourci Ctrl/⌘+K. Vérifications lint, TypeScript et build
+  réussies; la modification est poussée mais pas encore en production.
 - Une passe de fondation UI a centralisé les échelles rouge/or, les neutres
   chauds, les couleurs d'état, les rayons, ombres et durées. Geist est utilisé
   pour le texte et Sora pour les titres. Les boutons ont un état de chargement
