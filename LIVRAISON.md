@@ -1,6 +1,6 @@
 # FasoLink — état de finalisation et préparation de livraison
 
-Dernière vérification : 6 novembre 2026 (après la passe Mes boutiques).
+Dernière vérification : 6 novembre 2026 (après l’inscription boutique).
 
 ## État exécutif
 
@@ -10,10 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `0185c21` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `94827b7a-51a0-4e20-a747-18ea4eb4cae1`);
-les routes `/`, `/vendeur/boutiques`, `/vendeur/dashboard` et `/connexion`
-répondent HTTP 200.
+État Git : commit `5f0340f` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `0dd5dadf-53a6-4782-bff2-f1219e413488`);
+les routes `/`, `/vendeur/inscription`, `/vendeur/boutiques`,
+`/vendeur/dashboard` et `/connexion` répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -80,6 +80,14 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   `/vendeur/boutiques` et `/vendeur/dashboard` répondent HTTP 200. La recette
   authentifiée avec le compte vendeur et les écritures Firebase réelles reste
   à faire.
+- L’inscription boutique associe maintenant explicitement les libellés aux
+  contrôles, annonce le progrès du formulaire et réduit ses animations selon
+  le réglage système. Le choix des photos accepte les formats déjà permis par
+  Storage (JPG, PNG, WebP) et refuse côté interface les fichiers de 5 Mo ou
+  plus; la description et les noms respectent aussi les limites Firestore.
+  ESLint, TypeScript et le build de production ont réussi, et
+  `/vendeur/inscription` répond HTTP 200. Le téléversement doit encore être
+  vérifié après activation/validation du bucket Firebase Storage.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
