@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Building2,
   ArrowRight,
@@ -46,10 +46,17 @@ const initial: FormState = {
 };
 
 const MAX_GALLERY = 6;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function isAllowedImage(file: File) {
+  return ACCEPTED_IMAGE_TYPES.includes(file.type) && file.size < MAX_IMAGE_BYTES;
+}
 
 export function ShopRegistrationForm() {
   const router = useRouter();
   const { user, loading: authLoading, isConfigured } = useAuth();
+  const reduceMotion = useReducedMotion();
   const [form, setForm] = useState<FormState>(initial);
   const [logo, setLogo] = useState<File | null>(null);
   const [gallery, setGallery] = useState<File[]>([]);
@@ -84,7 +91,7 @@ export function ShopRegistrationForm() {
     form.city !== "" &&
     isValidBurkinaPhone(form.whatsapp) &&
     form.description.trim().length > 20;
-  const category = CATEGORY_MAP.electronique;
+  const category = CATEGORY_MAP[form.category || "electronique"];
   const completedFields = [
     form.name.trim().length > 1,
     Boolean(form.category) && (form.category !== "electronique" || Boolean(form.subcategory)),
@@ -137,9 +144,28 @@ export function ShopRegistrationForm() {
 
   function onGalleryPick(list: FileList | null) {
     if (!list) return;
-    setGallery((prev) =>
-      [...prev, ...Array.from(list)].slice(0, MAX_GALLERY),
-    );
+    const selected = Array.from(list);
+    const invalid = selected.filter((file) => !isAllowedImage(file));
+    const validFiles = selected.filter(isAllowedImage);
+    const availableSlots = MAX_GALLERY - gallery.length;
+    const accepted = validFiles.slice(0, availableSlots);
+    setGallery((prev) => [...prev, ...accepted]);
+    if (invalid.length) {
+      setError("Choisissez des images JPG, PNG ou WebP de moins de 5 Mo chacune.");
+    } else if (validFiles.length > availableSlots) {
+      setError(`La galerie est limitée à ${MAX_GALLERY} photos. ${accepted.length} ajoutée${accepted.length > 1 ? "s" : ""}.`);
+    } else {
+      setError(null);
+    }
+  }
+
+  function onLogoPick(file: File | null) {
+    if (file && !isAllowedImage(file)) {
+      setError("Le logo doit être une image JPG, PNG ou WebP de moins de 5 Mo.");
+      return;
+    }
+    setError(null);
+    setLogo(file);
   }
 
   if (authLoading) {
@@ -184,7 +210,7 @@ export function ShopRegistrationForm() {
   if (status === "done") {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
+        initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         className="card-premium mx-auto max-w-lg p-10 text-center"
       >
@@ -206,7 +232,7 @@ export function ShopRegistrationForm() {
         <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#17120E] p-5 text-white shadow-premium-lg sm:p-6">
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_100%_0,rgba(220,166,55,.24),transparent_44%)]" />
           <div className="flex items-center justify-between gap-3"><span className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[.18em] text-[#F3D88E]"><Building2 className="h-3.5 w-3.5" /> Votre progression</span><span className="text-xs font-black text-white">{completion}%</span></div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><motion.div initial={{ width: 0 }} animate={{ width: `${completion}%` }} transition={{ duration: .45, ease: "easeOut" }} className="h-full rounded-full bg-faso-gold" /></div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-label="Progression du formulaire" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completion}><motion.div initial={reduceMotion ? false : { scaleX: 0 }} animate={{ scaleX: completion / 100 }} transition={{ duration: reduceMotion ? 0 : .45, ease: "easeOut" }} className="h-full origin-left rounded-full bg-faso-gold" /></div>
           <div className="mt-5 flex items-center gap-3"><span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-white/10 text-faso-gold">{logoPreview ? (
             // eslint-disable-next-line @next/next/no-img-element -- Local object URL preview.
             <img src={logoPreview} alt="" className="h-full w-full object-cover" />
@@ -229,12 +255,14 @@ export function ShopRegistrationForm() {
           Identité de la boutique
         </legend>
 
-        <Field label="Nom de la boutique" required>
+        <Field label="Nom de la boutique" required controlId="shop-name">
           <input
             type="text"
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
             placeholder="Ex. Faso Mobile, Ouaga Digital…"
+            maxLength={100}
+            autoComplete="organization"
             className={inputCls}
             required
           />
@@ -248,17 +276,17 @@ export function ShopRegistrationForm() {
         </Field>
 
         {form.category === "electronique" && (
-          <Field label="Votre spécialité tech" required hint="Choisissez le domaine principal de votre boutique. Vous pourrez toujours proposer plusieurs types de produits.">
-            <div className="grid gap-2 sm:grid-cols-2">
+          <Field label="Votre spécialité tech" required hint="Choisissez le domaine principal de votre boutique. Vous pourrez toujours proposer plusieurs types de produits." groupId="shop-subcategory">
+            <div id="shop-subcategory" role="group" aria-labelledby="shop-subcategory-label" aria-describedby="shop-subcategory-hint" className="grid gap-2 sm:grid-cols-2">
               {ELECTRONICS_SUBCATEGORIES.map((item, index) => {
                 const selected = form.subcategory === item.id;
                 return (
                   <motion.button
                     type="button"
                     key={item.id}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.025 }}
+                    transition={{ delay: reduceMotion ? 0 : index * 0.025 }}
                     aria-pressed={selected}
                     onClick={() => update("subcategory", item.id)}
                     className={cn(
@@ -283,11 +311,12 @@ export function ShopRegistrationForm() {
           </Field>
         )}
 
-        <Field label="Description" required hint="Minimum 20 caractères">
+        <Field label="Description" required hint={`${form.description.trim().length}/3 000 caractères · minimum 21`} controlId="shop-description">
           <textarea
             value={form.description}
             onChange={(e) => update("description", e.target.value)}
             rows={4}
+            maxLength={3000}
             placeholder="Marques et catégories proposées, état des appareils, garanties annoncées, livraison et service après-vente…"
             className={cn(inputCls, "resize-none")}
             required
@@ -303,7 +332,7 @@ export function ShopRegistrationForm() {
         </legend>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Ville" required>
+          <Field label="Ville" required controlId="shop-city">
             <select
               value={form.city}
               onChange={(e) => update("city", e.target.value)}
@@ -319,12 +348,14 @@ export function ShopRegistrationForm() {
             </select>
           </Field>
 
-          <Field label="Quartier / secteur">
+          <Field label="Quartier / secteur" controlId="shop-neighborhood">
             <input
               type="text"
               value={form.neighborhood}
               onChange={(e) => update("neighborhood", e.target.value)}
               placeholder="Ex. Ouaga 2000, Secteur 15"
+              maxLength={100}
+              autoComplete="address-level3"
               className={inputCls}
             />
           </Field>
@@ -334,19 +365,25 @@ export function ShopRegistrationForm() {
           label="Numéro WhatsApp Business"
           required
           hint="Format local (70 00 00 00) ou international (+226…)"
+          controlId="shop-whatsapp"
         >
           <div className="flex items-center gap-2 rounded-2xl border border-clay-200 bg-white px-4 transition-all focus-within:border-faso-gold focus-within:shadow-[0_0_0_4px_rgba(244,169,60,0.14)]">
             <Phone className="h-4 w-4 text-ink-muted" />
             <input
               type="tel"
+              id="shop-whatsapp"
               value={form.whatsapp}
               onChange={(e) => update("whatsapp", e.target.value)}
               placeholder="70 12 34 56"
+              autoComplete="tel"
+              inputMode="tel"
+              aria-invalid={Boolean(form.whatsapp && !isValidBurkinaPhone(form.whatsapp))}
+              aria-describedby={form.whatsapp && !isValidBurkinaPhone(form.whatsapp) ? "shop-whatsapp-error" : "shop-whatsapp-hint"}
               className="h-12 w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted/70"
               required
             />
           </div>
-          {form.whatsapp && !isValidBurkinaPhone(form.whatsapp) && <span className="mt-1 block text-xs font-medium text-faso-red-dark">Numéro invalide : 8 chiffres burkinabè attendus, par exemple 05 88 27 68 ou +226 70 00 00 00.</span>}
+          {form.whatsapp && !isValidBurkinaPhone(form.whatsapp) && <span id="shop-whatsapp-error" className="mt-1 block text-xs font-medium text-faso-red-dark">Numéro invalide : 8 chiffres burkinabè attendus, par exemple 05 88 27 68 ou +226 70 00 00 00.</span>}
         </Field>
       </fieldset>
 
@@ -376,14 +413,16 @@ export function ShopRegistrationForm() {
             <input
               ref={logoInput}
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_IMAGE_TYPES.join(",")}
+              aria-label="Choisir le logo de la boutique"
               className="hidden"
-              onChange={(e) => { setLogo(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
+              onChange={(e) => { onLogoPick(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }}
             />
             <Button
               type="button"
               variant="outline"
               size="sm"
+              aria-describedby="shop-image-help"
               onClick={() => logoInput.current?.click()}
             >
               {logo ? "Changer le logo" : "Ajouter le logo"}
@@ -392,12 +431,12 @@ export function ShopRegistrationForm() {
               <button
                 type="button"
                 onClick={() => setLogo(null)}
-                className="ml-3 text-xs font-semibold text-faso-red hover:underline"
+                className="ml-2 inline-flex min-h-11 items-center rounded-lg px-3 text-xs font-semibold text-faso-red hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red"
               >
                 Retirer
               </button>
             )}
-            <p className="mt-2 text-[10px] leading-4 text-ink-muted">Carré de préférence · JPG ou PNG</p>
+            <p id="shop-image-help" className="mt-2 text-[10px] leading-4 text-ink-muted">Carré de préférence · JPG, PNG ou WebP · moins de 5 Mo</p>
             {logo && <p className="mt-1 max-w-xs truncate text-[10px] font-semibold text-faso-green-dark">{logo.name}</p>}
           </div>
         </div>
@@ -409,12 +448,13 @@ export function ShopRegistrationForm() {
               <span className="text-ink-muted">
                 ({gallery.length}/{MAX_GALLERY})
               </span>
-            </p><p className="mt-1 text-[10px] text-ink-muted">Ajoutez jusqu’à {MAX_GALLERY} images à votre vitrine.</p></div>
+            </p><p id="shop-gallery-help" className="mt-1 text-[10px] text-ink-muted">JPG, PNG ou WebP · moins de 5 Mo chacune · jusqu’à {MAX_GALLERY} photos.</p></div>
             <input
               ref={galleryInput}
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_IMAGE_TYPES.join(",")}
               multiple
+              aria-label="Choisir les photos de la boutique"
               className="hidden"
               onChange={(e) => { onGalleryPick(e.target.files); e.currentTarget.value = ""; }}
             />
@@ -422,6 +462,7 @@ export function ShopRegistrationForm() {
               type="button"
               variant="ghost"
               size="sm"
+              aria-describedby="shop-gallery-help"
               onClick={() => galleryInput.current?.click()}
               disabled={gallery.length >= MAX_GALLERY}
             >
@@ -448,8 +489,8 @@ export function ShopRegistrationForm() {
                     onClick={() =>
                       setGallery((g) => g.filter((_, idx) => idx !== i))
                     }
-                    className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-lg bg-ink/70 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-                    aria-label="Supprimer la photo"
+                    className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-lg bg-ink/75 text-white opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 motion-reduce:transition-none"
+                    aria-label={`Supprimer la photo ${i + 1}${p.name ? ` (${p.name})` : ""}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -464,7 +505,7 @@ export function ShopRegistrationForm() {
       </div>
 
       {error && (
-        <p className="rounded-xl bg-faso-red-soft/40 px-4 py-3 text-sm font-medium text-faso-red-dark">
+          <p id="shop-form-error" role="alert" aria-live="assertive" className="rounded-xl border border-faso-red/20 bg-faso-red-soft/40 px-4 py-3 text-sm font-medium text-faso-red-dark">
           {error}
         </p>
       )}
@@ -476,6 +517,7 @@ export function ShopRegistrationForm() {
           size="lg"
           disabled={!valid || status === "saving"}
           className="w-full sm:w-auto"
+          aria-busy={status === "saving"}
         >
           {status === "saving" ? (
             <>
@@ -501,22 +543,34 @@ function Field({
   label,
   required,
   hint,
+  controlId,
+  groupId,
   children,
 }: {
   label: string;
   required?: boolean;
   hint?: string;
+  controlId?: string;
+  groupId?: string;
   children: React.ReactNode;
 }) {
+  const hintId = (controlId || groupId) && hint ? `${controlId || groupId}-hint` : undefined;
   return (
-    <label className="block">
-      <span className="mb-1.5 flex items-center gap-1 text-sm font-semibold text-ink">
-        {label}
-        {required && <span className="text-faso-red">*</span>}
-      </span>
+    <div className="block">
+      {controlId ? (
+        <label htmlFor={controlId} className="mb-1.5 flex items-center gap-1 text-sm font-semibold text-ink">
+          {label}{required && <span className="text-faso-red" aria-hidden="true">*</span>}
+          {required && <span className="sr-only"> (obligatoire)</span>}
+        </label>
+      ) : (
+        <span id={groupId ? `${groupId}-label` : undefined} className="mb-1.5 block text-sm font-semibold text-ink">
+          {label}{required && <span className="text-faso-red" aria-hidden="true">*</span>}
+          {required && <span className="sr-only"> (obligatoire)</span>}
+        </span>
+      )}
       {children}
-      {hint && <span className="mt-1 block text-xs text-ink-muted">{hint}</span>}
-    </label>
+      {hint && <span id={hintId ?? (groupId ? `${groupId}-hint` : undefined)} className="mt-1 block text-xs text-ink-muted">{hint}</span>}
+    </div>
   );
 }
 
