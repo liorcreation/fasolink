@@ -10,10 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `09b44cc` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `3aff4780-543c-4f48-8216-608d55fe0637`);
-les routes `/`, `/offline` et `/vendeur/dashboard` répondent HTTP 200, et une
-adresse inconnue renvoie HTTP 404.
+État Git : commit `bf593d0` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `e2a31582-21e1-430f-ae83-ecfdc6c58939`);
+les routes `/` et `/offline` répondent HTTP 200, et une adresse inconnue renvoie
+HTTP 404.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -107,6 +107,13 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   ESLint, TypeScript et le build ont réussi le 6 novembre. Le comportement de
   reprise a été contrôlé par le code et la publication, mais il n’a pas été
   simulé dans un navigateur réellement déconnecté.
+- Le shell Next.js dispose désormais d’un squelette global pour les transitions
+  de route, d’un écran d’erreur de page et d’un écran autonome si le layout
+  racine échoue. Ils proposent une nouvelle tentative ou un retour à l’accueil
+  sans montrer de détail technique sensible. ESLint, TypeScript, le build et le
+  déploiement passent; les routes testées répondent `/` 200, `/offline` 200 et
+  une adresse inconnue 404. Un crash de rendu n’a pas été déclenché en
+  production : ces écrans ont été validés par build et inspection du code.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
