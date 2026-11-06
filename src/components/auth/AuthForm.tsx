@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   KeyRound,
-  LoaderCircle,
   LockKeyhole,
   Mail,
   ShieldCheck,
@@ -77,6 +76,7 @@ export function AuthForm({ initialMode }: AuthFormProps) {
     { label: "Au moins un chiffre", met: /\p{N}/u.test(password) },
     { label: "Au moins un symbole", met: /[^\p{L}\p{N}]/u.test(password) },
   ];
+  const metPasswordRequirements = passwordRequirements.filter((requirement) => requirement.met).length;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -208,10 +208,13 @@ export function AuthForm({ initialMode }: AuthFormProps) {
 
         <label className="auth-field">
           <span>Mot de passe</span>
-          <span className="auth-input-wrap"><KeyRound aria-hidden="true" /><input type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={isSignup ? 12 : 1} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? "12 caractères minimum" : "Votre mot de passe"} required /><button type="button" className="auth-password-toggle" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</button></span>
-          {isSignup && <ul className="mt-2 grid gap-1 rounded-xl border border-[#eee3d7] bg-[#fbf7f1] px-3 py-2.5 text-xs" aria-label="Exigences du mot de passe">
-            {passwordRequirements.map((requirement) => <li key={requirement.label} className={`flex items-center gap-2 ${requirement.met ? "font-semibold text-faso-green" : "text-ink-muted"}`}><span className={`grid h-4 w-4 place-items-center rounded-full ${requirement.met ? "bg-faso-green/10" : "bg-[#eee3d7]"}`}><Check className="h-2.5 w-2.5" aria-hidden="true" /></span>{requirement.label}</li>)}
-          </ul>}
+          <span className="auth-input-wrap"><KeyRound aria-hidden="true" /><input id="auth-password" type={showPassword ? "text" : "password"} autoComplete={isSignup ? "new-password" : "current-password"} minLength={isSignup ? 12 : 1} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? "12 caractères minimum" : "Votre mot de passe"} required aria-describedby={isSignup ? "password-requirements" : undefined} aria-invalid={isSignup && password.length > 0 && metPasswordRequirements < passwordRequirements.length} /><button type="button" className="auth-password-toggle" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} onClick={() => setShowPassword((visible) => !visible)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</button></span>
+          {isSignup && <div id="password-requirements" className="auth-password-requirements">
+            <p className="auth-password-progress" role="status" aria-live="polite" aria-atomic="true">{metPasswordRequirements} critère{metPasswordRequirements === 1 ? "" : "s"} sur 4 validé{metPasswordRequirements === 1 ? "" : "s"}</p>
+            <ul className="grid gap-1 text-xs" aria-label="Exigences du mot de passe">
+              {passwordRequirements.map((requirement) => <li key={requirement.label} className={`flex items-center gap-2 ${requirement.met ? "font-semibold text-faso-green" : "text-ink-muted"}`}><span className={`grid h-4 w-4 place-items-center rounded-full ${requirement.met ? "bg-faso-green/10" : "bg-clay-100"}`}>{requirement.met && <Check className="h-2.5 w-2.5" aria-hidden="true" />}</span>{requirement.label}</li>)}
+            </ul>
+          </div>}
         </label>
 
         <AnimatePresence initial={false}>
@@ -229,16 +232,16 @@ export function AuthForm({ initialMode }: AuthFormProps) {
           )}
         </AnimatePresence>
 
-        {!isSignup && <div className="flex justify-end"><button type="button" onClick={resetPassword} disabled={busy} className="text-sm font-bold text-faso-red transition hover:text-faso-red-dark hover:underline disabled:opacity-50">Mot de passe oublié ?</button></div>}
+        {!isSignup && <div className="flex justify-end"><button type="button" onClick={resetPassword} disabled={busy} className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-bold text-faso-red transition hover:text-faso-red-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2 disabled:opacity-50">Mot de passe oublié ?</button></div>}
 
         <AnimatePresence mode="wait" initial={false}>
           {error && <motion.p key="error" initial={reduceMotion ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="alert" className="auth-message auth-message-error">{error}</motion.p>}
           {!error && notice && <motion.p key="notice" initial={reduceMotion ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} role="status" className="auth-message auth-message-success">{notice}</motion.p>}
         </AnimatePresence>
 
-        <Button type="submit" size="lg" disabled={busy} className="auth-submit">
-          {busy ? <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> : isSignup ? <Sparkles className="h-5 w-5" aria-hidden="true" /> : <ArrowRight className="h-5 w-5" aria-hidden="true" />}
-          {busy ? "Un instant…" : isSignup ? "Créer mon compte" : "Me connecter"}
+        <Button type="submit" size="lg" loading={busy} className="auth-submit">
+          {!busy && (isSignup ? <Sparkles className="h-5 w-5" aria-hidden="true" /> : <ArrowRight className="h-5 w-5" aria-hidden="true" />)}
+          {busy ? isSignup ? "Création du compte…" : "Connexion…" : isSignup ? "Créer mon compte" : "Me connecter"}
           {!busy && <ArrowRight className="ml-auto h-4 w-4 opacity-70" aria-hidden="true" />}
         </Button>
       </form>
