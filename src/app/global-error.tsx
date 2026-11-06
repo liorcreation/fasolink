@@ -12,7 +12,9 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
     <html lang="fr">
       <head><title>Une erreur est survenue · FasoLink</title><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
       <body style={{ margin: 0 }}>
-        <AppErrorState error={error} retry={retry} />
+        <main>
+          <AppErrorState error={error} retry={retry} />
+        </main>
       </body>
     </html>
   );

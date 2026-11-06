@@ -13,7 +13,7 @@ export function AppErrorState({ error, retry }: AppErrorStateProps) {
   const [retrying, setRetrying] = useState(false);
 
   return (
-    <main
+    <div
       role="alert"
       style={{
         minHeight: "100svh",
@@ -49,6 +49,6 @@ export function AppErrorState({ error, retry }: AppErrorStateProps) {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
