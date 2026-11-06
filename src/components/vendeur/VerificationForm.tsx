@@ -43,6 +43,7 @@ export function VerificationForm({
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fileErrors, setFileErrors] = useState<{ recto?: string; verso?: string }>({});
   const rectoRef = useRef<HTMLInputElement>(null);
   const versoRef = useRef<HTMLInputElement>(null);
 
@@ -56,6 +57,7 @@ export function VerificationForm({
 
   async function confirmLocation() {
     setGeo("loading");
+    setError(null);
     try {
       const coords = await getBrowserPosition();
       setPosition(coords);
@@ -63,6 +65,28 @@ export function VerificationForm({
     } catch {
       setGeo("error");
     }
+  }
+
+  function chooseFile(side: "recto" | "verso", file: File | null) {
+    const update = side === "recto" ? setRecto : setVerso;
+    if (!file) {
+      update(null);
+      setFileErrors((current) => ({ ...current, [side]: undefined }));
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      update(null);
+      setFileErrors((current) => ({ ...current, [side]: "Choisissez un fichier image (JPG, PNG, HEIC ou autre format image)." }));
+      return;
+    }
+    // Storage rules require the file size to be strictly below 5 MiB.
+    if (file.size >= 5 * 1024 * 1024) {
+      update(null);
+      setFileErrors((current) => ({ ...current, [side]: "Cette image doit peser moins de 5 Mo." }));
+      return;
+    }
+    update(file);
+    setFileErrors((current) => ({ ...current, [side]: undefined }));
   }
 
   async function submit(e: React.FormEvent) {
@@ -101,7 +125,7 @@ export function VerificationForm({
       <motion.div
         initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        transition={reduceMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="relative mx-auto max-w-2xl overflow-hidden rounded-[2rem] border border-faso-green/15 bg-white p-8 text-center shadow-premium md:p-12"
       >
         <div className="page-ambient" aria-hidden="true" />
@@ -170,18 +194,18 @@ export function VerificationForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-ink">Numéro du document</span>
-                <input value={docNumber} onChange={(e) => setDocNumber(e.target.value)} placeholder="Ex. B1234567" autoComplete="off" className="input-premium" />
+                <input value={docNumber} onChange={(e) => setDocNumber(e.target.value)} placeholder="Ex. B1234567" autoComplete="off" className="input-premium" required minLength={4} aria-label="Numéro du document" />
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-ink">Nom complet</span>
-                <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Comme sur le document" autoComplete="name" className="input-premium" />
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Comme sur le document" autoComplete="name" className="input-premium" required minLength={4} aria-label="Nom complet du responsable" />
               </label>
             </div>
 
             <div>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <span className="text-sm font-semibold text-ink">Photos du justificatif</span>
-                <span className="text-xs text-ink-muted">Image nette · 5 Mo maximum par fichier</span>
+                <span className="text-xs text-ink-muted">Image nette · moins de 5 Mo par fichier</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
@@ -189,10 +213,11 @@ export function VerificationForm({
                   { label: "Verso", file: verso, set: setVerso, ref: versoRef, required: false },
                 ].map((f) => (
                   <div key={f.label}>
-                    <input ref={f.ref} type="file" accept="image/*" className="sr-only" aria-label={`Choisir le ${f.label.toLowerCase()} du justificatif`} onChange={(e) => f.set(e.target.files?.[0] ?? null)} />
+                    <input ref={f.ref} type="file" accept="image/*" className="sr-only" aria-label={`Choisir le ${f.label.toLowerCase()} du justificatif`} aria-required={f.required} aria-invalid={Boolean(fileErrors[f.label.toLowerCase() as "recto" | "verso"])} onChange={(e) => { chooseFile(f.label.toLowerCase() as "recto" | "verso", e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
                     <button
                       type="button"
                       onClick={() => f.ref.current?.click()}
+                      aria-describedby={fileErrors[f.label.toLowerCase() as "recto" | "verso"] ? `${f.label.toLowerCase()}-error` : undefined}
                       className={`group flex min-h-28 w-full items-center gap-4 rounded-2xl border border-dashed p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red focus-visible:ring-offset-2 ${f.file ? "border-faso-green/50 bg-faso-green-soft/15" : "border-clay-300 bg-clay-50/80 hover:border-faso-gold hover:bg-white"}`}
                     >
                       <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${f.file ? "bg-faso-green text-white" : "bg-white text-ink-soft shadow-sm"}`}>{f.file ? <Check className="h-5 w-5" /> : <Upload className="h-5 w-5" />}</span>
@@ -201,6 +226,7 @@ export function VerificationForm({
                         <span className="mt-1 block truncate text-xs text-ink-muted">{f.file?.name ?? "Choisir une photo claire"}</span>
                       </span>
                     </button>
+                    {fileErrors[f.label.toLowerCase() as "recto" | "verso"] && <p id={`${f.label.toLowerCase()}-error`} role="alert" className="mt-2 text-xs font-semibold text-faso-red-dark">{fileErrors[f.label.toLowerCase() as "recto" | "verso"]}</p>}
                   </div>
                 ))}
               </div>
@@ -222,7 +248,7 @@ export function VerificationForm({
                 <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-faso-gold-dark" />
                 <span>La position précise est jointe à la demande afin de permettre son examen par l’équipe FasoLink.</span>
               </div>
-              <Button type="button" variant={geo === "ok" ? "secondary" : "outline"} onClick={confirmLocation} disabled={geo === "loading"} className="shrink-0">
+              <Button type="button" variant={geo === "ok" ? "secondary" : "outline"} onClick={confirmLocation} disabled={geo === "loading"} className="shrink-0" aria-live="polite">
                 {geo === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : geo === "ok" ? <Check className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
                 {geo === "loading" ? "Localisation…" : geo === "ok" ? "Position confirmée" : "Confirmer ma position"}
               </Button>
@@ -237,7 +263,7 @@ export function VerificationForm({
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-faso-green" />
                 <span>Vos justificatifs sont transmis à FasoLink pour l’examen de votre demande. Ne transmettez que des documents vous appartenant.</span>
               </div>
-              <Button type="submit" size="lg" disabled={!valid || status === "sending"} className="w-full shrink-0 sm:w-auto">
+              <Button type="submit" size="lg" disabled={!valid || status === "sending"} className="w-full shrink-0 sm:w-auto" aria-busy={status === "sending"}>
                 {status === "sending" ? <><Loader2 className="h-5 w-5 animate-spin" /> Envoi du dossier…</> : <><BadgeCheck className="h-5 w-5" /> Envoyer ma demande</>}
               </Button>
             </div>
@@ -251,7 +277,7 @@ export function VerificationForm({
               <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold">{completedSteps}/2 étapes</span>
             </div>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-label="Progression de la vérification" aria-valuemin={0} aria-valuemax={2} aria-valuenow={completedSteps}>
-              <motion.div initial={false} animate={{ width: `${completedSteps * 50}%` }} transition={{ duration: 0.35 }} className="h-full rounded-full bg-gradient-to-r from-faso-gold to-faso-green" />
+              <motion.div initial={false} animate={{ scaleX: completedSteps / 2 }} transition={reduceMotion ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }} style={{ transformOrigin: "left" }} className="h-full w-full rounded-full bg-gradient-to-r from-faso-gold to-faso-green" />
             </div>
             <ol className="mt-5 space-y-4">
               {[

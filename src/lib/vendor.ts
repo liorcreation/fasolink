@@ -382,7 +382,7 @@ function validateVerificationFile(file: File | null | undefined) {
   if (!file.type.startsWith("image/")) {
     throw new VendorError("insert", "Les justificatifs doivent être des images.");
   }
-  if (file.size > 5 * 1024 * 1024) {
+  if (file.size >= 5 * 1024 * 1024) {
     throw new VendorError("insert", "Chaque justificatif doit peser moins de 5 Mo.");
   }
 }
