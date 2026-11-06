@@ -1,6 +1,6 @@
 # FasoLink — état de finalisation et préparation de livraison
 
-Dernière vérification : 6 novembre 2026 (après l’inscription boutique).
+Dernière vérification : 6 novembre 2026 (après l’interface de vérification boutique).
 
 ## État exécutif
 
@@ -10,10 +10,9 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `5f0340f` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `0dd5dadf-53a6-4782-bff2-f1219e413488`);
-les routes `/`, `/vendeur/inscription`, `/vendeur/boutiques`,
-`/vendeur/dashboard` et `/connexion` répondent HTTP 200.
+État Git : commit `d13d2ab` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `679cabf0-7770-4ec8-b71d-b7a9b50326b5`);
+les routes `/`, `/vendeur/verification` et `/vendeur/dashboard` répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -88,6 +87,17 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   ESLint, TypeScript et le build de production ont réussi, et
   `/vendeur/inscription` répond HTTP 200. Le téléversement doit encore être
   vérifié après activation/validation du bucket Firebase Storage.
+- La page de vérification distingue maintenant un dossier en attente, une
+  boutique déjà vérifiée et une boutique pouvant déposer une demande. Elle
+  évite de reproposer un formulaire pour une demande déjà en cours. Les erreurs
+  de chargement des boutiques ont un état de reprise. Les justificatifs sont
+  contrôlés avant envoi (type image, taille strictement inférieure à 5 Mo),
+  conformément à Storage; les erreurs de fichier sont affichées près du
+  contrôle, et les états d’envoi, de progression et de mouvement réduit sont
+  mieux annoncés/traités. Les règles d’accès et la confidentialité des pièces
+  n’ont pas été modifiées. ESLint, TypeScript et le build de production ont
+  réussi le 6 novembre. L’envoi réel exige que Firebase Storage soit activé;
+  la recette avec pièces et comptes réels reste à faire.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
