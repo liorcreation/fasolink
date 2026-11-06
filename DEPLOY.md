@@ -1,6 +1,6 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 6 novembre 2026 (états globaux de chargement et d’erreur).
+Dernière mise à jour : 6 novembre 2026 (palette de commandes clavier).
 
 ## Adresses actuellement publiées
 
@@ -100,9 +100,9 @@ npm run test:firebase-rules
 
 ESLint, TypeScript et le build de production ont réussi le 6 novembre 2026 pour
 l’interface de vérification boutique puis les pages d’état et les secours globaux.
-Le commit `bf593d0` est poussé sur `origin/main`; le Worker est en version
-`e2a31582-21e1-430f-ae83-ecfdc6c58939`. Après déploiement, `/` et `/offline`
-ont répondu HTTP 200, et une route inconnue HTTP 404. Le téléversement des images
+Le commit `a14868f` est poussé sur `origin/main`; le Worker est en version
+`2487f8e4-f2ca-4f6d-8ec7-e547442599f5`. Après déploiement, `/`, `/boutiques`,
+`/produits` et `/vendeur/dashboard` ont répondu HTTP 200. Le téléversement des images
 nécessite encore la recette Firebase Storage avec un compte vendeur. Le
 dernier build Pages vérifié concernait le commit `3328929` et était en échec;
 le résultat des pushs plus récents sur Pages n'a pas encore été vérifié. Après

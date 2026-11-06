@@ -10,10 +10,9 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `bf593d0` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `e2a31582-21e1-430f-ae83-ecfdc6c58939`);
-les routes `/` et `/offline` répondent HTTP 200, et une adresse inconnue renvoie
-HTTP 404.
+État Git : commit `a14868f` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `2487f8e4-f2ca-4f6d-8ec7-e547442599f5`);
+les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -114,6 +113,13 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   déploiement passent; les routes testées répondent `/` 200, `/offline` 200 et
   une adresse inconnue 404. Un crash de rendu n’a pas été déclenché en
   production : ces écrans ont été validés par build et inspection du code.
+- La palette de commandes s’ouvre avec `Ctrl/⌘ + K` et depuis les accès rapide
+  desktop/menu mobile. Elle recherche les pages et actions, tolère les accents,
+  se parcourt aux flèches et s’ouvre avec Entrée; Échap la ferme. Les options
+  vendeur apparaissent pour une session connectée et Super Admin seulement
+  après lecture du claim Firebase correspondant. ESLint, TypeScript et le build
+  passent; les pages publiques testées après publication répondent HTTP 200.
+  Le test interactif manuel dans navigateur n’a pas été réalisé.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
