@@ -58,7 +58,7 @@ export default async function ProduitPage({
       <ShopStatusWatcher shopId={shop.id} />
       {/* Fil d'Ariane */}
       <nav aria-label="Fil d’Ariane" className="flex min-w-0 items-center gap-1.5 overflow-hidden text-[11px] text-ink-muted sm:text-xs">
-        <Link href="/" className="shrink-0 transition hover:text-faso-red">
+        <Link href="/boutiques" className="shrink-0 transition hover:text-faso-red">
           Boutiques
         </Link>
         <ChevronRight className="h-3.5 w-3.5" />
@@ -204,6 +204,8 @@ export default async function ProduitPage({
         productId={product.id}
         aboutName={product.name}
         priceLabel={formatCFA(product.price)}
+        contactMessage={`Bonjour ${shop.name}, je suis intéressé(e) par le produit « ${product.name} » (${formatCFA(product.price)}) vu sur FasoLink. ${product.availability === "out_of_stock" ? "Est-il bientôt disponible ?" : "Est-il toujours disponible ?"}`}
+        actionLabel={product.availability === "out_of_stock" ? "Demander la disponibilité" : "Commander"}
       />
     </div>
   );

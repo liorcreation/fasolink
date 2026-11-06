@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 import { buildWhatsAppLink } from "@/lib/utils";
 import { trackContact } from "@/lib/tracking";
 
@@ -16,6 +17,8 @@ export function StickyContactBar({
   productId,
   aboutName,
   priceLabel,
+  contactMessage,
+  actionLabel,
 }: {
   shopId: string;
   shopName: string;
@@ -24,8 +27,11 @@ export function StickyContactBar({
   /** Nom du produit ou du service concerné. */
   aboutName?: string;
   priceLabel?: string;
+  contactMessage?: string;
+  actionLabel?: string;
 }) {
   const [shown, setShown] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const onScroll = () => setShown(window.scrollY > 320);
@@ -34,13 +40,13 @@ export function StickyContactBar({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const message = aboutName
+  const message = contactMessage ?? (aboutName
     ? `Bonjour ${shopName}, je vous contacte depuis FasoLink à propos de ${aboutName}.`
-    : `Bonjour ${shopName}, je vous contacte depuis FasoLink.`;
+    : `Bonjour ${shopName}, je vous contacte depuis FasoLink.`);
 
   return (
     <div
-      className={cnBar(shown)}
+      className={cnBar(shown, Boolean(reduceMotion))}
       // masqué sur desktop (le header porte déjà le bouton)
     >
       <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-clay-100 bg-white/95 p-2 shadow-premium-lg backdrop-blur">
@@ -56,19 +62,21 @@ export function StickyContactBar({
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackContact(shopId, productId)}
-          className="btn-base h-12 shrink-0 bg-[#25D366] px-5 text-sm text-white active:scale-95"
+          className="btn-base min-h-11 shrink-0 bg-[#25D366] px-3 text-xs text-white transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-green focus-visible:ring-offset-2 sm:px-5 sm:text-sm"
+          aria-label={actionLabel ?? `Contacter ${shopName} sur WhatsApp`}
         >
-          <MessageCircle className="h-4 w-4" />
-          Contacter sur WhatsApp
+          <MessageCircle className="h-4 w-4" aria-hidden="true" />
+          {actionLabel ?? "Contacter sur WhatsApp"}
         </a>
       </div>
     </div>
   );
 }
 
-function cnBar(shown: boolean) {
+function cnBar(shown: boolean, reduceMotion: boolean) {
   return [
-    "pointer-events-none fixed inset-x-0 z-40 px-3 transition-all duration-300 md:hidden",
+    "pointer-events-none fixed inset-x-0 z-40 px-3 md:hidden",
+    reduceMotion ? "transition-none" : "transition-all duration-300",
     // au-dessus de la BottomNav (h ~4rem) + safe area
     "bottom-[calc(4rem+env(safe-area-inset-bottom)+0.5rem)]",
     shown ? "translate-y-0 opacity-100" : "translate-y-[140%] opacity-0",
