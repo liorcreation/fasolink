@@ -10,12 +10,13 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `3328929` poussé sur `origin/main`. Le dernier déploiement
-Cloudflare Pages associé à ce commit est marqué **Failure**; le déploiement du
-commit précédent `1986f08` est également en échec. Les derniers déploiements
-Pages visibles sont en échec, tandis que l'ancien site déjà publié continue de
-répondre. Le Worker publié date du 28 octobre : ce commit documentaire ne l'a
-pas redéployé.
+État Git : commit `dff3acc` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `52e694fb-90c5-41e7-8ab4-ef26f1d5479c`);
+les routes `/`, `/produits`, `/connexion` et `/inscription` répondent HTTP 200.
+Cloudflare Pages demeure une
+publication distincte et ancienne; son dernier build `main` vérifié est marqué
+**Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
+même version.
 
 La livraison commerciale n'est pas prête : le workflow des règles Firebase a
 échoué dans son étape de tests, les secrets du Worker applicatif sont absents,
@@ -38,6 +39,11 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   de résultats est annoncé sans relire toute la grille, l'état vide distingue
   une recherche infructueuse d'un catalogue encore vide, et les animations des
   cartes respectent `prefers-reduced-motion`.
+- Connexion/Inscription ont ensuite reçu des critères de mot de passe annoncés
+  aux aides techniques, un bouton d’envoi qui expose son état occupé, des
+  contrôles tactiles renforcés et des couleurs reliées aux tokens du thème. Le
+  fonctionnement Firebase n’a pas été changé. ESLint, TypeScript et le build
+  Next.js ont réussi pour cette étape le 6 novembre.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
