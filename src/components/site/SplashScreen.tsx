@@ -57,8 +57,8 @@ export function SplashScreen() {
           className="fasolink-splash fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#15100A]"
           style={{ backgroundColor: "#15100A" }}
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
-          transition={{ duration: 0.6, ease: EASE }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 1.04, filter: "blur(6px)" }}
+          transition={reduced ? { duration: 0 } : { duration: 0.6, ease: EASE }}
           aria-hidden="true"
         >
           {/* Trame tissée, très discrète — Faso Dan Fani */}

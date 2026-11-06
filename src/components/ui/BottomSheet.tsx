@@ -37,9 +37,9 @@ export function BottomSheet({
       {open && (
         <motion.div
           className="fixed inset-0 z-[75] flex items-end justify-center sm:items-center"
-          initial={{ opacity: 0 }}
+          initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={reduce ? undefined : { opacity: 0 }}
         >
           <div
             className="absolute inset-0 bg-ink/50 backdrop-blur-sm"
@@ -52,7 +52,7 @@ export function BottomSheet({
             initial={reduce ? { opacity: 0 } : { y: "100%" }}
             animate={reduce ? { opacity: 1 } : { y: 0 }}
             exit={reduce ? { opacity: 0 } : { y: "100%" }}
-            transition={{ type: "spring", damping: 32, stiffness: 320 }}
+            transition={reduce ? { duration: 0 } : { type: "spring", damping: 32, stiffness: 320 }}
             drag={reduce ? false : "y"}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}

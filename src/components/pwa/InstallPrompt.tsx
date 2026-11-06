@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Download, Share, X } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -12,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISS_KEY = "fasolink:pwa-dismissed";
 
 export function InstallPrompt() {
+  const reduceMotion = useReducedMotion();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
     null,
   );
@@ -71,9 +72,10 @@ export function InstallPrompt() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 40 }}
+          exit={reduceMotion ? undefined : { opacity: 0, y: 40 }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="fixed inset-x-4 bottom-[calc(9rem+env(safe-area-inset-bottom))] z-[45] mx-auto max-w-md rounded-3xl border border-clay-100 bg-white p-4 shadow-premium-lg sm:left-auto sm:right-4 md:bottom-4 md:z-[65]"
         >
           <div className="flex items-start gap-3">

@@ -2,7 +2,7 @@
 
 import { AppLink as Link } from "@/components/site/AppLink";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { BriefcaseBusiness, Home, PackageSearch, Store, UserRound, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,7 @@ const ITEMS: NavItem[] = [
 
 export function BottomNav() {
   const pathname = usePathname() || "/";
+  const reduceMotion = useReducedMotion();
   return (
     <nav
       aria-label="Navigation rapide"
@@ -60,7 +61,7 @@ export function BottomNav() {
                   active ? "text-faso-red" : "text-ink-muted hover:text-ink",
                 )}
               >
-                {active && <motion.span layoutId="bottom-nav-active" className="absolute inset-x-2 top-0 h-[3px] rounded-full bg-faso-red" transition={{ type: "spring", stiffness: 450, damping: 35 }} />}
+                {active && <motion.span layoutId={reduceMotion ? undefined : "bottom-nav-active"} className="absolute inset-x-2 top-0 h-[3px] rounded-full bg-faso-red" transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 450, damping: 35 }} />}
                 <Icon className={cn("h-[19px] w-[19px]", active && "stroke-[2.5]")} aria-hidden="true" />
                 <span>{item.label}</span>
               </Link>

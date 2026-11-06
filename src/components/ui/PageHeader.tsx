@@ -45,14 +45,14 @@ export function PageHeader({
         aria-hidden="true"
         initial={reduce ? false : { opacity: 0, scale: 0.8 }}
         animate={reduce ? undefined : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        transition={reduce ? { duration: 0 } : { duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-faso-gold/15 blur-3xl"
       />
       <motion.div
         aria-hidden="true"
         initial={reduce ? false : { opacity: 0, x: 30 }}
         animate={reduce ? undefined : { opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.12 }}
+        transition={reduce ? { duration: 0 } : { duration: 0.8, delay: 0.12 }}
         className="pointer-events-none absolute bottom-[-5rem] left-1/2 h-48 w-48 rounded-full bg-faso-green/10 blur-3xl"
       />
       <Reveal

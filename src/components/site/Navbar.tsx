@@ -185,7 +185,7 @@ export function Navbar() {
                   initial={reduceMotion ? false : { opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={reduceMotion ? undefined : { opacity: 0, y: 6, scale: 0.98 }}
-                  transition={{ duration: 0.16 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.16 }}
                   className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[22rem] -translate-x-1/2 rounded-[1.5rem] border border-clay-100 bg-[#fffdfa] p-3 shadow-[0_24px_70px_-30px_rgba(26,17,9,.38)]"
                   role="menu"
                   aria-label="Navigation de l’espace vendeur"
@@ -267,7 +267,7 @@ export function Navbar() {
               initial={reduceMotion ? false : { opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? undefined : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] mx-auto max-h-[min(78dvh,44rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] border border-clay-100 bg-[#fffdfa] p-4 pb-5 shadow-[0_-24px_70px_-24px_rgba(26,17,9,.32)] sm:inset-x-4 sm:bottom-[calc(4.25rem+env(safe-area-inset-bottom))] sm:rounded-[2rem] sm:p-6"
             >
               <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-clay-200 sm:hidden" />
