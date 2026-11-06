@@ -10,9 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `dff3acc` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `52e694fb-90c5-41e7-8ab4-ef26f1d5479c`);
-les routes `/`, `/produits`, `/connexion` et `/inscription` répondent HTTP 200.
+État Git : commit `c8fbd80` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `9b1425bf-d0ec-4848-955d-3d5dc98a315c`);
+les routes `/`, `/produits`, `/connexion`, `/inscription` et `/vendeur/dashboard`
+répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -44,6 +45,12 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   contrôles tactiles renforcés et des couleurs reliées aux tokens du thème. Le
   fonctionnement Firebase n’a pas été changé. ESLint, TypeScript et le build
   Next.js ont réussi pour cette étape le 6 novembre.
+- Le tableau de bord vendeur présente maintenant des squelettes pendant le
+  chargement des statistiques, une description accessible du graphique, des
+  commandes tactiles d’au moins 44 px et des entrées animées réduites selon la
+  préférence système. ESLint, TypeScript et le build de production ont réussi;
+  `/vendeur/dashboard` répond HTTP 200. La recette réelle avec un compte vendeur
+  et les données Firebase n’a pas été exécutée.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.

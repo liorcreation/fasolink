@@ -86,8 +86,8 @@ def story():
     s += header("1. Situation actuelle", "Ce qui est en place, ce qui est vérifié et ce qui reste à prouver.")
     s += [table([
         ["Domaine", "État du code / de la démonstration", "État de clôture"],
-        ["Application", "Worker version 52e694fb-90c5-41e7-8ab4-ef26f1d5479c; accueil, /produits, /connexion et /inscription HTTP 200. Pages reste une publication distincte.", "Versions différentes"],
-        ["Build Pages", "Le dernier résultat consulté pour Pages concernait le commit 3328929 et était Failure. Le résultat du push plus récent dff3acc n'a pas encore été vérifié dans Pages.", "Pipeline à réparer ou Pages à abandonner"],
+        ["Application", "Worker version 9b1425bf-d0ec-4848-955d-3d5dc98a315c; accueil et /vendeur/dashboard HTTP 200. Pages reste une publication distincte.", "Versions différentes"],
+        ["Build Pages", "Le dernier résultat consulté pour Pages concernait le commit 3328929 et était Failure. Le résultat du push plus récent c8fbd80 n'a pas encore été vérifié dans Pages.", "Pipeline à réparer ou Pages à abandonner"],
         ["Règles", "Workflow Firebase 41238891242 échoué dans l'étape de tests; logs détaillés non accessibles.", "Règles non validées par tests"],
         ["Paiement", "Aucun secret sur le Worker applicatif; pas de clé CinetPay ni compte service configuré.", "Pas de transaction réelle testée"],
         ["Cron", "Secret présent sur le Worker cron, absent côté API; POST sans authentification renvoie 401.", "Expiration automatique bloquée"],
@@ -108,7 +108,7 @@ def story():
         ["Worker cron", "Le dernier déploiement observé date du 14 septembre; il ne contient pas la cible modifiée depuis. Le POST API reçoit 401 sans secret côté application."],
         ["Données de démonstration", "Le script npm run seed injecte 9 boutiques toutes catégories, avec abonnements factices actifs. À ne pas lancer sur la base de production."],
         ["Pages Cloudflare", "Le dernier build observé sur le commit 3328929 était en échec. Le résultat Pages après les pushs 5ea6748 et dff3acc n'a pas été consulté; la synchronisation reste à vérifier."],
-        ["Révision UI", "Palette et surfaces centralisées, Geist avec Sora, focus clavier, boutons à états, badges sémantiques. Le catalogue a des zones tactiles de 44 px, une annonce accessible du nombre de résultats et des animations réduites. Connexion/Inscription ajoutent des critères de mot de passe accessibles, un chargement annoncé et des contrôles tactiles renforcés."],
+        ["Révision UI", "Palette et surfaces centralisées, Geist avec Sora, focus clavier, boutons à états, badges sémantiques. Catalogue : filtres tactiles, annonce accessible des résultats et mouvements réduits. Connexion/Inscription : critères de mot de passe accessibles et chargement annoncé. Espace vendeur : squelettes de statistiques, description du graphique, commandes tactiles et mouvements réduits."],
         ["Dossier client", "PDF de livraison actualisé avec les versions différentes, les tests réellement lancés, les coûts à confirmer et les étapes de recette."],
     ], [43*mm, 127*mm]), Spacer(1, 7*mm), p("Actions nécessitant les comptes du client", "H2X"),
         p("Le choix de l'adresse officielle, l'attribution du rôle Super Admin, les clés CinetPay/Firebase, l'activation de Storage et l'approbation d'un éventuel budget ne peuvent pas être inventés ou remplacés par du code local. Ces opérations doivent être faites par une personne autorisée dans les comptes correspondants."),

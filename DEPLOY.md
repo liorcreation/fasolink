@@ -99,9 +99,9 @@ npm run test:firebase-rules
 ```
 
 La compilation locale, ESLint et TypeScript ont réussi le 6 novembre 2026. Le
-Worker a été redéployé sur le commit `dff3acc`, version Cloudflare
-`52e694fb-90c5-41e7-8ab4-ef26f1d5479c`; `/connexion` et `/inscription` ont
+Worker a été redéployé sur le commit `c8fbd80`, version Cloudflare
+`9b1425bf-d0ec-4848-955d-3d5dc98a315c`; `/vendeur/dashboard` et l'accueil ont
 répondu HTTP 200. Le dernier build Pages vérifié concernait le commit `3328929`
-et était en échec; le résultat du push plus récent sur Pages n'a pas encore été
-vérifié. Après réparation du pipeline choisi et validation des secrets et
+et était en échec; le résultat des pushs plus récents sur Pages n'a pas encore
+été vérifié. Après réparation du pipeline choisi et validation des secrets et
 recettes, le Worker se déploie avec `npm run deploy`.
