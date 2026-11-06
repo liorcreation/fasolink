@@ -1,6 +1,6 @@
 # FasoLink — état de finalisation et préparation de livraison
 
-Dernière vérification : 6 novembre 2026 (après la passe vitrine).
+Dernière vérification : 6 novembre 2026 (après la passe Mes boutiques).
 
 ## État exécutif
 
@@ -10,9 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `cf6be37` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `fdc36526-a108-40e9-9189-c863a4a4fd5a`);
-les routes `/`, `/boutiques` et `/connexion` répondent HTTP 200.
+État Git : commit `0185c21` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `94827b7a-51a0-4e20-a747-18ea4eb4cae1`);
+les routes `/`, `/vendeur/boutiques`, `/vendeur/dashboard` et `/connexion`
+répondent HTTP 200.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -70,6 +71,15 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   Le Worker a été redéployé; aucune URL de produit publique n'était présente
   dans le catalogue accessible pour tester une fiche réelle. Une recette
   mobile avec un produit et un vendeur existants reste à faire.
+- « Mes boutiques » suit en direct les boutiques, les produits de chaque
+  boutique et les abonnements Firestore; les changements de statut et de
+  catalogue apparaissent sans actualiser la page. Des filtres par statut avec
+  compteurs, une recherche effaçable, un état de synchronisation et une action
+  de reprise complètent le parcours. Les animations respectent la préférence
+  de mouvement réduit. ESLint, TypeScript et le build réussissent; les routes
+  `/vendeur/boutiques` et `/vendeur/dashboard` répondent HTTP 200. La recette
+  authentifiée avec le compte vendeur et les écritures Firebase réelles reste
+  à faire.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.

@@ -1,6 +1,6 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 6 novembre 2026 (fiche produit).
+Dernière mise à jour : 6 novembre 2026 (Mes boutiques).
 
 ## Adresses actuellement publiées
 
@@ -99,11 +99,11 @@ npm run test:firebase-rules
 ```
 
 ESLint, TypeScript et le build de production ont réussi le 6 novembre 2026 pour
-la fiche produit. Le commit `cf6be37` est poussé sur `origin/main`; le Worker
-Cloudflare est en version `fdc36526-a108-40e9-9189-c863a4a4fd5a`. Les routes
-`/`, `/boutiques` et `/connexion` ont répondu HTTP 200 après déploiement. Aucun
-lien produit public n'était présent sur la liste pour valider un identifiant
-réel de fiche. Le
+la page Mes boutiques. Le commit `0185c21` est poussé sur `origin/main`; le Worker
+Cloudflare est en version `94827b7a-51a0-4e20-a747-18ea4eb4cae1`. Les routes
+`/`, `/vendeur/boutiques`, `/vendeur/dashboard` et `/connexion` ont répondu HTTP
+200 après déploiement. La recette des écoutes temps réel avec un compte vendeur
+authentifié reste à faire. Le
 dernier build Pages vérifié concernait le commit `3328929` et était en échec;
 le résultat des pushs plus récents sur Pages n'a pas encore été vérifié. Après
 réparation du pipeline choisi et validation des secrets et recettes, le Worker
