@@ -1,37 +1,79 @@
 # FasoLink — état de finalisation et préparation de livraison
 
-Dernière vérification : 31 octobre 2026.
+Dernière vérification : 6 novembre 2026.
 
 ## État exécutif
 
-La version récente de FasoLink est déployée sur Cloudflare Workers :
-<https://fasolink.jurisia-api.workers.dev>. L'accueil et le film de présentation
-répondent en ligne. L'ancienne adresse <https://fasolink.pages.dev> répond
-encore, mais sert une version différente, sans la nouvelle section vidéo.
+La version de démonstration répond sur le Worker
+<https://fasolink.jurisia-api.workers.dev> et sur Pages
+<https://fasolink.pages.dev>, mais les deux publications diffèrent. Le Worker
+renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
+du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-Le dépôt local est synchronisé avec `origin/main` au commit `1986f08`. Le site
-peut être présenté comme démonstration. Il n'est pas prêt à encaisser en
-production : la liste des secrets du Worker est vide, le paiement marchand n'a
-pas été testé et Firebase Storage doit être confirmé/activé avant de dépendre
-des téléversements.
+État Git : commit `3328929` poussé sur `origin/main`. Le dernier déploiement
+Cloudflare Pages associé à ce commit est marqué **Failure**; le déploiement du
+commit précédent `1986f08` est également en échec. Les derniers déploiements
+Pages visibles sont en échec, tandis que l'ancien site déjà publié continue de
+répondre. Le Worker publié date du 28 octobre : ce commit documentaire ne l'a
+pas redéployé.
+
+La livraison commerciale n'est pas prête : le workflow des règles Firebase a
+échoué dans son étape de tests, les secrets du Worker applicatif sont absents,
+le endpoint cron renvoie 401 sans le secret attendu, les pages légales portent
+encore des champs à compléter et le paiement réel n'a pas été testé.
 
 ## Ce qui est vérifié ou préparé dans le dépôt
 
-- La nouvelle hero claire, le visuel du téléphone, le comportement mobile et la
-  section vidéo sont déployés sur le Worker. La vérification HTTP du Worker et
-  de Pages a répondu 200; la version Pages reste ancienne.
-- Les derniers contrôles de code de la version publiée (ESLint, TypeScript,
-  build de production) ont réussi le 28 octobre 2026.
-- Les règles Firestore ont été signalées comme publiées dans la recette du
-  15 octobre. Leur état effectif doit être revalidé avant ouverture publique.
+- `npm run lint`, `npx tsc --noEmit` et `npm run build` ont réussi localement le
+  6 novembre. Le build affiche encore l'avertissement de dépréciation de la
+  convention `middleware` dans cette version de Next.js.
+- Une passe de fondation UI a centralisé les échelles rouge/or, les neutres
+  chauds, les couleurs d'état, les rayons, ombres et durées. Geist est utilisé
+  pour le texte et Sora pour les titres. Les boutons ont un état de chargement
+  et une variante destructive; les badges ont des tons sémantiques; les
+  valeurs de tableau de bord utilisent des chiffres tabulaires. Le titre hero
+  desktop a été recalibré et un filet de marque a été ajouté à la navbar.
+- Le catalogue Produits a ensuite été poli : filtres famille et actions de
+  comparaison/commande disposent de zones tactiles d'au moins 44 px, le nombre
+  de résultats est annoncé sans relire toute la grille, l'état vide distingue
+  une recherche infructueuse d'un catalogue encore vide, et les animations des
+  cartes respectent `prefers-reduced-motion`.
+- La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
+  titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
+  a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
+  Le rendu mobile n'a pas été inspecté visuellement dans cette passe. Les bases
+  sont consolidées, mais les pages ne sont pas encore toutes migrées vers ces
+  tokens et il n'y a pas encore de thème sombre complet.
+- Un contrôle HTTP des principales pages publiques a renvoyé 200 sur Worker et
+  Pages; `/route-inconnue-fasolink` renvoie 404. Les endpoints POST-only
+  renvoient 405 au GET sur le Worker, mais les routes de paiement
+  `/api/payments/cinetpay/initialize` et `/api/payments/trial` renvoient 404 sur
+  Pages. Ce contrôle HTTP ne teste pas les actions authentifiées.
+- Le Worker actuel contient le visuel récent de la hero; Pages ne contient pas
+  ce visuel. Il faut choisir une seule adresse canonique ou synchroniser le
+  déploiement Pages avant d'annoncer l'URL officielle.
+- Les règles Firestore avaient été signalées publiées le 15 octobre, mais les
+  règles actuellement actives doivent être comparées au dépôt.
 - Les tests automatisés Firestore/Storage existent dans
   `scripts/test-firebase-rules.mjs`. Leur lancement local le 31 octobre a
   échoué avant les tests : Firebase CLI exige Java 21 ou plus, absent de ce
-  poste. Un workflow GitHub Actions a été ajouté pour les exécuter sous Linux;
-  son premier résultat reste à consulter.
-- Le fichier de configuration du Worker cron pointe maintenant vers le Worker
-  récent. Ce Worker cron séparé n'est pas confirmé comme déployé et nécessite
-  `CRON_SECRET` avant activation.
+  poste. Le workflow GitHub `41238891242` a ensuite échoué dans l'étape
+  `Run Firestore and Storage rule tests`. La cause détaillée n'a pas pu être
+  lue avec les droits disponibles; les règles ne sont donc pas validées par
+  cette suite.
+- `wrangler secret list` renvoie une liste vide pour le Worker applicatif
+  `fasolink`. Le Worker cron possède un secret nommé `CRON_SECRET`, mais son
+  dernier déploiement visible date du 14 septembre. Un POST non authentifié à
+  l'API d'expiration du Worker applicatif renvoie 401. Il faut renseigner le
+  même secret côté application, redéployer le cron avec la cible Worker récente,
+  puis effectuer un test authentifié.
+- `scripts/seed.ts` injecte le jeu de démonstration complet : 9 boutiques,
+  catégories hors électronique incluses, ainsi que des abonnements factices
+  actifs `gateway: seed`. Ne pas lancer ce script contre la base de production;
+  assainir le seeding et vérifier le contenu réel de Firestore.
+- Les fichiers `/conditions`, `/confidentialite` et `/mentions-legales` affichent
+  encore explicitement des informations à compléter ou à confirmer (éditeur,
+  adresse, email, responsable de publication et relecture légale).
 - Un rate limiter en mémoire est présent dans le middleware. Il s'applique par
   instance/isolate, peut repartir à zéro et ne bloque pas les appels
   d'authentification que le navigateur envoie directement à Firebase. Il ne
@@ -42,37 +84,39 @@ des téléversements.
 
 ### À faire avec le client ou ses comptes
 
-1. **Confirmer l'adresse officielle.** Choisir le Worker actuel ou un domaine
-   contrôlé par le client. `fasolink.pages.dev` et le Worker n'affichent pas la
-   même version. Ajouter ensuite le domaine retenu aux domaines autorisés de
-   Firebase Authentication et mettre à jour les URL du paiement et du cron.
-2. **Ajouter les secrets dans Cloudflare.** La commande de contrôle du Worker
-   renvoie une liste vide. Il faut saisir les clés CinetPay, le compte de
-   service Firebase Admin, `CRON_SECRET`, `APP_BASE_URL` et, si la signature
-   CinetPay utilisée par le compte le demande, le secret de webhook. Ne jamais
-   transmettre ces valeurs dans un message ni les committer.
-3. **Valider le compte marchand CinetPay.** Le client doit fournir/activer ses
+1. **Choisir l'adresse officielle et rétablir le déploiement attendu.** Le Worker
+   et Pages sont différents; le dernier build Pages de `main` est en échec.
+   Choisir le Worker ou corriger le pipeline Pages, puis aligner Firebase Auth,
+   le paiement et le cron sur ce domaine.
+2. **Faire réussir les tests Firebase.** Le workflow GitHub des règles a échoué.
+   Obtenir ses logs, corriger la cause, relancer et comparer les règles actives
+   de Firestore/Storage aux fichiers du dépôt.
+3. **Configurer les secrets dans le Worker applicatif.** La liste de secrets du
+   Worker `fasolink` est vide. Il manque au minimum les clés CinetPay et le
+   compte de service Firebase; `CRON_SECRET` doit aussi être présent côté API.
+   Saisir toute valeur directement dans Cloudflare, jamais dans Git ou un PDF.
+4. **Valider le compte marchand CinetPay.** Le client doit fournir/activer ses
    accès et canaux de paiement burkinabè. Il faut ensuite configurer la
    notification sur `/api/webhooks/payment` et tester les paiements acceptés,
    refusés, annulés, répétés et interrompus. Aucun paiement réel n'a été
    exécuté.
-4. **Confirmer Firebase Storage.** Le dernier état documenté disait que le
+5. **Confirmer Firebase Storage.** Le dernier état documenté disait que le
    bucket n'était pas activé et que ses règles n'étaient pas déployées. Vérifier
    la console, valider le budget, activer Storage si accepté, publier les règles,
    puis tester logos, images produits et pièces privées avec plusieurs rôles.
-5. **Valider le Super Admin.** Le client doit créer/valider son compte. Un
+6. **Valider le Super Admin.** Le client doit créer/valider son compte. Un
    opérateur autorisé attribue ensuite le claim `superAdmin` depuis un poste
    sécurisé avec le compte de service; le client renouvelle sa session. Tester
    accès autorisé et refusé avec des comptes séparés.
-6. **Valider le contenu et les règles métier.** Confirmer raison sociale,
+7. **Finaliser les pages légales et règles métier.** Confirmer raison sociale,
    coordonnées, support, tarifs, durée d'essai, conditions de remboursement,
    textes légaux, boutiques et produits de démonstration à garder ou supprimer.
 
 ### Travail technique restant après réception de ces décisions/accès
 
 1. Consulter le résultat du workflow Firebase Rules et corriger toute erreur.
-   Vérifier que les règles réellement publiées correspondent aux fichiers du
-   dépôt.
+   Le run `41238891242` est déjà en échec; ses logs doivent être obtenus avant
+   de relancer la suite et valider les règles actives.
 2. Exécuter une recette de bout en bout : inscription, connexion, rôle vendeur,
    créations/modifications, téléversements, avis, vérification, administration,
    suspension/réactivation, essai et expiration.
@@ -80,15 +124,19 @@ des téléversements.
    client : notification valide et invalide, doublon, mauvais montant, retour
    navigateur et boutique suspendue. Vérifier qu'une licence n'est activée
    qu'une fois.
-4. Déployer et tester le Worker cron après configuration du secret et de l'URL
-   officielle; vérifier l'expiration et la suspension attendues.
+4. Ajouter `CRON_SECRET` au Worker API, redéployer le Worker cron (son dernier
+   déploiement visible date du 14 septembre) après confirmation de l'URL, puis
+   vérifier qu'un abonnement expiré est traité et que la boutique est suspendue.
 5. Configurer dans Cloudflare la limitation adaptée aux endpoints d'API
    exposés, puis vérifier les journaux, alertes et procédure de remboursement.
    Le limiteur en mémoire actuel est seulement une barrière locale par instance.
-6. Faire la recette visuelle sur téléphones, tablettes et ordinateurs réels,
+6. Vérifier que `scripts/seed.ts` ne peut pas injecter des boutiques et licences
+   factices en production; contrôler le catalogue réel et retirer toute donnée
+   de démonstration avant livraison.
+7. Faire la recette visuelle sur téléphones, tablettes et ordinateurs réels,
    puis une recette d'accessibilité, de réseau lent et de restauration après
    incident.
-7. Mettre à jour et remettre le procès-verbal de recette, les consignes
+8. Mettre à jour et remettre le procès-verbal de recette, les consignes
    d'exploitation, les contacts d'assistance et les accès par canal sécurisé.
 
 ## Coûts externes à confirmer
@@ -110,8 +158,10 @@ client.
 
 ## Décision de livraison
 
-**Démonstration en ligne : oui, sur le Worker. Encaissement commercial et
-livraison opérationnelle complète : pas encore.** Les principaux blocages qui
-dépendent du client sont l'adresse officielle, les secrets, le compte marchand,
-Storage et l'approbation des informations métier. La recette de sécurité et des
-parcours réels devra être terminée après ces réglages.
+**Démonstration en ligne : oui, sur Worker et Pages avec des versions différentes.
+Livraison commerciale complète : non.** Les blocages incluent maintenant un
+build Pages en échec, une suite Firebase en échec, l'absence de secrets sur le
+Worker applicatif, un cron qui reçoit 401, des textes légaux incomplets, le
+seeding de données factices et les recettes réelles du paiement, des rôles et
+des appareils. Il n'y a donc pas seulement huit points, et certains points
+précédemment notés « en attente » sont désormais confirmés en échec.

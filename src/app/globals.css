@@ -3,10 +3,70 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Sora", var(--font-sans);
-  --background: #fbf6ef;
-  --foreground: #1a1109;
+  /* Central palette: Sahel cream, Burkina red, gold and trust green. */
+  --faso-red-50: 255 241 239;
+  --faso-red-100: 255 222 217;
+  --faso-red-200: 255 190 181;
+  --faso-red-300: 255 151 139;
+  --faso-red-400: 239 91 77;
+  --faso-red: 214 40 40;
+  --faso-red-dark: 158 27 27;
+  --faso-red-700: 130 29 28;
+  --faso-red-800: 105 28 26;
+  --faso-red-900: 83 27 24;
+  --faso-red-950: 46 12 12;
+  --faso-red-soft: 244 181 181;
+  --faso-gold-50: 255 249 235;
+  --faso-gold-100: 255 240 202;
+  --faso-gold-200: 255 222 153;
+  --faso-gold-300: 250 197 103;
+  --faso-gold-400: 244 169 60;
+  --faso-gold: 244 169 60;
+  --faso-gold-dark: 201 127 22;
+  --faso-gold-700: 151 95 22;
+  --faso-gold-800: 119 73 22;
+  --faso-gold-900: 97 60 22;
+  --faso-gold-950: 54 31 10;
+  --faso-gold-soft: 251 227 184;
+  --faso-green: 31 146 84;
+  --faso-green-dark: 19 106 59;
+  --faso-green-soft: 183 228 199;
+  --clay-50: 251 246 239;
+  --clay-100: 245 233 218;
+  --clay-200: 233 210 181;
+  --clay-300: 218 181 136;
+  --clay-400: 201 148 92;
+  --clay-500: 181 119 59;
+  --clay-600: 152 94 46;
+  --clay-700: 122 74 39;
+  --clay-800: 94 58 34;
+  --clay-900: 61 38 26;
+  --clay-950: 36 21 16;
+  --ink: 26 17 9;
+  --ink-soft: 74 63 51;
+  --ink-muted: 104 91 75;
+  --state-success: 19 106 59;
+  --state-warning: 151 95 22;
+  --state-danger: 158 27 27;
+  --state-info: 38 91 139;
+  --background: rgb(var(--clay-50));
+  --foreground: rgb(var(--ink));
+  --surface: 255 253 250;
+  --surface-raised: 255 255 255;
+  --surface-muted: 248 242 233;
+  --border-subtle: 233 210 181;
+  --focus-ring: 201 127 22;
+  --shadow-1: 0 1px 2px rgb(26 17 9 / 0.04), 0 4px 14px -8px rgb(26 17 9 / 0.12);
+  --shadow-2: 0 1px 2px rgb(26 17 9 / 0.04), 0 12px 32px -12px rgb(26 17 9 / 0.18);
+  --shadow-3: 0 2px 4px rgb(26 17 9 / 0.05), 0 32px 64px -24px rgb(26 17 9 / 0.28);
+  --shadow-brand: 0 0 0 1px rgb(244 169 60 / 0.35), 0 16px 48px -12px rgb(214 40 40 / 0.25);
+  --radius-control: 0.875rem;
+  --radius-card: 1.5rem;
+  --motion-fast: 150ms;
+  --motion-standard: 240ms;
+  --motion-enter: 520ms;
 }
 
 /* Le splash est rendu dans le HTML initial pour Ã©viter tout flash du contenu.
@@ -59,6 +119,11 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   h4 {
     @apply font-display tracking-tight;
   }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid rgb(var(--focus-ring));
+    outline-offset: 3px;
+  }
 }
 
 @layer components {
@@ -74,7 +139,7 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
 
   .card-premium {
     @apply rounded-3xl border border-clay-100/90 bg-white/90 shadow-premium backdrop-blur-sm transition-all duration-300;
-    box-shadow: 0 1px 2px rgba(26, 17, 9, 0.03), 0 16px 42px -24px rgba(26, 17, 9, 0.24);
+    box-shadow: var(--shadow-2);
   }
 
   .card-premium:hover {
@@ -87,7 +152,7 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   }
 
   .input-premium {
-    @apply h-12 w-full rounded-2xl border border-clay-200 bg-white px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-ink-muted/70;
+    @apply min-h-12 w-full rounded-2xl border border-clay-200 bg-white px-4 text-sm text-ink outline-none transition-all duration-200 placeholder:text-ink-muted/70;
   }
 
   .input-premium:hover {
@@ -95,8 +160,8 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   }
 
   .input-premium:focus {
-    border-color: #f4a93c;
-    box-shadow: 0 0 0 4px rgba(244, 169, 60, 0.14), 0 8px 24px -16px rgba(26, 17, 9, 0.28);
+    border-color: rgb(var(--focus-ring));
+    box-shadow: 0 0 0 4px rgb(var(--focus-ring) / 0.14), 0 8px 24px -16px rgb(26 17 9 / 0.28);
   }
 
   .section-kicker {
@@ -109,7 +174,46 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   }
 
   .btn-base {
-    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-300 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55;
+    transition-duration: var(--motion-standard);
+  }
+
+  .faso-card {
+    border: 1px solid rgb(var(--border-subtle) / 0.68);
+    border-radius: var(--radius-card);
+    background: rgb(var(--surface-raised) / 0.94);
+    box-shadow: var(--shadow-1);
+    transition: border-color var(--motion-standard) ease, box-shadow var(--motion-standard) ease, transform var(--motion-standard) ease;
+  }
+
+  .faso-card-interactive:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--faso-gold) / 0.48);
+    box-shadow: var(--shadow-2);
+  }
+
+  .faso-control {
+    min-height: 2.875rem;
+    border: 1px solid rgb(var(--border-subtle));
+    border-radius: var(--radius-control);
+    background: rgb(var(--surface-raised));
+    color: rgb(var(--ink));
+    transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease;
+  }
+
+  .faso-control:hover { border-color: rgb(var(--clay-300)); }
+  .faso-control:focus-visible { border-color: rgb(var(--focus-ring)); box-shadow: 0 0 0 4px rgb(var(--focus-ring) / 0.14); }
+
+  .faso-status-success { color: rgb(var(--state-success)); }
+  .faso-status-warning { color: rgb(var(--state-warning)); }
+  .faso-status-danger { color: rgb(var(--state-danger)); }
+  .faso-status-info { color: rgb(var(--state-info)); }
+
+  .faso-tabular { font-variant-numeric: tabular-nums lining-nums; }
+
+  .faso-brand-thread {
+    height: 2px;
+    background: linear-gradient(90deg, rgb(var(--faso-red)), rgb(var(--faso-gold)) 52%, rgb(var(--faso-green)));
   }
 }
 
@@ -150,6 +254,16 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   }
   .pb-bottom-nav {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

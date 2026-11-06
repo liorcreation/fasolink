@@ -239,6 +239,7 @@ export function Navbar() {
           </button>
         </div>
       </nav>
+      <span aria-hidden="true" className="faso-brand-thread pointer-events-none absolute inset-x-0 bottom-0 opacity-70" />
 
     </header>
 

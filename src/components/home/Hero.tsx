@@ -22,7 +22,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
     <section className="hero-cinematic relative isolate overflow-hidden text-white">
       <div aria-hidden="true" className="hero-cinematic-glow pointer-events-none absolute inset-0" />
 
-      <div className="container-faso relative z-10 grid min-h-[min(760px,calc(100svh-5rem))] items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.02fr_.98fr] lg:gap-12 lg:py-20 xl:gap-16">
+      <div className="container-faso relative z-10 grid min-h-[min(760px,calc(100svh-5rem))] items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.1fr_.9fr] lg:gap-12 lg:py-20 xl:gap-16">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -45,7 +45,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
           <motion.h1
             variants={reveal}
             transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-7 max-w-4xl text-[clamp(2.85rem,7vw,5.5rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-ink"
+            className="mt-7 max-w-4xl text-[clamp(2.85rem,5.8vw,5rem)] font-extrabold leading-[0.96] tracking-[-0.065em] text-ink md:text-[clamp(3.5rem,5.8vw,5rem)]"
           >
             La tech
             <br />
@@ -145,7 +145,7 @@ export function Hero({ shops }: { shops: ShopWithProducts[] }) {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div>
-      <dt className="text-xl font-extrabold tracking-tight text-ink sm:text-2xl">{value}</dt>
+      <dt className="faso-tabular text-xl font-extrabold tracking-tight text-ink sm:text-2xl">{value}</dt>
       <dd className="mt-0.5 text-[11px] font-medium text-ink-muted sm:text-xs">{label}</dd>
     </div>
   );

@@ -1,8 +1,9 @@
 import { AppLink as Link } from "@/components/site/AppLink";
 import { forwardRef } from "react";
+import { LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "ghost" | "gold" | "outline";
+type Variant = "primary" | "secondary" | "ghost" | "gold" | "outline" | "destructive";
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
@@ -14,12 +15,14 @@ const variants: Record<Variant, string> = {
   outline:
     "border border-ink/15 bg-white/90 text-ink shadow-sm hover:border-faso-red hover:text-faso-red hover:shadow-premium",
   ghost: "text-ink hover:bg-clay-100",
+  destructive:
+    "bg-state-danger text-white shadow-premium hover:bg-faso-red-dark hover:shadow-premium-lg hover:-translate-y-0.5",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-9 px-4 text-sm",
-  md: "h-11 px-6 text-sm",
-  lg: "h-14 px-8 text-base",
+  sm: "min-h-11 px-4 text-sm",
+  md: "min-h-11 px-6 text-sm",
+  lg: "min-h-14 px-8 text-base",
 };
 
 interface BaseProps {
@@ -30,15 +33,22 @@ interface BaseProps {
 
 export interface ButtonProps
   extends BaseProps,
-    React.ButtonHTMLAttributes<HTMLButtonElement> {}
+    React.ButtonHTMLAttributes<HTMLButtonElement> {
+  loading?: boolean;
+}
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", className, ...props }, ref) => (
+  ({ variant = "primary", size = "md", className, loading = false, disabled, children, ...props }, ref) => (
     <button
       ref={ref}
       className={cn("btn-base", variants[variant], sizes[size], className)}
       {...props}
-    />
+      disabled={disabled || loading}
+      aria-busy={loading || props["aria-busy"]}
+    >
+      {loading && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
+      {children}
+    </button>
   ),
 );
 Button.displayName = "Button";

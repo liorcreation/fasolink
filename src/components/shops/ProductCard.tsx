@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { AppLink as Link } from "@/components/site/AppLink";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeftRight, Check, MessageCircle, Smartphone } from "lucide-react";
 import type { Product } from "@/lib/database.types";
 import { buildWhatsAppLink, formatCFA } from "@/lib/utils";
@@ -29,6 +29,7 @@ export function ProductCard({
   compareLimitReached?: boolean;
   onCompareToggle?: () => void;
 }) {
+  const reduceMotion = useReducedMotion();
   const soldOut = product.availability === "out_of_stock";
   const message = whatsappMessage({
     shopName,
@@ -39,10 +40,10 @@ export function ProductCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      whileTap={{ scale: 0.99 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      whileHover={reduceMotion ? undefined : { y: -4 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.99 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3) }}
       className="group card-premium flex flex-col overflow-hidden"
@@ -98,7 +99,7 @@ export function ProductCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackContact(shopId, product.id)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 py-1.5 text-xs font-bold text-white transition-transform hover:scale-105 active:scale-95"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-[#25D366] px-3 text-xs font-bold text-white transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-green focus-visible:ring-offset-2"
             aria-label={`Commander ${product.name} sur WhatsApp`}
           >
             <MessageCircle className="h-3.5 w-3.5" />
@@ -111,7 +112,7 @@ export function ProductCard({
             onClick={onCompareToggle}
             aria-pressed={compareSelected}
             disabled={compareLimitReached}
-            className={`mt-2 inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-extrabold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${compareSelected ? "border-faso-green bg-faso-green/10 text-faso-green-dark" : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink"}`}
+            className={`mt-2 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${compareSelected ? "border-faso-green bg-faso-green/10 text-faso-green-dark" : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink"}`}
           >
             {compareSelected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden="true" />}
             {compareSelected ? "Ajouté au comparatif" : compareLimitReached ? "3 appareils maximum" : "Comparer"}

@@ -201,7 +201,7 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
           </div>
           <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrer par famille de produits">
             {FILTERS.map(({ id, label, icon: Icon }) => (
-              <button key={id} type="button" onClick={() => setFamily(id)} aria-pressed={family === id} className={cn("inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-extrabold transition-all", family === id ? "border-ink bg-ink text-white shadow-md" : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink")}>
+              <button key={id} type="button" onClick={() => setFamily(id)} aria-pressed={family === id} className={cn("inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-extrabold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2", family === id ? "border-ink bg-ink text-white shadow-md" : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink")}>
                 <Icon className="h-4 w-4" aria-hidden="true" /> {label}
               </button>
             ))}
@@ -209,13 +209,13 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
         </div>
       </section>
 
-      <section className="px-3 pb-16 pt-10 sm:px-8 sm:pt-14 lg:px-14" aria-live="polite">
+      <section className="px-3 pb-16 pt-10 sm:px-8 sm:pt-14 lg:px-14" aria-label="Résultats des produits">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> Sélection actuelle</p>
             <h2 className="mt-3 font-display text-2xl font-extrabold tracking-[-.04em] text-ink sm:text-3xl">Les offres qui vous attendent</h2>
           </div>
-          <p className="text-sm font-semibold text-ink-muted">{visible.length} résultat{visible.length === 1 ? "" : "s"}</p>
+          <p className="text-sm font-semibold text-ink-muted" role="status" aria-live="polite" aria-atomic="true">{visible.length} résultat{visible.length === 1 ? "" : "s"}</p>
         </div>
 
         <AnimatePresence mode="wait" initial={false}>
@@ -229,8 +229,8 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
           ) : (
             <motion.div key="empty" initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="mt-6 rounded-[2rem] border border-dashed border-clay-200 bg-clay-50/70 px-6 py-16 text-center">
               <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white text-faso-gold-dark shadow-premium"><PackageSearch className="h-7 w-7" /></span>
-              <h3 className="mt-5 text-xl font-extrabold text-ink">Aucun produit trouvé</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-muted">Modifiez votre recherche ou réinitialisez les filtres pour parcourir toutes les offres tech disponibles.</p>
+              <h3 className="mt-5 text-xl font-extrabold text-ink">{hasFilters ? "Aucun produit ne correspond" : "Le catalogue se prépare"}</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink-muted">{hasFilters ? "Essayez une autre recherche ou retirez un filtre pour retrouver les offres disponibles." : "Les boutiques publieront bientôt leurs premières offres tech. Revenez découvrir les nouveautés."}</p>
               {hasFilters && <button type="button" onClick={clearFilters} className="mt-5 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-extrabold text-white transition hover:bg-faso-green-dark"><Check className="h-4 w-4" /> Voir tout le catalogue</button>}
             </motion.div>
           )}
@@ -251,8 +251,8 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
                 <p className="text-xs text-white/65">{compareItems.length}/3 appareil{compareItems.length > 1 ? "s" : ""} sélectionné{compareItems.length > 1 ? "s" : ""}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button type="button" onClick={() => setCompareIds([])} className="grid h-10 w-10 place-items-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white" aria-label="Effacer la sélection"><Trash2 className="h-4 w-4" /></button>
-                <button type="button" onClick={() => setCompareOpen(true)} disabled={compareItems.length < 2} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-faso-gold px-4 text-xs font-extrabold text-ink transition hover:bg-faso-gold-soft disabled:cursor-not-allowed disabled:opacity-50"><ArrowLeftRight className="h-4 w-4" /> Comparer</button>
+                <button type="button" onClick={() => setCompareIds([])} className="grid h-11 w-11 place-items-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold" aria-label="Effacer la sélection"><Trash2 className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setCompareOpen(true)} disabled={compareItems.length < 2} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-faso-gold px-4 text-xs font-extrabold text-ink transition hover:bg-faso-gold-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-50"><ArrowLeftRight className="h-4 w-4" /> Comparer</button>
               </div>
             </div>
           </motion.div>

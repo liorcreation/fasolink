@@ -48,7 +48,7 @@ def table(rows, widths):
     return result
 
 def header(title, subtitle):
-    return [p("DOSSIER DE LIVRAISON • MISE À JOUR 31 OCTOBRE 2026", "KickerX"), p(title, "H1X"), p(subtitle), Spacer(1, 2*mm)]
+    return [p("DOSSIER DE LIVRAISON • MISE À JOUR 6 NOVEMBRE 2026", "KickerX"), p(title, "H1X"), p(subtitle), Spacer(1, 2*mm)]
 
 def draw_page(canvas, doc):
     canvas.saveState()
@@ -67,7 +67,7 @@ def draw_cover(canvas, doc):
     canvas.setFillColor(WHITE); canvas.setFont("Helvetica-Bold", 10); canvas.drawString(18*mm, A4[1]-28*mm, "FASOLINK")
     canvas.setFillColor(colors.HexColor("#D8D0C8")); canvas.setFont("Helvetica", 7)
     canvas.drawRightString(A4[0]-18*mm, A4[1]-28*mm, "CONFIDENTIEL • PRÉPARATION DE LIVRAISON")
-    canvas.drawString(18*mm, 12*mm, "Version actualisée | 31 octobre 2026")
+    canvas.drawString(18*mm, 12*mm, "Version actualisée | 6 novembre 2026")
     canvas.restoreState()
 
 class Doc(BaseDocTemplate):
@@ -81,29 +81,34 @@ def story():
          p("État des travaux, sécurité, exploitation et actions avant livraison", "CoverTextX"), Spacer(1, 20*mm),
          p("Marketplace de produits électroniques au Burkina Faso", "CoverTextX"), Spacer(1, 24*mm),
          p("DÉCISION À RETENIR", "KickerX"),
-         p("La version de démonstration est accessible sur Cloudflare Workers. La livraison commerciale complète reste conditionnée aux réglages des comptes du client, à la validation Firebase et à une recette réelle du paiement. Aucun paiement marchand n'a été effectué.", "CoverTextX"), PageBreak()]
+         p("Les pages publiques répondent, mais le dernier build Pages de main et les tests CI Firebase sont en échec. La livraison commerciale complète n'est pas prête : les comptes, les règles, le paiement, les textes légaux et les données de production doivent être validés.", "CoverTextX"), PageBreak()]
 
     s += header("1. Situation actuelle", "Ce qui est en place, ce qui est vérifié et ce qui reste à prouver.")
     s += [table([
         ["Domaine", "État du code / de la démonstration", "État de clôture"],
-        ["Application", "Version récente disponible sur fasolink.jurisia-api.workers.dev.", "Démonstration accessible"],
-        ["Adresse Pages", "fasolink.pages.dev répond encore mais affiche une version différente.", "Adresse officielle à choisir"],
-        ["Rôles et règles", "Règles Firestore/Storage et claim superAdmin présents dans le dépôt.", "Règles actives à comparer; tests CI attendus"],
-        ["CinetPay", "Parcours côté serveur préparé; aucune clé marchande configurée lors du dernier contrôle.", "Pas de transaction réelle testée"],
-        ["Photos et documents", "Règles Storage présentes; dernier état documenté : activation du bucket non confirmée.", "État et coût à vérifier"],
+        ["Application", "Worker HTTP 200; version publiée le 28 octobre. Pages HTTP 200 mais image hero différente.", "Versions différentes"],
+        ["Build Pages", "Le déploiement du commit 3328929 est marqué Failure; le commit précédent 1986f08 aussi.", "Pipeline à réparer ou Pages à abandonner"],
+        ["Règles", "Workflow Firebase 41238891242 échoué dans l'étape de tests; logs détaillés non accessibles.", "Règles non validées par tests"],
+        ["Paiement", "Aucun secret sur le Worker applicatif; pas de clé CinetPay ni compte service configuré.", "Pas de transaction réelle testée"],
+        ["Cron", "Secret présent sur le Worker cron, absent côté API; POST sans authentification renvoie 401.", "Expiration automatique bloquée"],
+        ["Photos et documents", "Règles Storage présentes; activation actuelle du bucket à confirmer.", "État et coût à vérifier"],
+        ["Textes légaux", "Identité éditeur, adresse, email et responsable de publication à compléter.", "À faire avant ouverture"],
         ["Protection trafic", "Limiteur en mémoire, local à chaque isolate; Firebase Auth direct n'y passe pas.", "Protection globale à configurer"],
     ], [27*mm, 90*mm, 53*mm]), Spacer(1, 5*mm), p("Contrôles techniques", "H2X"),
-        p("Les derniers contrôles documentés (ESLint, TypeScript et build) ont réussi fin octobre. Worker et Pages répondaient HTTP 200 lors du dernier contrôle, mais leurs versions diffèrent. Le test automatique Firestore/Storage n'a pas démarré sur le poste Windows : Java 21 ou plus est requis et manque ici. Un workflow GitHub Actions a été ajouté pour le lancer avec Java 21; son premier résultat reste à consulter."),
+        p("ESLint, TypeScript et le build de production local ont réussi le 6 novembre. Le contrôle HTTP du 31 octobre a renvoyé 200 sur les pages principales des deux domaines; Pages renvoyait 404 sur les routes de paiement, tandis que le Worker les connaît. Le test local Firestore/Storage s'est arrêté faute de Java 21; le workflow GitHub a ensuite échoué dans son étape de test. Les journaux détaillés nécessitent un droit administrateur du dépôt."),
         p("Conclusion", "H2X"),
         p("FasoLink peut être montré comme démonstration. Ne pas encore annoncer une mise en production commerciale prête à encaisser ni une sécurité certifiée.", "CalloutX"), PageBreak()]
 
     s += header("2. Ce qui peut être fait côté technique", "Travaux réalisables dans le dépôt, sans accès aux comptes ni paiement fournisseur.")
     s += [table([
         ["Action technique", "Avancement / résultat"],
-        ["Tests de règles Firebase", "Workflow CI ajouté avec Java 21. Le test local s'est arrêté avant exécution; premier résultat GitHub à consulter."],
+        ["Tests Firebase", "Workflow ajouté; premier run échoué dans l'étape de tests. Cause à lire dans les journaux protégés par les droits du dépôt."],
         ["Documentation de sécurité", "Les limites réelles du rate limiter et les vérifications encore manquantes sont décrites sans prétendre à une certification."],
         ["Configuration sûre", "Exemples de configuration corrigés : URL locale en développement, secret cron vide par défaut, pas de domaine client supposé."],
-        ["Worker cron", "URL cible du Worker actuel inscrite dans sa configuration source. Le déploiement et le secret restent à vérifier."],
+        ["Worker cron", "Le dernier déploiement observé date du 14 septembre; il ne contient pas la cible modifiée depuis. Le POST API reçoit 401 sans secret côté application."],
+        ["Données de démonstration", "Le script npm run seed injecte 9 boutiques toutes catégories, avec abonnements factices actifs. À ne pas lancer sur la base de production."],
+        ["Pages Cloudflare", "Le dernier build main est en échec; la version publique précédente répond encore, mais les changements n'y sont pas publiés."],
+        ["Révision UI", "Palette et surfaces centralisées, Geist avec Sora, focus clavier, boutons à états, badges sémantiques. Le catalogue ajoute des zones tactiles de 44 px, une annonce accessible du nombre de résultats, des états vides distincts et le respect de la réduction du mouvement."],
         ["Dossier client", "PDF de livraison actualisé avec les versions différentes, les tests réellement lancés, les coûts à confirmer et les étapes de recette."],
     ], [43*mm, 127*mm]), Spacer(1, 7*mm), p("Actions nécessitant les comptes du client", "H2X"),
         p("Le choix de l'adresse officielle, l'attribution du rôle Super Admin, les clés CinetPay/Firebase, l'activation de Storage et l'approbation d'un éventuel budget ne peuvent pas être inventés ou remplacés par du code local. Ces opérations doivent être faites par une personne autorisée dans les comptes correspondants."),
@@ -114,12 +119,15 @@ def story():
     s += [table([
         ["Priorité", "Action", "Qui"],
         ["P0", "Choisir l'adresse officielle : Worker actuel ou domaine du client; Pages et Worker n'ont pas la même version.", "Client"],
-        ["P0", "Lire le premier résultat du workflow Firebase Rules; comparer ensuite les règles actives avec le dépôt.", "Technique"],
+        ["P0", "Obtenir les logs du run Firebase en échec, corriger et relancer les tests; comparer ensuite les règles actives au dépôt.", "Technique"],
+        ["P0", "Réparer le build Pages si cette adresse est choisie; sinon confirmer le Worker comme domaine canonique et traiter Pages comme ancienne version.", "Client + technique"],
+        ["P0", "Finaliser mentions légales, éditeur, adresse, contact et relecture de la confidentialité.", "Client"],
         ["P0", "Vérifier/activer Storage après accord sur le budget, publier ses règles et tester photos publiques et justificatifs privés.", "Client + technique"],
         ["P0", "Ajouter les secrets nécessaires dans Cloudflare et vérifier qu'ils ne sont pas exposés au navigateur.", "Client + technique"],
         ["P0", "Tester les rôles visiteur, vendeur et Super Admin avec des comptes séparés, autorisations et refus compris.", "Client + technique"],
         ["P0", "Faire une recette CinetPay : paiement accepté/refusé/annulé, notification répétée, montant invalide et boutique suspendue.", "Client + technique"],
-        ["P1", "Déployer et tester le cron après choix d'URL et ajout de son secret; vérifier l'expiration d'un abonnement.", "Technique"],
+        ["P0", "Mettre le même CRON_SECRET côté API et cron, redéployer le cron depuis sa configuration à jour, puis tester une expiration.", "Client + technique"],
+        ["P1", "Désactiver le seeding démo en production et vérifier/supprimer les données de démonstration dans Firestore.", "Technique + client"],
         ["P1", "Configurer une protection Cloudflare adaptée aux requêtes exposées; le compteur mémoire actuel n'est pas global.", "Compte Cloudflare"],
         ["P1", "Faire la recette sur vrais téléphones, tablettes et ordinateurs, puis valider les textes, contenus et contacts de support.", "Client + technique"],
     ], [17*mm, 121*mm, 32*mm]), Spacer(1, 6*mm),
@@ -138,13 +146,13 @@ def story():
     ], [30*mm, 91*mm, 49*mm]), Spacer(1, 7*mm), p("Critères de réception", "H2X"),
         p("1. Le client confirme l'adresse et les contenus.<br/>2. Les tests Firebase passent et les règles actives sont comparées au dépôt.<br/>3. Le Super Admin, le vendeur et le visiteur ont les accès attendus.<br/>4. Photos et documents fonctionnent avec les bonnes permissions.<br/>5. Le paiement et le cron ont été testés avec les secrets réels.<br/>6. Les contrôles mobiles, tablettes et desktop sont terminés.<br/>7. Le procès-verbal, les contacts de support et les accès sont remis de manière sécurisée."),
         p("Décision de livraison", "H2X"),
-        p("Démonstration en ligne : oui. Commercialisation avec encaissement et livraison complète : après validation des règles, configuration des comptes, essais réels et accord du client sur les coûts. Cette distinction protège le client et évite de promettre un parcours non vérifié.", "CalloutX"), Spacer(1, 7*mm),
+        p("Démonstration en ligne : oui. Livraison commerciale : pas encore. Le build Pages et le workflow des règles Firebase sont en échec; paiement, cron, Storage, textes légaux, données de production et tests sur appareils restent à clôturer. La liste de blocages ne se limite donc pas à huit éléments.", "CalloutX"), Spacer(1, 7*mm),
         table([["Pour FasoLink", "Pour le client"], ["Nom : ___________________________<br/><br/>Date : ___________________________<br/><br/>Signature : _______________________", "Nom : ___________________________<br/><br/>Date : ___________________________<br/><br/>Signature : _______________________" ]], [85*mm, 85*mm])]
     return s
 
 if __name__ == "__main__":
     doc = Doc(str(OUT))
-    doc.title = "FasoLink - Dossier de finalisation commerciale - 31 octobre 2026"
+    doc.title = "FasoLink - Dossier de finalisation commerciale - 6 novembre 2026"
     doc.author = "FasoLink"
     doc.handle_nextPageTemplate("body")
     doc.build(story())

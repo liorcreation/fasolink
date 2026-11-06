@@ -168,7 +168,7 @@ export function VendorDashboard({
             className="group relative overflow-hidden rounded-[1.5rem] border border-clay-200/80 bg-white p-5 shadow-[0_7px_25px_rgba(51,37,23,.04)] transition duration-200 hover:-translate-y-0.5 hover:border-faso-gold/35 hover:shadow-premium sm:p-6"
           >
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-faso-green-soft/35 text-faso-green-dark"><k.icon className="h-5 w-5" /></span>
-            <p className="mt-4 text-3xl font-black tracking-tight text-ink">{stats ? k.value : "…"}</p>
+            <p className="faso-tabular mt-4 text-3xl font-black tracking-tight text-ink">{stats ? k.value : "…"}</p>
             <p className="mt-0.5 text-sm font-extrabold text-ink">{k.label}</p>
             <p className="mt-1 text-[11px] text-ink-muted">{k.hint}</p>
           </motion.div>

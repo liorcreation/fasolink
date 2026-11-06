@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Geist, Sora } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -10,7 +10,7 @@ import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { AutoRefresh } from "@/components/site/AutoRefresh";
 
-const inter = Inter({
+const geist = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -72,7 +72,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
+    <html lang="fr" className={`${geist.variable} ${sora.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

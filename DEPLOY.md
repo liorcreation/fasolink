@@ -1,6 +1,6 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 31 octobre 2026.
+Dernière mise à jour : 6 novembre 2026.
 
 ## Adresses actuellement publiées
 
@@ -22,15 +22,19 @@ et les variables de déploiement sur cette adresse.
    téléversements.
 3. Comparer les règles actives avec `firestore.rules` et `storage.rules`.
 4. Exécuter `npm run test:firebase-rules`. Ce poste Windows n'a pas Java 21;
-   l'exécution locale a donc échoué avant le démarrage des tests. Le workflow
-   `.github/workflows/firebase-rules.yml` lance la même suite sur GitHub Actions
-   avec Java 21. Consulter son premier résultat avant d'affirmer que les règles
-   sont validées.
+   l'exécution locale s'est arrêtée avant les tests. Le workflow
+   `.github/workflows/firebase-rules.yml` a exécuté la suite sur GitHub avec
+   Java 21, mais le run `41238891242` est en échec dans l'étape de tests. Les
+   règles ne sont pas validées tant que la cause n'est pas corrigée et que la
+   suite ne réussit pas.
 
 ## Secrets Cloudflare Workers
 
-Le dernier contrôle de `wrangler secret list` pour le Worker `fasolink` a renvoyé
-une liste vide. Ajouter les secrets seulement dans le compte Cloudflare autorisé,
+Le dernier contrôle de `wrangler secret list` pour le Worker applicatif `fasolink`
+a renvoyé une liste vide. Pour le Worker cron, seul un secret nommé `CRON_SECRET`
+est présent. Un POST sans authentification à `/api/cron/expire` renvoie 401 : le
+Worker API n'a donc pas le secret partagé attendu. Ajouter les secrets seulement
+dans le compte Cloudflare autorisé,
 jamais dans Git :
 
 - `CINETPAY_API_KEY` et `CINETPAY_SITE_ID` : requis pour le checkout;
@@ -64,12 +68,12 @@ navigateur. Cela ne remplace pas une recette avec le véritable compte marchand.
 
 ## Expiration automatique
 
-Le cron séparé se trouve dans `workers/`. Son URL par défaut vise maintenant le
-Worker actuel dans `workers/wrangler.toml`; elle devra suivre le domaine que le
-client choisira. Le cron **n'est pas confirmé comme déployé**. Avant activation,
-ajouter `CRON_SECRET` à ce Worker et déployer sa configuration avec `wrangler
-deploy --config workers/wrangler.toml`. Puis provoquer une exécution contrôlée
-et vérifier la réponse de `/api/cron/expire`.
+Le cron séparé se trouve dans `workers/`. Son fichier source vise maintenant le
+Worker actuel, mais le dernier déploiement visible date du 14 septembre : il
+n'inclut donc pas la cible modifiée ensuite. Après choix du domaine, redéployer
+avec `wrangler deploy --config workers/wrangler.toml`, configurer le même
+`CRON_SECRET` des deux côtés, puis déclencher une exécution contrôlée et vérifier
+la réponse de `/api/cron/expire`.
 
 ## Limitation des requêtes
 
@@ -94,7 +98,8 @@ npm run build
 npm run test:firebase-rules
 ```
 
-La dernière compilation de production réussie date du 31 octobre 2026. Le test
-Firebase local a échoué sur cette machine parce que Java 21 manque; le workflow
-GitHub doit confirmer les tests. Après validation des secrets et de la recette,
-le Worker applicatif se déploie avec `npm run deploy`.
+La compilation locale, ESLint et TypeScript ont réussi le 6 novembre 2026. Le
+dernier build Pages de `main` est marqué en échec; les routes déjà publiées
+répondent encore, mais restent une version antérieure. Le Worker applicatif
+répond HTTP 200 sur les pages contrôlées. Après réparation du pipeline choisi et
+validation des secrets et recettes, le Worker se déploie avec `npm run deploy`.
