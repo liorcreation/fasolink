@@ -57,7 +57,7 @@
   --surface-raised: 255 255 255;
   --surface-muted: 248 242 233;
   --border-subtle: 233 210 181;
-  --focus-ring: 201 127 22;
+  --focus-ring: 151 95 22;
   --shadow-1: 0 1px 2px rgb(26 17 9 / 0.04), 0 4px 14px -8px rgb(26 17 9 / 0.12);
   --shadow-2: 0 1px 2px rgb(26 17 9 / 0.04), 0 12px 32px -12px rgb(26 17 9 / 0.18);
   --shadow-3: 0 2px 4px rgb(26 17 9 / 0.05), 0 32px 64px -24px rgb(26 17 9 / 0.28);
@@ -772,4 +772,12 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
 @media (prefers-reduced-motion: reduce) {
   .profile-hero-orb { animation: none !important; }
   .profile-shortcut,.profile-create-shop,.profile-edit-link,.profile-hero-button { transition-duration: .01ms !important; }
+}
+
+/* Un seul indicateur clavier contrasté, même si un composant utilise
+   outline-none ou une ancienne classe focus:ring. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--focus-ring));
+  outline-offset: 3px;
+  box-shadow: none;
 }
