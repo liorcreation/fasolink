@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircle2, Lock, ShieldCheck, Star } from "lucide-react";
 import type { Review } from "@/lib/database.types";
 import { cn, initials } from "@/lib/utils";
@@ -33,6 +33,8 @@ export function ReviewsSection({
   const [comment, setComment] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const isOwner = Boolean(user?.uid && ownerId && user.uid === ownerId);
   const canReview = !authLoading && !isOwner && hasContacted;
@@ -68,6 +70,7 @@ export function ReviewsSection({
 
     setError("");
     setSent(false);
+    setSubmitting(true);
 
     const review: Review = {
       id: `local-${Date.now()}`,
@@ -80,8 +83,8 @@ export function ReviewsSection({
       created_at: new Date().toISOString(),
     };
 
-    if (isFirebaseConfigured) {
-      try {
+    try {
+      if (isFirebaseConfigured) {
         const authorId = await ensureSession();
         await addDoc(collection(db, COLLECTIONS.reviews), {
           shop_id: shopId,
@@ -92,17 +95,7 @@ export function ReviewsSection({
           is_verified: false,
           created_at: review.created_at,
         });
-      } catch (error) {
-        console.error("[FasoLink] review:", error);
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Impossible de publier votre avis pour le moment.",
-        );
-        return;
-      }
-    } else {
-      try {
+      } else {
         const local = JSON.parse(
           localStorage.getItem(LS_KEY(shopId)) ?? "[]",
         ) as Review[];
@@ -110,16 +103,23 @@ export function ReviewsSection({
           LS_KEY(shopId),
           JSON.stringify([review, ...local].slice(0, 20)),
         );
-      } catch {
-        /* ignore */
       }
-    }
 
-    setReviews((r) => [review, ...r]);
-    setComment("");
-    setName("");
-    setRating(5);
-    setSent(true);
+      setReviews((r) => [review, ...r]);
+      setComment("");
+      setName("");
+      setRating(5);
+      setSent(true);
+    } catch (error) {
+      console.error("[FasoLink] review:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Impossible de publier votre avis pour le moment.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -144,7 +144,7 @@ export function ReviewsSection({
             ))}
           </div>
           <p className="mt-1 text-xs text-ink-muted">
-            {summary.count} avis vérifié{summary.count > 1 ? "s" : ""}
+            {summary.count} avis publié{summary.count > 1 ? "s" : ""}
           </p>
 
           <div className="mt-4 space-y-1.5">
@@ -165,7 +165,7 @@ export function ReviewsSection({
 
           <p className="mt-4 flex items-center justify-center gap-1.5 rounded-xl bg-faso-green-soft/30 px-3 py-2 text-[11px] font-medium text-faso-green-dark">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Avis déposés après contact vérifié
+            Avis partagés après un contact via FasoLink
           </p>
         </div>
       </div>
@@ -175,10 +175,12 @@ export function ReviewsSection({
         <AnimatePresence>
           {sent && (
             <motion.p
-              initial={{ opacity: 0, y: -8 }}
+              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mb-4 flex items-center gap-2 rounded-xl bg-faso-green-soft/40 px-4 py-3 text-sm font-medium text-faso-green-dark"
+            role="status"
+            aria-live="polite"
+            className="mb-4 flex items-center gap-2 rounded-xl bg-faso-green-soft/40 px-4 py-3 text-sm font-medium text-faso-green-dark"
             >
               <CheckCircle2 className="h-4 w-4" />
               Merci ! Votre avis a été publié.
@@ -194,7 +196,7 @@ export function ReviewsSection({
             <p className="text-sm font-bold text-ink">
               Partagez votre expérience avec {shopName}
             </p>
-            <div className="-m-1.5 flex">
+            <div className="flex" role="group" aria-label="Votre note">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
@@ -202,8 +204,9 @@ export function ReviewsSection({
                   onClick={() => setRating(n)}
                   onMouseEnter={() => setHover(n)}
                   onMouseLeave={() => setHover(0)}
-                  className="p-1.5"
+                  className="grid h-11 w-11 place-items-center rounded-xl transition hover:bg-faso-gold-soft/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold"
                   aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
+                  aria-pressed={rating === n}
                 >
                   <Star
                     className={cn(
@@ -216,25 +219,37 @@ export function ReviewsSection({
                 </button>
               ))}
             </div>
+            <label htmlFor={`review-name-${shopId}`} className="block text-xs font-bold text-ink-soft">Votre nom</label>
             <input
+              id={`review-name-${shopId}`}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Votre nom"
-              className="h-10 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm outline-none focus:border-faso-gold"
+              placeholder="Ex. Awa O."
+              autoComplete="name"
+              maxLength={60}
+              required
+              className="h-11 w-full rounded-xl border border-clay-200 bg-white px-3 text-sm outline-none transition focus:border-faso-gold focus-visible:ring-2 focus-visible:ring-faso-gold/40"
             />
+            <label htmlFor={`review-comment-${shopId}`} className="block text-xs font-bold text-ink-soft">Votre expérience</label>
             <textarea
+              id={`review-comment-${shopId}`}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              rows={3}
-              placeholder="Qualité, délai, accueil… (min. 10 caractères)"
-              className="w-full resize-none rounded-xl border border-clay-200 bg-white px-3 py-2 text-sm outline-none focus:border-faso-gold"
+              rows={4}
+              minLength={10}
+              maxLength={1200}
+              required
+              placeholder="Qualité, délai, accueil… (10 caractères minimum)"
+              className="w-full resize-y rounded-xl border border-clay-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-faso-gold focus-visible:ring-2 focus-visible:ring-faso-gold/40"
             />
+            <p className="text-right text-[11px] text-ink-muted" aria-live="polite">{comment.length}/1 200</p>
             <button
               type="submit"
-              disabled={!name.trim() || comment.trim().length < 10}
-              className="btn-base h-10 bg-faso-red px-5 text-sm text-white disabled:opacity-50"
+              disabled={submitting || !name.trim() || comment.trim().length < 10}
+              className="btn-base min-h-11 bg-faso-red px-5 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red focus-visible:ring-offset-2"
+              aria-busy={submitting}
             >
-              Publier mon avis
+              {submitting ? "Publication…" : "Publier mon avis"}
             </button>
           </form>
         ) : (
@@ -266,7 +281,7 @@ export function ReviewsSection({
         <AnimatePresence>
           {error && (
             <motion.p
-              initial={{ opacity: 0, y: -8 }}
+              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               role="alert"
