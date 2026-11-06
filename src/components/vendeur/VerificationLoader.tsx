@@ -7,6 +7,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { VerificationForm } from "@/components/vendeur/VerificationForm";
 import { fetchShops } from "@/lib/shops";
 import { fetchOwnedShops } from "@/lib/vendor-data";
+import { subscribeToOwnedShopPortfolio } from "@/lib/shop-realtime";
 import type { ShopWithProducts } from "@/lib/database.types";
 
 export function VerificationLoader() {
@@ -20,6 +21,7 @@ export function VerificationLoader() {
   useEffect(() => {
     if (authLoading) return;
     let mounted = true;
+    let unsubscribe: (() => void) | undefined;
     async function load() {
       setLoading(true);
       setError(null);
@@ -37,6 +39,16 @@ export function VerificationLoader() {
         if (mounted) {
           setShops(owned);
           setSelectedShopId((current) => current && owned.some((item) => item.id === current) ? current : owned[0]?.id ?? null);
+          unsubscribe = subscribeToOwnedShopPortfolio(
+            user.uid,
+            (records) => {
+              if (!mounted) return;
+              const liveShops = records.map((record) => record.shop);
+              setShops(liveShops);
+              setSelectedShopId((current) => current && liveShops.some((item) => item.id === current) ? current : liveShops[0]?.id ?? null);
+            },
+            (cause) => console.warn("[FasoLink] synchronisation des vérifications boutique:", cause),
+          );
         }
       } catch (cause) {
         if (mounted) setError(cause instanceof Error ? cause.message : "Impossible de charger vos boutiques.");
@@ -47,6 +59,7 @@ export function VerificationLoader() {
     void load();
     return () => {
       mounted = false;
+      unsubscribe?.();
     };
   }, [authLoading, isConfigured, reloadKey, user]);
 
