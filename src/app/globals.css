@@ -781,3 +781,25 @@ html[data-fasolink-splash-seen="true"] .fasolink-splash {
   outline-offset: 3px;
   box-shadow: none;
 }
+
+.skip-to-content {
+  position: fixed;
+  z-index: 1000;
+  top: max(.5rem, env(safe-area-inset-top));
+  left: 1rem;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border-radius: .875rem;
+  background: rgb(var(--ink));
+  padding: .6rem 1rem;
+  color: white;
+  font-size: .875rem;
+  font-weight: 750;
+  box-shadow: var(--shadow-2);
+  transform: translateY(calc(-100% - 1rem));
+  transition: transform var(--motion-fast) ease;
+}
+
+.skip-to-content:focus-visible { transform: translateY(0); }
+#main-content { scroll-margin-top: 6rem; }

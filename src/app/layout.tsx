@@ -82,9 +82,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav lg:pb-0">
         <AuthProvider>
+          <a className="skip-to-content" href="#main-content">
+            Passer au contenu principal
+          </a>
           <SplashScreen />
           <Navbar />
-          <main>{children}</main>
+          <div id="main-content" tabIndex={-1}>
+            {children}
+          </div>
           <Footer />
           <BottomNav />
           <ServiceWorkerRegister />
