@@ -10,9 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `d13d2ab` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `679cabf0-7770-4ec8-b71d-b7a9b50326b5`);
-les routes `/`, `/vendeur/verification` et `/vendeur/dashboard` répondent HTTP 200.
+État Git : commit `09b44cc` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `3aff4780-543c-4f48-8216-608d55fe0637`);
+les routes `/`, `/offline` et `/vendeur/dashboard` répondent HTTP 200, et une
+adresse inconnue renvoie HTTP 404.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -98,6 +99,14 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   n’ont pas été modifiées. ESLint, TypeScript et le build de production ont
   réussi le 6 novembre. L’envoi réel exige que Firebase Storage soit activé;
   la recette avec pièces et comptes réels reste à faire.
+- La page hors connexion annonce l’état du réseau, retente l’ouverture de
+  l’accueil lorsqu’une connexion revient et réactive le bouton si l’essai
+  échoue. Les apparitions visuelles communes respectent maintenant entièrement
+  `prefers-reduced-motion`. La page 404 et la page hors connexion répondent aux
+  routes attendues sur le Worker; `/offline` répond 200 et une URL inconnue 404.
+  ESLint, TypeScript et le build ont réussi le 6 novembre. Le comportement de
+  reprise a été contrôlé par le code et la publication, mais il n’a pas été
+  simulé dans un navigateur réellement déconnecté.
 - La prévisualisation desktop avait montré un saut de ligne trop tôt dans le
   titre hero, corrigé ensuite. La nouvelle vérification visuelle après rebuild
   a échoué dans le navigateur local; le serveur répondait pourtant HTTP 200.
