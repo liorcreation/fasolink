@@ -1,6 +1,6 @@
 # FasoLink — état de finalisation et préparation de livraison
 
-Dernière vérification : 6 novembre 2026 (après l’interface de vérification boutique).
+Dernière vérification : 6 novembre 2026 (accessibilité des animations de navigation).
 
 ## État exécutif
 
@@ -10,9 +10,10 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `a14868f` poussé sur `origin/main`. Le Worker Cloudflare a été
-redéployé après cette publication (version `2487f8e4-f2ca-4f6d-8ec7-e547442599f5`);
-les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondent HTTP 200.
+État Git : commit `0ac8537` poussé sur `origin/main`. Le Worker Cloudflare a été
+redéployé après cette publication (version `fe8d8a5c-d309-474c-b74f-e67ea4edb682`);
+les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondent HTTP 200
+au contrôle HTTP du 6 novembre.
 Cloudflare Pages demeure une
 publication distincte et ancienne; son dernier build `main` vérifié est marqué
 **Failure**. Les deux adresses ne servent donc toujours pas nécessairement la
@@ -28,6 +29,11 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
 - `npm run lint`, `npx tsc --noEmit` et `npm run build` ont réussi localement le
   6 novembre. Le build affiche encore l'avertissement de dépréciation de la
   convention `middleware` dans cette version de Next.js.
+- Les animations partagées de la barre mobile, du menu, des panneaux, de
+  l'invite d'installation et de la sortie du splash respectent maintenant
+  `prefers-reduced-motion` : les déplacements décoratifs sont retirés ou
+  instantanés lorsque l'utilisateur a demandé moins d'animation. Les parcours
+  de navigation n'ont pas été modifiés.
 - Une passe de fondation UI a centralisé les échelles rouge/or, les neutres
   chauds, les couleurs d'état, les rayons, ombres et durées. Geist est utilisé
   pour le texte et Sora pour les titres. Les boutons ont un état de chargement

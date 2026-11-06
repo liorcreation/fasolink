@@ -1,11 +1,15 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 6 novembre 2026 (palette de commandes clavier).
+Dernière mise à jour : 6 novembre 2026 (accessibilité des animations partagées).
 
 ## Adresses actuellement publiées
 
 - Worker avec les dernières améliorations :
   `https://fasolink.jurisia-api.workers.dev`.
+- Commit du code publié : `0ac8537`; version Worker :
+  `fe8d8a5c-d309-474c-b74f-e67ea4edb682`.
+- Contrôle HTTP du 6 novembre : `/`, `/boutiques`, `/produits` et
+  `/vendeur/dashboard` répondent tous `200`.
 - Ancien site Pages : `https://fasolink.pages.dev` (répond encore mais n'a pas
   les mêmes fichiers ni la section vidéo récente).
 
