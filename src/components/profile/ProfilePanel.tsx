@@ -10,7 +10,6 @@ import {
   ChevronRight,
   CircleHelp,
   Heart,
-  LoaderCircle,
   LogIn,
   LogOut,
   MapPin,
@@ -182,9 +181,9 @@ export function ProfilePanel() {
           <div className="profile-hero-orb profile-hero-orb-one" aria-hidden="true" />
           <div className="profile-hero-orb profile-hero-orb-two" aria-hidden="true" />
           <div className="profile-hero-content">
-            <div className="profile-avatar-wrap">
-              <span className="profile-avatar" aria-label={`Initiales de ${fullName}`}>{initials}</span>
-              {user && <span className="profile-online-dot" title="Session active" />}
+            <div className="profile-avatar-wrap" aria-hidden="true">
+              <span className="profile-avatar">{initials}</span>
+              {user && <span className="profile-online-dot" />}
             </div>
             <div className="profile-hero-copy">
               <span className="profile-eyebrow"><Sparkles aria-hidden="true" /> VOTRE ESPACE FASOLINK</span>
@@ -200,8 +199,8 @@ export function ProfilePanel() {
             {user ? (
               <>
                 <a href="#coordonnees" className="profile-hero-button profile-hero-button-light"><PencilLine aria-hidden="true" /> Modifier mes infos</a>
-                <Button variant="ghost" size="sm" className="profile-signout" onClick={() => void signOut()} disabled={loggingOut}>
-                  {loggingOut ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}{loggingOut ? "Déconnexion…" : "Déconnexion"}
+                <Button variant="ghost" size="sm" className="profile-signout" onClick={() => void signOut()} loading={loggingOut}>
+                  {!loggingOut && <LogOut className="h-4 w-4" />}{loggingOut ? "Déconnexion…" : "Déconnexion"}
                 </Button>
               </>
             ) : (
@@ -219,6 +218,7 @@ export function ProfilePanel() {
           <main className="profile-main-column">
             <motion.section
               id="coordonnees"
+              aria-busy={loading || profileLoading}
               initial={reduceMotion ? false : { opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: .06 }}
@@ -230,7 +230,10 @@ export function ProfilePanel() {
               </div>
 
               {loading || profileLoading ? (
-                <div className="profile-loading"><LoaderCircle className="h-5 w-5 animate-spin" /><span>Chargement des informations…</span></div>
+                <div className="profile-info-skeleton" role="status">
+                  <span className="sr-only">Chargement des informations du profil…</span>
+                  {[0, 1, 2, 3].map((item) => <span key={item} aria-hidden="true"><i /><i /></span>)}
+                </div>
               ) : !user ? (
                 <div className="profile-login-prompt"><div className="profile-login-symbol"><UserRound aria-hidden="true" /></div><div><h3>Un espace à vous, partout</h3><p>Créez un compte gratuit pour synchroniser votre profil et retrouver vos boutiques favorites sur tous vos appareils.</p><ButtonLink href={isConfigured ? "/connexion" : "/inscription"} size="sm" className="mt-4"><LogIn aria-hidden="true" /> {isConfigured ? "Connexion / Inscription" : "Découvrir FasoLink"}<ArrowRight aria-hidden="true" /></ButtonLink></div></div>
               ) : editing ? (
@@ -238,7 +241,7 @@ export function ProfilePanel() {
                   <label className="profile-field"><span>Nom complet</span><input autoComplete="name" required minLength={2} maxLength={80} value={profile.full_name} onChange={(event) => setProfile((current) => ({ ...current, full_name: event.target.value }))} placeholder="Votre nom complet" /></label>
                   <label className="profile-field"><span>Adresse email</span><input value={user.email || "Aucune adresse email"} disabled readOnly /><small>Pour modifier votre email, utilisez les paramètres de votre compte Firebase.</small></label>
                   <div className="profile-edit-grid"><label className="profile-field"><span>Téléphone <i>Facultatif</i></span><input autoComplete="tel" type="tel" inputMode="tel" maxLength={24} value={profile.phone} onChange={(event) => setProfile((current) => ({ ...current, phone: event.target.value }))} placeholder="+226 70 00 00 00" /></label><label className="profile-field"><span>Ville <i>Facultatif</i></span><input autoComplete="address-level2" maxLength={60} value={profile.city} onChange={(event) => setProfile((current) => ({ ...current, city: event.target.value }))} placeholder="Ex. Ouagadougou" /></label></div>
-                  <div className="profile-form-actions"><button type="button" className="profile-cancel-button" onClick={cancelEdit}>Annuler</button><Button type="submit" disabled={saving || profile.full_name.trim().length < 2}>{saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{saving ? "Enregistrement…" : "Enregistrer"}</Button></div>
+                  <div className="profile-form-actions"><button type="button" className="profile-cancel-button" onClick={cancelEdit} disabled={saving}>Annuler</button><Button type="submit" loading={saving} disabled={profile.full_name.trim().length < 2}>{!saving && <Check className="h-4 w-4" />}{saving ? "Enregistrement…" : "Enregistrer"}</Button></div>
                 </form>
               ) : (
                 <div className="profile-info-grid">

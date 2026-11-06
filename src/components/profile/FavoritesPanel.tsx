@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppLink as Link } from "@/components/site/AppLink";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Heart, LoaderCircle, RefreshCw, Store } from "lucide-react";
+import { ArrowRight, Heart, RefreshCw, Store } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { fetchFavoriteShops } from "@/lib/favorites";
 import type { ShopWithProducts } from "@/lib/database.types";
@@ -44,9 +44,9 @@ export function FavoritesPanel() {
     <motion.section
       id="favoris"
       initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: .08 }}
-      transition={{ duration: .48 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: .48 }}
       className="profile-section-card profile-favorites-section scroll-mt-28"
     >
       <div className="profile-section-heading profile-favorites-heading">
@@ -54,14 +54,14 @@ export function FavoritesPanel() {
         {shops.length > 0 && <span className="profile-favorite-count">{shops.length}<small>{shops.length === 1 ? "boutique" : "boutiques"}</small></span>}
       </div>
 
-      {loading && <div className="profile-favorites-loading" role="status"><LoaderCircle className="h-5 w-5 animate-spin" /><span>Nous préparons votre sélection…</span></div>}
+      {loading && <div className="profile-favorites-loading" role="status"><span className="sr-only">Nous préparons votre sélection…</span>{[0, 1, 2].map((item) => <span key={item} className="profile-favorite-skeleton" aria-hidden="true"><i /><i /><i /></span>)}</div>}
       {!loading && isConfigured && !user && (
         <div className="profile-empty-state">
           <span className="profile-empty-icon"><Heart aria-hidden="true" /></span><div><h3>Vos coups de cœur, toujours avec vous</h3><p>Connectez-vous pour retrouver les boutiques que vous avez enregistrées sur tous vos appareils.</p><Link href="/connexion">Me connecter <ArrowRight aria-hidden="true" /></Link></div>
         </div>
       )}
       {!loading && (!isConfigured || user) && loadError && (
-        <div className="profile-favorites-error" role="alert"><span>Vos favoris n’ont pas pu être chargés. Vérifiez votre connexion puis réessayez.</span><button type="button" onClick={() => setRetry((value) => value + 1)}><RefreshCw aria-hidden="true" /> Réessayer</button></div>
+        <div className="profile-favorites-error" role="alert"><span>Vos favoris n’ont pas pu être chargés. Vérifiez votre connexion puis réessayez.</span><button type="button" className="min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2" onClick={() => setRetry((value) => value + 1)}><RefreshCw aria-hidden="true" /> Réessayer</button></div>
       )}
       {!loading && !loadError && (!isConfigured || user) && shops.length === 0 && (
         <div className="profile-empty-state">
