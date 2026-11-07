@@ -48,7 +48,7 @@ def table(rows, widths):
     return result
 
 def header(title, subtitle):
-    return [p("DOSSIER DE LIVRAISON • MISE À JOUR 6 NOVEMBRE 2026", "KickerX"), p(title, "H1X"), p(subtitle), Spacer(1, 2*mm)]
+    return [p("DOSSIER DE LIVRAISON • MISE À JOUR 7 NOVEMBRE 2026", "KickerX"), p(title, "H1X"), p(subtitle), Spacer(1, 2*mm)]
 
 def draw_page(canvas, doc):
     canvas.saveState()
@@ -67,7 +67,7 @@ def draw_cover(canvas, doc):
     canvas.setFillColor(WHITE); canvas.setFont("Helvetica-Bold", 10); canvas.drawString(18*mm, A4[1]-28*mm, "FASOLINK")
     canvas.setFillColor(colors.HexColor("#D8D0C8")); canvas.setFont("Helvetica", 7)
     canvas.drawRightString(A4[0]-18*mm, A4[1]-28*mm, "CONFIDENTIEL • PRÉPARATION DE LIVRAISON")
-    canvas.drawString(18*mm, 12*mm, "Version actualisée | 6 novembre 2026")
+    canvas.drawString(18*mm, 12*mm, "Version actualisée | 7 novembre 2026")
     canvas.restoreState()
 
 class Doc(BaseDocTemplate):
@@ -86,7 +86,7 @@ def story():
     s += header("1. Situation actuelle", "Ce qui est en place, ce qui est vérifié et ce qui reste à prouver.")
     s += [table([
         ["Domaine", "État du code / de la démonstration", "État de clôture"],
-        ["Application", "Commit 1f1bd13 poussé sur origin/main; améliorations clavier de focus, lien de saut et palette en attente d'authentification Wrangler pour déployer. Le Worker publié reste à la version fe8d8a5c-d309-474c-b74f-e67ea4edb682 (commit 0ac8537); les routes principales répondaient HTTP 200 sur ce Worker au contrôle précédent.", "Accessibilité non publiée"],
+        ["Application", "Commit b77d52c poussé sur origin/main; améliorations clavier et recherche instantanée en attente d'authentification Wrangler pour déployer. Le Worker publié reste à la version fe8d8a5c-d309-474c-b74f-e67ea4edb682 (commit 0ac8537); les routes principales répondaient HTTP 200 sur ce Worker au contrôle précédent.", "Accessibilité non publiée"],
         ["Build Pages", "Le dernier résultat consulté pour Pages concernait le commit 3328929 et était Failure. Le résultat du push plus récent 8232cb6 n'a pas encore été vérifié dans Pages.", "Pipeline à réparer ou Pages à abandonner"],
         ["Règles", "Workflow Firebase 41238891242 échoué dans l'étape de tests; logs détaillés non accessibles.", "Règles non validées par tests"],
         ["Paiement", "Aucun secret sur le Worker applicatif; pas de clé CinetPay ni compte service configuré.", "Pas de transaction réelle testée"],
@@ -95,7 +95,7 @@ def story():
         ["Textes légaux", "Identité éditeur, adresse, email et responsable de publication à compléter.", "À faire avant ouverture"],
         ["Protection trafic", "Limiteur en mémoire, local à chaque isolate; Firebase Auth direct n'y passe pas.", "Protection globale à configurer"],
     ], [27*mm, 90*mm, 53*mm]), Spacer(1, 5*mm), p("Contrôles techniques", "H2X"),
-        p("ESLint, TypeScript et le build de production ont réussi le 6 novembre. Le commit 1f1bd13 est poussé sur origin/main, mais son déploiement est bloqué car Wrangler n'est pas authentifié; le Worker public reste à la version précédente fe8d8a5c-d309-474c-b74f-e67ea4edb682. Les routes principales répondaient HTTP 200 sur cette ancienne version. Le repère de focus clavier a été assombri et uniformisé (contraste calculé 4,93:1 sur le fond crème), le lien clavier Passer au contenu principal a été ajouté et la palette expose son aide et son raccourci aux technologies d'assistance; ces changements ne sont pas encore publics ni testés manuellement dans un navigateur. Le contrôle HTTP ne valide pas les parcours connectés ni les écritures Firebase. Le test local Firestore/Storage s'est arrêté faute de Java 21; le workflow GitHub a ensuite échoué dans son étape de test. Les journaux détaillés nécessitent un droit administrateur du dépôt."),
+        p("ESLint, TypeScript et le build de production ont réussi le 7 novembre. Le commit b77d52c est poussé sur origin/main, mais son déploiement est bloqué car Wrangler n'est pas authentifié; le Worker public reste à la version précédente fe8d8a5c-d309-474c-b74f-e67ea4edb682. Les routes principales répondaient HTTP 200 sur cette ancienne version. Le repère de focus clavier est plus contrasté (4,93:1 calculé sur le fond crème), le lien Passer au contenu principal et les descriptions ARIA de la palette sont ajoutés. La recherche instantanée expose sa boîte de dialogue, piège la navigation Tab pendant son ouverture, rend le focus au déclencheur et respecte la préférence de mouvement réduit. Ces changements ne sont pas encore publics ni testés manuellement dans un navigateur. Le contrôle HTTP ne valide pas les parcours connectés ni les écritures Firebase. Le test local Firestore/Storage s'est arrêté faute de Java 21; le workflow GitHub a ensuite échoué dans son étape de test. Les journaux détaillés nécessitent un droit administrateur du dépôt."),
         p("Conclusion", "H2X"),
         p("FasoLink peut être montré comme démonstration. Ne pas encore annoncer une mise en production commerciale prête à encaisser ni une sécurité certifiée.", "CalloutX"), PageBreak()]
 
@@ -108,7 +108,7 @@ def story():
         ["Worker cron", "Le dernier déploiement observé date du 14 septembre; il ne contient pas la cible modifiée depuis. Le POST API reçoit 401 sans secret côté application."],
         ["Données de démonstration", "Le script npm run seed injecte 9 boutiques toutes catégories, avec abonnements factices actifs. À ne pas lancer sur la base de production."],
         ["Pages Cloudflare", "Le dernier build observé sur le commit 3328929 était en échec. Le résultat Pages après les pushs 5ea6748, dff3acc, c8fbd80 et 8232cb6 n'a pas été consulté; la synchronisation reste à vérifier."],
-        ["Révision UI", "Palette et surfaces centralisées, Geist avec Sora, focus clavier, boutons à états, badges sémantiques. Catalogue : filtres tactiles, annonces accessibles et mouvements réduits. Connexion/Inscription : critères accessibles et chargement annoncé. Espace vendeur : placeholders et commandes tactiles. Profil : favoris avec états accessibles. Vitrine : avis tactiles et galerie au clavier. Fiche produit : retour Boutiques et contact contextualisé. Mes boutiques : filtres et synchronisation directe des vitrines, produits et licences. Inscription boutique : libellés explicites, progression accessible, photos JPG/PNG/WebP de moins de 5 Mo contrôlées avant envoi, limites de texte et mouvement réduit. Vérification : statuts en direct, reprise en cas d’erreur et justificatifs contrôlés. Pages hors connexion/404 : reprise au retour du réseau. Shell global : skeleton de chargement et secours page/layout. Palette de commandes clavier `Ctrl/⌘ + K`, recherche accent-insensible, destinations filtrées selon session et claim Super Admin. Les animations communes du menu, de la barre mobile, des panneaux, de l'invite d'installation et de sortie du splash respectent aussi `prefers-reduced-motion`. Le focus clavier contrasté, le lien de saut au contenu principal et les descriptions ARIA de la palette ont été ajoutés dans le commit 1f1bd13, en attente de déploiement."],
+        ["Révision UI", "Palette et surfaces centralisées, Geist avec Sora, focus clavier, boutons à états, badges sémantiques. Catalogue : filtres tactiles, annonces accessibles et mouvements réduits. Connexion/Inscription : critères accessibles et chargement annoncé. Espace vendeur : placeholders et commandes tactiles. Profil : favoris avec états accessibles. Vitrine : avis tactiles et galerie au clavier. Fiche produit : retour Boutiques et contact contextualisé. Mes boutiques : filtres et synchronisation directe des vitrines, produits et licences. Inscription boutique : libellés explicites, progression accessible, photos JPG/PNG/WebP de moins de 5 Mo contrôlées avant envoi, limites de texte et mouvement réduit. Vérification : statuts en direct, reprise en cas d’erreur et justificatifs contrôlés. Pages hors connexion/404 : reprise au retour du réseau. Shell global : skeleton de chargement et secours page/layout. Palette de commandes clavier `Ctrl/⌘ + K`, recherche accent-insensible, destinations filtrées selon session et claim Super Admin. Les animations communes du menu, de la barre mobile, des panneaux, de l'invite d'installation et de sortie du splash respectent aussi `prefers-reduced-motion`. Les améliorations du focus, du lien de saut, des descriptions de la palette et de la recherche instantanée sont poussées dans le commit b77d52c, en attente de déploiement."],
         ["Dossier client", "PDF de livraison actualisé avec les versions différentes, les tests réellement lancés, les coûts à confirmer et les étapes de recette."],
     ], [43*mm, 127*mm]), Spacer(1, 7*mm), p("Actions nécessitant les comptes du client", "H2X"),
         p("Le choix de l'adresse officielle, l'attribution du rôle Super Admin, les clés CinetPay/Firebase, l'activation de Storage et l'approbation d'un éventuel budget ne peuvent pas être inventés ou remplacés par du code local. Ces opérations doivent être faites par une personne autorisée dans les comptes correspondants."),
@@ -152,7 +152,7 @@ def story():
 
 if __name__ == "__main__":
     doc = Doc(str(OUT))
-    doc.title = "FasoLink - Dossier de finalisation commerciale - 6 novembre 2026"
+    doc.title = "FasoLink - Dossier de finalisation commerciale - 7 novembre 2026"
     doc.author = "FasoLink"
     doc.handle_nextPageTemplate("body")
     doc.build(story())
