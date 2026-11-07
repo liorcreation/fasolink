@@ -5,7 +5,7 @@ import { AppLink as Link } from "@/components/site/AppLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, CornerDownLeft, Search, Store, X } from "lucide-react";
 import type { ShopWithProducts } from "@/lib/database.types";
 import { CATEGORY_MAP } from "@/lib/constants";
@@ -56,6 +56,9 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
 
   // Le portail vers document.body ne peut être rendu qu'une fois monté côté
   // client (évite tout mismatch d'hydratation SSR).
@@ -78,8 +81,14 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
 
   useEffect(() => {
     if (open) {
+      returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : triggerRef.current;
       document.body.style.overflow = "hidden";
-      setTimeout(() => inputRef.current?.focus(), 20);
+      const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 20);
+      return () => {
+        window.clearTimeout(focusTimer);
+        document.body.style.overflow = "";
+        if (returnFocusRef.current?.isConnected) returnFocusRef.current.focus();
+      };
     } else {
       document.body.style.overflow = "";
     }
@@ -127,8 +136,13 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
     <>
       {/* Déclencheur : faux champ de recherche */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
+        aria-label="Rechercher un téléphone, un ordinateur, une boutique"
+        aria-haspopup="dialog"
+        aria-controls="fasolink-predictive-search-dialog"
+        aria-expanded={open}
         className="group flex w-full items-center gap-3 rounded-2xl border border-clay-200 bg-white/80 px-4 py-3.5 text-left shadow-premium backdrop-blur transition-all hover:border-faso-gold hover:shadow-premium-lg"
       >
         <Search className="h-5 w-5 text-ink-muted" />
@@ -153,17 +167,35 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
           <AnimatePresence>
             {open && (
               <motion.div
-                initial={{ opacity: 0 }}
+                id="fasolink-predictive-search-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Recherche rapide dans FasoLink"
+                onKeyDown={(event) => {
+                  if (event.key !== "Tab") return;
+                  const focusable = event.currentTarget.querySelectorAll<HTMLElement>('input:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+                  if (!focusable.length) return;
+                  const first = focusable[0];
+                  const last = focusable[focusable.length - 1];
+                  if (event.shiftKey && (document.activeElement === first || !event.currentTarget.contains(document.activeElement))) {
+                    event.preventDefault();
+                    last.focus();
+                  } else if (!event.shiftKey && (document.activeElement === last || !event.currentTarget.contains(document.activeElement))) {
+                    event.preventDefault();
+                    first.focus();
+                  }
+                }}
+                initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0 }}
                 className="fixed inset-0 z-[70] flex items-start justify-center bg-ink/50 p-4 backdrop-blur-sm sm:pt-24"
                 onClick={() => setOpen(false)}
               >
                 <motion.div
-                  initial={{ opacity: 0, y: -12, scale: 0.98 }}
+                  initial={reduceMotion ? false : { opacity: 0, y: -12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.98 }}
-                  transition={{ duration: 0.18 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -12, scale: 0.98 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.18 }}
                   onClick={(e) => e.stopPropagation()}
                   className="w-full max-w-xl overflow-hidden rounded-3xl border border-clay-100 bg-white shadow-premium-lg"
                 >
@@ -171,6 +203,7 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
                     <Search className="h-5 w-5 shrink-0 text-ink-muted" />
                     <input
                       ref={inputRef}
+                      aria-label="Rechercher des boutiques et des produits"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       onKeyDown={onInputKey}
