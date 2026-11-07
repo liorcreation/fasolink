@@ -10,8 +10,9 @@ La version de démonstration répond sur le Worker
 renvoie l'image de la hero récente; Pages ne la renvoie pas. Les contrôles HTTP
 du 31 octobre ont renvoyé 200 sur les pages principales des deux domaines.
 
-État Git : commit `b77d52c` poussé sur `origin/main`. Les améliorations
-d'accessibilité clavier de la recherche ne sont pas encore déployées. Le Worker reste à la version précédente
+État Git : commit `3a39d18` poussé sur `origin/main`. Les améliorations
+d'accessibilité clavier et le nouvel ajustement de contraste ne sont pas encore
+déployés. Le Worker reste à la version précédente
 `fe8d8a5c-d309-474c-b74f-e67ea4edb682` (commit `0ac8537`); les routes `/`,
 `/boutiques`, `/produits` et `/vendeur/dashboard` y répondaient HTTP 200 lors du
 contrôle précédent. Le déploiement de `308abe0` a été bloqué parce que Wrangler
@@ -54,6 +55,11 @@ encore des champs à compléter et le paiement réel n'a pas été testé.
   de réduction des animations. Lint, TypeScript et build réussis; la version
   est poussée dans `b77d52c`, mais son déploiement attend l’authentification
   Wrangler.
+- Les couleurs de texte vert et doré foncé ont été assombries dans les tokens
+  communs. Contrastes calculés sur blanc/crème : rouge 4,66:1 (crème), vert
+  4,81:1 (crème et texte blanc sur bouton vert), doré foncé 4,93:1 (crème).
+  Ces vérifications portent sur ces couples de tokens uniquement, pas sur tous
+  les composants; le changement est dans `3a39d18`, non encore déployé.
 - Une passe de fondation UI a centralisé les échelles rouge/or, les neutres
   chauds, les couleurs d'état, les rayons, ombres et durées. Geist est utilisé
   pour le texte et Sora pour les titres. Les boutons ont un état de chargement

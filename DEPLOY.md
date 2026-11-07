@@ -1,15 +1,16 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 7 novembre 2026 (accessibilité de la recherche instantanée, publication en attente).
+Dernière mise à jour : 7 novembre 2026 (contrastes de marque, publication en attente).
 
 ## Adresses actuellement publiées
 
 - Worker avec les dernières améliorations :
   `https://fasolink.jurisia-api.workers.dev`.
-- Dernier commit poussé : `b77d52c`. Le Worker publié est encore le commit
+- Dernier commit poussé : `3a39d18`. Le Worker publié est encore le commit
   `0ac8537`, version `fe8d8a5c-d309-474c-b74f-e67ea4edb682` : le déploiement
   du focus clavier, du lien « Passer au contenu principal », de la palette et de
-  la recherche instantanée attend une session Wrangler authentifiée.
+  la recherche instantanée et les contrastes de palette attendent une session
+  Wrangler authentifiée.
 - Les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondaient
   `200` sur cette version précédente au contrôle HTTP du 6 novembre.
 - Site Pages distinct : `https://fasolink.pages.dev` (répond encore mais n'a pas
