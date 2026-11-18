@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Download, QrCode } from "lucide-react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/Button";
  * Le QR pointe vers la fiche boutique ; le PNG téléchargeable est composé
  * avec l'identité FasoLink (couleurs drapeau + nom de la boutique).
  */
+const subscribeNothing = () => () => {};
+
 export function QRCodeCard({
   shopId,
   shopName,
@@ -21,10 +23,14 @@ export function QRCodeCard({
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
-  const url =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/boutiques/${shopId}`
-      : `https://fasolink.bf/boutiques/${shopId}`;
+  // Origine sûre pour l'hydratation : le serveur et le premier rendu client
+  // utilisent le domaine de repli, puis l'origine réelle est appliquée.
+  const origin = useSyncExternalStore(
+    subscribeNothing,
+    () => window.location.origin,
+    () => "https://fasolink.bf",
+  );
+  const url = `${origin}/boutiques/${shopId}`;
 
   const compose = useCallback(async () => {
     const dataUrl = await QRCode.toDataURL(url, {

@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useSafeReducedMotion } from "@/components/fx/motion";
 import {
   Building2,
   ArrowRight,
@@ -56,7 +57,7 @@ function isAllowedImage(file: File) {
 export function ShopRegistrationForm() {
   const router = useRouter();
   const { user, loading: authLoading, isConfigured } = useAuth();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
   const [form, setForm] = useState<FormState>(initial);
   const [logo, setLogo] = useState<File | null>(null);
   const [gallery, setGallery] = useState<File[]>([]);

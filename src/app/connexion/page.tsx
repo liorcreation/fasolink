@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AppLink as Link } from "@/components/site/AppLink";
 import { ArrowRight, Heart, MapPin, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { Backdrop } from "@/components/fx/Backdrop";
 
 export const metadata: Metadata = {
   title: "Connexion",
@@ -11,13 +12,12 @@ export const metadata: Metadata = {
 export default function ConnexionPage() {
   return (
     <div className="auth-page-shell">
-      <div className="auth-page-glow auth-page-glow-one" aria-hidden="true" />
-      <div className="auth-page-glow auth-page-glow-two" aria-hidden="true" />
+      <Backdrop />
       <div className="container-faso relative py-9 sm:py-14 lg:py-20">
         <div className="auth-page-grid">
           <section className="auth-story" aria-labelledby="auth-story-title">
             <span className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> La communauté FasoLink</span>
-            <h1 id="auth-story-title" className="auth-display-title">Le local vous attend.<br /><span>Reprenez le fil.</span></h1>
+            <h1 id="auth-story-title" className="auth-display-title">Le local vous attend.<br /><span className="font-serif-accent fx-text-gradient pr-1 text-[1.08em]">Reprenez le fil.</span></h1>
             <p className="auth-story-copy">Retrouvez vos boutiques favorites, explorez les talents près de vous et gardez vos échanges à portée de main.</p>
 
             <div className="auth-visual" aria-label="Aperçu de votre espace FasoLink">

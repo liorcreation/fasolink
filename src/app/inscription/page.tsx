@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AppLink as Link } from "@/components/site/AppLink";
 import { ArrowRight, Check, Heart, MapPin, MessageCircle, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { Backdrop } from "@/components/fx/Backdrop";
 
 export const metadata: Metadata = {
   title: "Créer un compte",
@@ -17,13 +18,12 @@ const benefits = [
 export default function InscriptionPage() {
   return (
     <div className="auth-page-shell auth-signup-shell">
-      <div className="auth-page-glow auth-page-glow-one" aria-hidden="true" />
-      <div className="auth-page-glow auth-page-glow-two" aria-hidden="true" />
+      <Backdrop />
       <div className="container-faso relative py-9 sm:py-14 lg:py-20">
         <div className="auth-page-grid">
           <section className="auth-story" aria-labelledby="signup-story-title">
             <span className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> L’aventure commence ici</span>
-            <h1 id="signup-story-title" className="auth-display-title">Votre prochain<br /><span>coup de cœur</span><br />est tout près.</h1>
+            <h1 id="signup-story-title" className="auth-display-title">Votre prochain<br /><span className="font-serif-accent fx-text-gradient pr-1 text-[1.08em]">coup de cœur</span><br />est tout près.</h1>
             <p className="auth-story-copy">Un compte gratuit pour découvrir, enregistrer et soutenir les commerces qui font vibrer le Burkina Faso.</p>
 
             <div className="auth-benefit-list">

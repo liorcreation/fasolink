@@ -143,10 +143,12 @@ export function PredictiveSearch({ shops }: { shops: ShopWithProducts[] }) {
         aria-haspopup="dialog"
         aria-controls="fasolink-predictive-search-dialog"
         aria-expanded={open}
-        className="group flex w-full items-center gap-3 rounded-2xl border border-clay-200 bg-white/80 px-4 py-3.5 text-left shadow-premium backdrop-blur transition-all hover:border-faso-gold hover:shadow-premium-lg"
+        className="group flex w-full items-center gap-3 rounded-[1.15rem] bg-white/90 py-2.5 pl-2.5 pr-3 text-left backdrop-blur transition-all hover:bg-white"
       >
-        <Search className="h-5 w-5 text-ink-muted" />
-        <span className="flex-1 text-sm text-ink-muted">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-ink text-white transition-transform duration-300 group-hover:rotate-[-8deg] group-hover:scale-105">
+          <Search className="h-[18px] w-[18px]" aria-hidden="true" />
+        </span>
+        <span className="flex-1 truncate text-sm text-ink-muted">
           Rechercher un téléphone, un ordinateur, une boutique…
         </span>
         <kbd className="hidden rounded-md border border-clay-200 bg-clay-50 px-1.5 py-0.5 text-[10px] font-semibold text-ink-muted sm:block">

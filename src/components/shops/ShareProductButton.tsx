@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Check, Copy, Share2 } from "lucide-react";
 
 export function ShareProductButton({ title, shopName }: { title: string; shopName: string }) {
@@ -59,6 +59,8 @@ export function ShareProductButton({ title, shopName }: { title: string; shopNam
     }
   };
 
+  const canNativeShare = useCanNativeShare();
+
   return (
     <div>
       <button
@@ -66,7 +68,7 @@ export function ShareProductButton({ title, shopName }: { title: string; shopNam
         onClick={share}
         className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-clay-200 bg-white px-4 text-xs font-extrabold text-ink-soft shadow-sm transition hover:-translate-y-0.5 hover:border-faso-gold hover:text-ink hover:shadow-premium"
       >
-        {copied ? <Check className="h-4 w-4 text-faso-green" aria-hidden="true" /> : navigatorShareIcon()}
+        {copied ? <Check className="h-4 w-4 text-faso-green" aria-hidden="true" /> : canNativeShare ? <Share2 className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
         {copied ? "Lien copié" : "Partager"}
       </button>
       <span className="sr-only" role="status" aria-live="polite">{copied ? "Lien de la fiche produit copié." : ""}</span>
@@ -74,8 +76,9 @@ export function ShareProductButton({ title, shopName }: { title: string; shopNam
   );
 }
 
-function navigatorShareIcon() {
-  return typeof navigator !== "undefined" && "share" in navigator
-    ? <Share2 className="h-4 w-4" aria-hidden="true" />
-    : <Copy className="h-4 w-4" aria-hidden="true" />;
+const subscribeNothing = () => () => {};
+
+/** Partage natif disponible ? `false` côté serveur et à l'hydratation (même HTML). */
+function useCanNativeShare() {
+  return useSyncExternalStore(subscribeNothing, () => "share" in navigator, () => false);
 }

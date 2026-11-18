@@ -7,9 +7,13 @@ import {
   ShieldCheck,
   Store,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Reveal } from "@/components/ui/Reveal";
+import { motion } from "framer-motion";
+import { useSafeReducedMotion } from "@/components/fx/motion";
+import { Backdrop } from "@/components/fx/Backdrop";
+import { RevealText } from "@/components/fx/RevealText";
 import { cn } from "@/lib/utils";
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export function PageHeader({
   eyebrow,
@@ -27,7 +31,7 @@ export function PageHeader({
   className?: string;
 }) {
   const centered = align === "center";
-  const reduce = useReducedMotion();
+  const reduce = useSafeReducedMotion();
   const Icon = icon
     ? {
         lock: LockKeyhole,
@@ -39,41 +43,38 @@ export function PageHeader({
     : null;
 
   return (
-    <section className={cn("relative overflow-hidden rounded-[2rem] border border-clay-200/70 bg-white/65 px-6 py-8 shadow-premium md:px-10 md:py-10", className)}>
-      <div className="page-ambient" aria-hidden="true" />
-      <motion.div
-        aria-hidden="true"
-        initial={reduce ? false : { opacity: 0, scale: 0.8 }}
-        animate={reduce ? undefined : { opacity: 1, scale: 1 }}
-        transition={reduce ? { duration: 0 } : { duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-faso-gold/15 blur-3xl"
-      />
-      <motion.div
-        aria-hidden="true"
-        initial={reduce ? false : { opacity: 0, x: 30 }}
-        animate={reduce ? undefined : { opacity: 1, x: 0 }}
-        transition={reduce ? { duration: 0 } : { duration: 0.8, delay: 0.12 }}
-        className="pointer-events-none absolute bottom-[-5rem] left-1/2 h-48 w-48 rounded-full bg-faso-green/10 blur-3xl"
-      />
-      <Reveal
-        className={cn(
-          "relative z-10",
-          centered ? "mx-auto max-w-3xl text-center" : "max-w-3xl text-left",
-        )}
-      >
-        <span className={cn("section-kicker", centered && "justify-center")}>
+    <section
+      className={cn(
+        "relative isolate overflow-hidden rounded-[2rem] border border-white/80 bg-white/55 px-6 py-10 shadow-[inset_0_1px_0_rgb(255_255_255/.9),0_30px_70px_-45px_rgb(26_17_9/.45)] md:rounded-[2.5rem] md:px-12 md:py-14",
+        className,
+      )}
+    >
+      <Backdrop />
+      <span aria-hidden="true" className="faso-brand-thread absolute inset-x-0 top-0 opacity-80" />
+      <div className={cn("relative z-10", centered ? "mx-auto max-w-3xl text-center" : "max-w-3xl text-left")}>
+        <motion.span
+          initial={reduce ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={reduce ? { duration: 0 } : { duration: 0.6, ease: EASE }}
+          className={cn("section-kicker", centered && "justify-center")}
+        >
           {Icon && <Icon className="h-3.5 w-3.5" aria-hidden="true" />}
           {eyebrow}
-        </span>
-        <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-[-0.05em] text-ink md:text-6xl">
-          {title}
+        </motion.span>
+        <h1 className="mt-5 text-4xl font-extrabold leading-[1.02] tracking-[-0.055em] text-ink md:text-6xl">
+          <RevealText text={title} delay={0.08} stagger={0.05} />
         </h1>
         {description && (
-          <p className="mt-5 text-base leading-7 text-ink-soft md:text-lg">
+          <motion.p
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reduce ? { duration: 0 } : { duration: 0.7, delay: 0.35, ease: EASE }}
+            className={cn("mt-5 text-base leading-7 text-ink-soft md:text-lg", centered && "mx-auto max-w-2xl")}
+          >
             {description}
-          </p>
+          </motion.p>
         )}
-      </Reveal>
+      </div>
     </section>
   );
 }

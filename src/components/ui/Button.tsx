@@ -3,20 +3,21 @@ import { forwardRef } from "react";
 import { LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "ghost" | "gold" | "outline" | "destructive";
+type Variant = "primary" | "secondary" | "ghost" | "gold" | "outline" | "destructive" | "ink";
 type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-faso-red text-white shadow-premium hover:bg-faso-red-dark hover:shadow-premium-lg hover:-translate-y-0.5",
+    "btn-shine bg-[linear-gradient(135deg,rgb(var(--faso-red))_0%,rgb(var(--faso-red-dark))_100%)] text-white shadow-[0_1px_0_rgb(255_255_255/.25)_inset,0_14px_34px_-16px_rgb(var(--faso-red)/.85)] hover:shadow-[0_1px_0_rgb(255_255_255/.25)_inset,0_20px_44px_-16px_rgb(var(--faso-red)/.9)] hover:-translate-y-0.5",
   secondary:
-    "bg-faso-green text-white shadow-premium hover:bg-faso-green-dark hover:-translate-y-0.5",
-  gold: "bg-faso-gold text-ink shadow-premium hover:bg-faso-gold-dark hover:text-white hover:-translate-y-0.5",
+    "btn-shine bg-faso-green text-white shadow-premium hover:bg-faso-green-dark hover:-translate-y-0.5",
+  gold: "btn-shine bg-[linear-gradient(135deg,#f8c46e_0%,rgb(var(--faso-gold))_55%,#e59a31_100%)] text-ink shadow-[0_1px_0_rgb(255_255_255/.45)_inset,0_14px_34px_-16px_rgb(var(--faso-gold)/.9)] hover:-translate-y-0.5 hover:shadow-[0_1px_0_rgb(255_255_255/.45)_inset,0_20px_44px_-16px_rgb(var(--faso-gold)/.95)]",
   outline:
-    "border border-ink/15 bg-white/90 text-ink shadow-sm hover:border-faso-red hover:text-faso-red hover:shadow-premium",
+    "border border-ink/15 bg-white/90 text-ink shadow-sm backdrop-blur hover:border-ink/30 hover:bg-white hover:shadow-premium hover:-translate-y-0.5",
   ghost: "text-ink hover:bg-clay-100",
   destructive:
     "bg-state-danger text-white shadow-premium hover:bg-faso-red-dark hover:shadow-premium-lg hover:-translate-y-0.5",
+  ink: "btn-shine bg-ink text-white shadow-[0_1px_0_rgb(255_255_255/.12)_inset,0_14px_34px_-18px_rgb(26_17_9/.8)] hover:-translate-y-0.5 hover:bg-[#2a1f15]",
 };
 
 const sizes: Record<Size, string> = {

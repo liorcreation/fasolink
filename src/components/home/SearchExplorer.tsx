@@ -27,6 +27,8 @@ import { ShopCard } from "@/components/shops/ShopCard";
 import { ShopGridSkeleton } from "@/components/ui/Skeletons";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Reveal } from "@/components/ui/Reveal";
+import { Backdrop } from "@/components/fx/Backdrop";
+import { RevealText } from "@/components/fx/RevealText";
 
 type GeoState = "off" | "loading" | "on" | "denied";
 const RADII = [3, 5, 10, 25];
@@ -39,7 +41,9 @@ export function SearchExplorer({
   electronicsOnly = false,
   eyebrow = "Explorer",
   heading = "Trouvez une boutique près de chez vous",
-  description = "Recherche instantanée parmi les commerçants vérifiés du Burkina Faso.",
+  description = "Recherche instantanée parmi les commerçants du Burkina Faso.",
+  accent,
+  variant = "section",
 }: {
   shops: ShopWithProducts[];
   initialCategory?: ShopCategory | "all";
@@ -49,7 +53,13 @@ export function SearchExplorer({
   eyebrow?: string;
   heading?: string;
   description?: string;
+  /** Fin de titre affichée en italique serif. */
+  accent?: string;
+  /** « page » : titre principal (h1) avec fond d'ambiance et repères. */
+  variant?: "section" | "page";
 }) {
+  const isPage = variant === "page";
+  const HeadingTag = isPage ? "h1" : "h2";
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<ShopCategory | "all">(initialCategory);
   const [city, setCity] = useState<string>("all");
@@ -193,24 +203,53 @@ export function SearchExplorer({
   }, [results, query]);
 
   return (
-    <section id={sectionId} className="container-faso scroll-mt-24 py-16 md:py-24">
-      <Reveal className="mx-auto max-w-2xl text-center">
-        <span className="text-sm font-bold uppercase tracking-widest text-faso-red">
-          {eyebrow}
-        </span>
-        <h2 className="mt-3 text-3xl font-bold text-ink md:text-4xl">
-          {heading}
-        </h2>
-        <p className="mt-3 text-ink-muted">
-          {description}
-        </p>
-      </Reveal>
+    <section
+      id={sectionId}
+      className={cn(
+        "container-faso relative isolate scroll-mt-24",
+        isPage ? "pb-16 pt-10 sm:pt-16 md:pb-24" : "py-20 md:py-28",
+      )}
+    >
+      {isPage && (
+        <div aria-hidden="true" className="pointer-events-none absolute -inset-x-48 top-0 -z-10 h-[44rem]">
+          <Backdrop />
+        </div>
+      )}
+      <div className="mx-auto max-w-3xl text-center">
+        <Reveal>
+          <span className="section-kicker">{eyebrow}</span>
+        </Reveal>
+        <HeadingTag
+          className={cn(
+            "fx-display mt-5 text-ink",
+            isPage ? "text-[clamp(2.6rem,6.4vw,5.4rem)]" : "text-[clamp(2.3rem,5vw,4rem)]",
+          )}
+        >
+          <RevealText inView={!isPage} text={heading} className="block" />
+          {accent && <span className="font-serif-accent fx-text-gradient block pb-1 text-[1.08em]">{accent}</span>}
+        </HeadingTag>
+        <Reveal delay={0.1}>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-ink-muted">{description}</p>
+        </Reveal>
+        {isPage && (
+          <Reveal delay={0.18}>
+            <dl className="mt-7 flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold text-ink-soft">
+              <PageStat value={shops.length} label={shops.length > 1 ? "boutiques tech" : "boutique tech"} />
+              <PageStat value={new Set(shops.map((shop) => shop.city).filter(Boolean)).size} label={new Set(shops.map((shop) => shop.city).filter(Boolean)).size > 1 ? "villes" : "ville"} />
+              <PageStat value={shops.reduce((total, shop) => total + shop.products.length, 0)} label="offres publiées" />
+            </dl>
+          </Reveal>
+        )}
+      </div>
 
       {/* Barre de recherche + géo */}
       <div className="mx-auto mt-10 max-w-3xl space-y-3">
-        <div className="card-premium flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
-          <div className="flex flex-1 items-center gap-3 rounded-2xl border border-clay-100 bg-clay-50/80 px-4 py-3 transition-all focus-within:border-faso-gold focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(244,169,60,0.12)]">
-            <Search className="h-5 w-5 shrink-0 text-ink-muted" />
+        <div className="rounded-[calc(1.4rem+1.5px)] bg-gradient-to-r from-faso-red/40 via-faso-gold/60 to-faso-green/40 p-[1.5px] shadow-[0_24px_60px_-30px_rgb(26_17_9/.45)]">
+        <div className="flex flex-col gap-2 rounded-[1.4rem] bg-white/95 p-2 backdrop-blur sm:flex-row sm:items-center">
+          <div className="flex flex-1 items-center gap-3 rounded-[1.1rem] px-2 py-1.5 transition-all focus-within:bg-clay-50/70">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-ink text-white" aria-hidden="true">
+              <Search className="h-[18px] w-[18px]" />
+            </span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -223,10 +262,10 @@ export function SearchExplorer({
             type="button"
             onClick={useMyLocation}
             className={cn(
-              "inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition-all active:scale-[0.98]",
+              "inline-flex min-h-12 items-center justify-center gap-2 rounded-[1.1rem] px-5 text-sm font-bold transition-all active:scale-[0.98]",
               geo === "on"
-                ? "bg-faso-green text-white"
-                : "bg-clay-50 text-ink-soft hover:bg-clay-100",
+                ? "bg-faso-green text-white shadow-[0_12px_28px_-14px_rgb(var(--faso-green)/.9)]"
+                : "bg-clay-100/80 text-ink hover:bg-clay-100",
             )}
           >
             {geo === "loading" ? (
@@ -236,6 +275,7 @@ export function SearchExplorer({
             )}
             Proche de moi
           </button>
+        </div>
         </div>
 
         {/* Ligne géo secondaire */}
@@ -261,7 +301,7 @@ export function SearchExplorer({
               )}
               <select
                 onChange={(e) => pickReferenceNeighborhood(e.target.value)}
-                className="rounded-full border border-clay-200 bg-white px-3 py-1.5 text-xs font-medium outline-none"
+                className="fx-select min-h-9 text-xs"
                 aria-label="Quartier de référence"
                 defaultValue=""
               >
@@ -543,6 +583,15 @@ export function SearchExplorer({
   );
 }
 
+function PageStat({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="fx-glass inline-flex flex-row-reverse items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5">
+      <dt>{label}</dt>
+      <dd className="grid h-7 min-w-7 place-items-center rounded-full bg-ink px-2 text-[11px] font-extrabold text-white">{value.toLocaleString("fr-FR")}</dd>
+    </div>
+  );
+}
+
 function NoResults({
   query,
   onReset,
@@ -602,9 +651,9 @@ function FilterChip({
         "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all",
         active
           ? tone === "green"
-            ? "border-transparent bg-faso-green text-white shadow-premium"
-            : "border-transparent bg-faso-gradient text-white shadow-premium"
-          : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink",
+            ? "border-transparent bg-faso-green text-white shadow-[0_10px_24px_-12px_rgb(var(--faso-green)/.8)]"
+            : "border-transparent bg-ink text-white shadow-[0_10px_24px_-12px_rgb(26_17_9/.7)]"
+          : "border-clay-200 bg-white/90 text-ink-soft hover:-translate-y-0.5 hover:border-ink/25 hover:text-ink",
         className,
       )}
     >
@@ -636,7 +685,7 @@ function LocationSelect({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-full border border-clay-200 bg-white px-3 py-1.5 text-xs font-medium outline-none disabled:opacity-50"
+        className="fx-select"
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -686,7 +735,7 @@ function SheetChip({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold transition-all active:scale-95",
         active
-          ? "border-transparent bg-faso-gradient text-white shadow-premium"
+          ? "border-transparent bg-ink text-white shadow-[0_10px_24px_-12px_rgb(26_17_9/.7)]"
           : "border-clay-200 bg-white text-ink-soft",
       )}
     >

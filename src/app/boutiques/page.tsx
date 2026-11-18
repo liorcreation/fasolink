@@ -11,9 +11,11 @@ export const metadata: Metadata = {
 export default async function BoutiquesPage({
   searchParams,
 }: {
-  searchParams?: { categorie?: string; q?: string };
+  // Next 16 : searchParams est une Promise et doit être attendue.
+  searchParams: Promise<{ categorie?: string; q?: string }>;
 }) {
-  const shops = (await fetchShops()).filter((shop) => shop.category === "electronique");
+  const [{ q }, allShops] = await Promise.all([searchParams, fetchShops()]);
+  const shops = allShops.filter((shop) => shop.category === "electronique");
 
-  return <RealtimeBoutiques initialShops={shops} initialQuery={searchParams?.q?.slice(0, 100) ?? ""} />;
+  return <RealtimeBoutiques initialShops={shops} initialQuery={typeof q === "string" ? q.slice(0, 100) : ""} />;
 }

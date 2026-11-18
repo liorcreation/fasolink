@@ -88,10 +88,13 @@ export function SplashScreen() {
             }}
           />
 
-          {/* Éclat au moment précis où le rivet d'or se pose */}
-          {!reduced && (
+          {/* Éclat au moment précis où le rivet d'or se pose. Toujours rendu
+              (structure identique serveur/client), simplement masqué en
+              mouvement réduit pour éviter un échec d'hydratation. */}
+          {(
             <motion.div
-              className="pointer-events-none absolute left-1/2 top-[44%] h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-[44%] h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
               style={{
                 background:
                   "radial-gradient(circle, rgba(251,198,106,0.9) 0%, rgba(251,198,106,0) 70%)",

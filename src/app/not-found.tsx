@@ -10,19 +10,20 @@ import {
 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
+import { Backdrop } from "@/components/fx/Backdrop";
 
 export default function NotFound() {
   return (
     <div className="container-faso py-8 sm:py-12 md:py-16">
       <div className="relative mx-auto grid max-w-6xl items-center gap-6 lg:grid-cols-[.92fr_1.08fr] lg:gap-8">
-        <Reveal className="relative isolate min-h-[300px] overflow-hidden rounded-[2rem] border border-clay-200/80 bg-[#1b2920] p-6 text-white shadow-premium-lg sm:min-h-[390px] sm:rounded-[2.5rem] sm:p-9 md:p-12">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_82%_14%,rgba(244,169,60,.25),transparent_34%),radial-gradient(ellipse_at_5%_100%,rgba(39,140,88,.28),transparent_42%)]" aria-hidden="true" />
+        <Reveal className="fx-night fx-beam relative isolate min-h-[300px] overflow-hidden rounded-[2rem] p-6 text-white shadow-[0_50px_100px_-60px_rgb(18_13_9/.9)] sm:min-h-[390px] sm:rounded-[2.5rem] sm:p-9 md:p-12">
+          <Backdrop dark />
           <div className="absolute right-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.18em] text-white/65 sm:right-8 sm:top-8">
             FasoLink <span className="text-faso-gold">·</span> 404
           </div>
           <div className="relative flex min-h-[250px] flex-col justify-center sm:min-h-[310px]">
             <div className="relative w-fit">
-              <span className="select-none text-[clamp(7rem,24vw,14rem)] font-black leading-[.78] tracking-[-.1em] text-white/[.96]">404</span>
+              <span className="fx-display fx-text-gradient-light select-none text-[clamp(7rem,24vw,14rem)] leading-[.8] tracking-[-.08em]">404</span>
               <div className="absolute -right-2 top-[-1.2rem] grid h-14 w-14 rotate-6 place-items-center rounded-2xl bg-faso-gold text-ink shadow-[0_14px_32px_-12px_rgba(244,169,60,.8)] sm:-right-4 sm:top-[-1.6rem] sm:h-16 sm:w-16">
                 <MapPin className="h-7 w-7" strokeWidth={2.4} />
               </div>
@@ -36,10 +37,10 @@ export default function NotFound() {
           </div>
         </Reveal>
 
-        <Reveal delay={0.08} y={16} className="rounded-[2rem] border border-clay-200/70 bg-white/85 p-6 shadow-premium backdrop-blur sm:rounded-[2.5rem] sm:p-9 md:p-11">
+        <Reveal delay={0.08} y={16} className="fx-glass rounded-[2rem] p-6 sm:rounded-[2.5rem] sm:p-9 md:p-11">
           <span className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> On vous remet sur la bonne voie</span>
-          <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-[-.04em] text-ink sm:text-4xl md:text-5xl">
-            Cette page a pris un autre chemin.
+          <h1 className="fx-display mt-5 text-[clamp(2.2rem,4.6vw,3.6rem)] text-ink">
+            Cette page a pris <span className="font-serif-accent fx-text-gradient pr-1 text-[1.08em]">un autre chemin.</span>
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-ink-soft sm:text-base sm:leading-8">
             Le lien est peut-être incomplet ou la page a été déplacée. Les boutiques et les savoir-faire du Burkina, eux, sont toujours à découvrir.

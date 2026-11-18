@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AppLink as Link } from "@/components/site/AppLink";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSafeReducedMotion } from "@/components/fx/motion";
+import { Backdrop } from "@/components/fx/Backdrop";
 import {
   ArrowRight,
   BadgeCheck,
@@ -63,7 +65,7 @@ function getProfileError(cause: unknown) {
 
 export function ProfilePanel() {
   const { user, loading, isConfigured, logout } = useAuth();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
   const [profile, setProfile] = useState<ProfileFields>(EMPTY_PROFILE);
   const [profileLoading, setProfileLoading] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -176,8 +178,9 @@ export function ProfilePanel() {
         <motion.header
           initial={reduceMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          className="profile-hero"
+          className="profile-hero fx-beam"
         >
+          <Backdrop dark />
           <div className="profile-hero-orb profile-hero-orb-one" aria-hidden="true" />
           <div className="profile-hero-orb profile-hero-orb-two" aria-hidden="true" />
           <div className="profile-hero-content">

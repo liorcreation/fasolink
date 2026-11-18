@@ -13,16 +13,18 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <div className="container-faso py-8 sm:py-12 md:py-16">
-      <Reveal className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] border border-clay-200/80 bg-white/90 shadow-premium-lg sm:rounded-[2.5rem]">
-        <div className="page-ambient" aria-hidden="true" />
+      <Reveal className="relative isolate mx-auto max-w-5xl overflow-hidden rounded-[2rem] border border-white/80 bg-white/60 shadow-[inset_0_1px_0_rgb(255_255_255/.9),0_40px_90px_-50px_rgb(26_17_9/.5)] sm:rounded-[2.5rem]">
+        <div aria-hidden="true" className="fx-grid" />
+        <div aria-hidden="true" className="fx-grain" />
+        <span aria-hidden="true" className="faso-brand-thread absolute inset-x-0 top-0 opacity-80" />
         <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full bg-faso-gold/15 blur-3xl" aria-hidden="true" />
         <div className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-faso-green/10 blur-3xl" aria-hidden="true" />
 
         <div className="relative grid items-center gap-8 p-6 sm:p-9 md:grid-cols-[minmax(0,1fr)_300px] md:gap-12 md:p-12">
           <div>
             <span className="section-kicker"><WifiOff className="h-3.5 w-3.5" /> Mode hors connexion</span>
-            <h1 className="mt-5 max-w-2xl text-4xl font-extrabold leading-[1.06] tracking-[-0.05em] text-ink sm:text-5xl md:text-6xl">
-              Le réseau a fait une pause.
+            <h1 className="fx-display mt-5 max-w-2xl text-[clamp(2.4rem,5.6vw,4.4rem)] text-ink">
+              Le réseau a fait <span className="font-serif-accent fx-text-gradient pr-1 text-[1.08em]">une pause.</span>
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-ink-soft sm:text-lg sm:leading-8">
               FasoLink n’arrive pas à joindre Internet pour le moment. Vérifiez votre connexion puis réessayez : nous vous ramènerons à votre navigation dès que possible.

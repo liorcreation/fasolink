@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useSafeReducedMotion } from "@/components/fx/motion";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -33,7 +34,7 @@ export function VerificationForm({
   demo?: boolean;
 }) {
   const router = useRouter();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
   const [docType, setDocType] = useState("cnib");
   const [docNumber, setDocNumber] = useState("");
   const [fullName, setFullName] = useState("");

@@ -2,7 +2,8 @@
 
 import { AppLink as Link } from "@/components/site/AppLink";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSafeReducedMotion } from "@/components/fx/motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -29,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/site/Logo";
 import { ButtonLink } from "@/components/ui/Button";
 import { CommandPalette } from "@/components/site/CommandPalette";
+import { ScrollProgress } from "@/components/fx/ScrollProgress";
 
 const SELLER_LINKS = [
   { href: "/vendeur/dashboard", label: "Tableau de bord", detail: "Pilotez votre boutique", icon: Gauge },
@@ -75,9 +77,21 @@ function QuickLink({
   );
 }
 
+function ActivePill({ active, reduce }: { active: boolean; reduce: boolean | null }) {
+  if (!active) return null;
+  return (
+    <motion.span
+      aria-hidden="true"
+      layoutId={reduce ? undefined : "navbar-active-pill"}
+      transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }}
+      className="absolute inset-0 -z-10 rounded-full bg-white shadow-[0_1px_0_#fff_inset,0_6px_18px_-10px_rgb(26_17_9/.45)] ring-1 ring-clay-200/70"
+    />
+  );
+}
+
 export function Navbar() {
   const pathname = usePathname() || "/";
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
   const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [sellerMenuOpen, setSellerMenuOpen] = useState(false);
@@ -139,31 +153,36 @@ export function Navbar() {
   }
 
   const activeLinkClass = (active: boolean) => cn(
-    "inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red",
-    active ? "bg-white text-ink shadow-sm" : "text-ink-soft hover:bg-white/75 hover:text-ink",
+    "relative inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red",
+    active ? "text-ink" : "text-ink-soft hover:text-ink",
   );
+
 
   return (
     <>
-    <header
-      className={cn(
-        "sticky top-0 z-50 border-b transition-all duration-300",
-        scrolled
-          ? "border-clay-100/80 bg-clay-50/90 shadow-[0_12px_32px_-26px_rgba(26,17,9,0.5)] backdrop-blur-xl"
-          : "border-transparent bg-clay-50/70 backdrop-blur-md",
-      )}
-    >
-      <nav aria-label="Navigation principale" className="container-faso flex h-16 items-center gap-4 md:h-[4.5rem]">
+    <header className="sticky top-0 z-50 px-2 pt-2 sm:px-3">
+      <div
+        className={cn(
+          "relative mx-auto max-w-[82rem] rounded-[1.35rem] border transition-[background-color,border-color,box-shadow] duration-500",
+          scrolled
+            ? "border-white/80 bg-[#fffdfa]/80 shadow-[0_1px_0_#fff_inset,0_18px_50px_-28px_rgba(26,17,9,0.45)] backdrop-blur-2xl backdrop-saturate-150"
+            : "border-transparent bg-transparent",
+        )}
+      >
+      <nav aria-label="Navigation principale" className="relative isolate flex h-14 items-center gap-4 px-3 sm:px-5 md:h-16">
         <Logo linked={false} />
 
-        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
+        <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1">
           <Link href="/" aria-current={pathname === "/" ? "page" : undefined} className={activeLinkClass(pathname === "/")}>
+            <ActivePill active={pathname === "/"} reduce={reduceMotion} />
             Accueil
           </Link>
           <Link href="/boutiques" aria-current={pathname.startsWith("/boutiques") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/boutiques"))}>
+            <ActivePill active={pathname.startsWith("/boutiques")} reduce={reduceMotion} />
             Boutiques
           </Link>
           <Link href="/produits" aria-current={pathname.startsWith("/produits") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/produits"))}>
+            <ActivePill active={pathname.startsWith("/produits")} reduce={reduceMotion} />
             <PackageSearch className="h-4 w-4" aria-hidden="true" />
             Produits
           </Link>
@@ -175,6 +194,7 @@ export function Navbar() {
               onClick={() => setSellerMenuOpen((open) => !open)}
               className={activeLinkClass(pathname.startsWith("/vendeur"))}
             >
+              <ActivePill active={pathname.startsWith("/vendeur")} reduce={reduceMotion} />
               <Store className="h-4 w-4" aria-hidden="true" />
               Espace vendeur
               <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", sellerMenuOpen && "rotate-180")} aria-hidden="true" />
@@ -207,21 +227,23 @@ export function Navbar() {
             </AnimatePresence>
           </div>
           <Link href="/profil" aria-current={pathname.startsWith("/profil") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/profil"))}>
+            <ActivePill active={pathname.startsWith("/profil")} reduce={reduceMotion} />
             <UserRound className="h-4 w-4" aria-hidden="true" />
             Mon profil
           </Link>
           {isSuperAdmin && (
             <Link href="/admin" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className={activeLinkClass(pathname.startsWith("/admin"))}>
+            <ActivePill active={pathname.startsWith("/admin")} reduce={reduceMotion} />
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
               Super Admin
             </Link>
           )}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-auto">
+        <div className="ml-auto flex shrink-0 items-center gap-2 lg:ml-0">
           <button type="button" onClick={() => setCommandPaletteOpen(true)} aria-label="Rechercher une page ou une action" aria-haspopup="dialog" aria-controls="fasolink-command-palette" aria-expanded={commandPaletteOpen} aria-keyshortcuts="Control+k Meta+k" title="Recherche rapide · Ctrl/⌘ K" className="hidden min-h-10 items-center gap-2 rounded-full border border-clay-200 bg-white/90 px-3 text-xs font-semibold text-ink-muted shadow-sm transition hover:border-faso-gold/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-red xl:inline-flex">
             <Search className="h-4 w-4 text-faso-red" aria-hidden="true" />
-            <span>Accès rapide</span>
+            <span className="hidden 2xl:inline">Accès rapide</span>
             <kbd className="rounded-md border border-clay-200 bg-clay-50 px-1.5 py-0.5 text-[10px]">Ctrl K</kbd>
           </button>
           {!user && (
@@ -229,7 +251,7 @@ export function Navbar() {
               Se connecter
             </Link>
           )}
-          <ButtonLink href="/vendeur/inscription" variant="outline" size="sm" className="hidden min-h-10 px-3.5 lg:inline-flex">
+          <ButtonLink href="/vendeur/inscription" variant="ink" size="sm" className="hidden min-h-10 px-4 lg:inline-flex">
             <Store className="h-4 w-4" />
             Ouvrir ma boutique
           </ButtonLink>
@@ -246,8 +268,10 @@ export function Navbar() {
           </button>
         </div>
       </nav>
-      <span aria-hidden="true" className="faso-brand-thread pointer-events-none absolute inset-x-0 bottom-0 opacity-70" />
-
+      <div aria-hidden="true" className={cn("pointer-events-none absolute inset-x-5 bottom-0 h-[2px] overflow-hidden rounded-full transition-opacity duration-500", scrolled ? "opacity-90" : "opacity-0")}>
+        <ScrollProgress />
+      </div>
+      </div>
     </header>
 
       <AnimatePresence>

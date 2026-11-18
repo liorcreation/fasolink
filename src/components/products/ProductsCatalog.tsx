@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { AppLink as Link } from "@/components/site/AppLink";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSafeReducedMotion } from "@/components/fx/motion";
 import {
   AudioLines,
   ArrowLeftRight,
@@ -23,6 +24,9 @@ import { ProductCard } from "@/components/shops/ProductCard";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { usePublicShopsRealtime } from "@/components/shops/PublicShopsRealtime";
 import { cn, formatCFA } from "@/lib/utils";
+import { Backdrop } from "@/components/fx/Backdrop";
+import { RevealText } from "@/components/fx/RevealText";
+import { Reveal } from "@/components/ui/Reveal";
 
 const FILTERS = [
   { id: "all", label: "Tout le catalogue", icon: Sparkles },
@@ -54,7 +58,7 @@ function availabilityLabel(value: AvailabilityFilter) {
 }
 
 export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProducts[] }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useSafeReducedMotion();
   const shops = usePublicShopsRealtime(initialShops);
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState<ProductFamily>("all");
@@ -135,73 +139,82 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
 
   return (
     <div className="relative overflow-hidden">
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-ink px-5 py-10 text-white shadow-premium-lg sm:rounded-[2.75rem] sm:px-8 sm:py-14 lg:px-14 lg:py-20">
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full bg-faso-red/35 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-36 left-1/3 h-96 w-96 rounded-full bg-faso-green/25 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.13)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.13)_1px,transparent_1px)] [background-size:42px_42px]" />
+      <section className="fx-night fx-beam relative isolate overflow-hidden rounded-[2rem] px-5 pb-20 pt-12 text-white shadow-[0_50px_100px_-60px_rgb(18_13_9/.9)] sm:rounded-[2.75rem] sm:px-10 sm:pb-24 sm:pt-16 lg:px-16 lg:pb-28 lg:pt-20">
+        <Backdrop dark />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[26rem] w-[26rem] rounded-full border border-white/10" />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 -z-10 h-[18rem] w-[18rem] rounded-full border border-white/[.06]" />
         <div className="relative max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-gold-soft backdrop-blur-sm">
-            <PackageSearch className="h-3.5 w-3.5" aria-hidden="true" /> Catalogue FasoLink
-          </span>
-          <h1 className="mt-5 max-w-2xl font-display text-4xl font-extrabold leading-[1.02] tracking-[-.055em] sm:text-5xl lg:text-7xl">
-            La tech du Faso,<br /><span className="text-faso-gold">à portée de main.</span>
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[.18em] text-faso-gold backdrop-blur-sm">
+              <PackageSearch className="h-3.5 w-3.5" aria-hidden="true" /> Catalogue FasoLink
+            </span>
+          </Reveal>
+          <h1 className="fx-display mt-6 text-[clamp(2.7rem,7vw,5.8rem)]">
+            <RevealText text="Toute la tech," className="block" delay={0.05} />
+            <span className="font-serif-accent fx-text-gradient-light block pb-1 text-[1.08em]">en un seul endroit.</span>
           </h1>
-          <p className="mt-5 max-w-2xl text-sm leading-7 text-white/70 sm:text-base sm:leading-8">
-            Tous les téléphones, ordinateurs et accessoires publiés par les boutiques tech vérifiées de FasoLink. Comparez les offres et échangez directement avec le vendeur.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3 text-xs font-bold text-white/65">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2"><Sparkles className="h-4 w-4 text-faso-gold" /> {catalog.length} produit{catalog.length === 1 ? "" : "s"} disponible{catalog.length === 1 ? "" : "s"}</span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2"><Store className="h-4 w-4 text-faso-green-soft" /> {shops.length} boutique{shops.length === 1 ? "" : "s"} tech</span>
-          </div>
+          <Reveal delay={0.15}>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-white/65 sm:leading-8">
+              Tous les téléphones, ordinateurs et accessoires publiés par les boutiques tech de FasoLink. Comparez les offres et échangez directement avec le vendeur.
+            </p>
+          </Reveal>
+          <Reveal delay={0.22}>
+            <div className="mt-8 flex flex-wrap items-center gap-2.5 text-xs font-bold text-white/75">
+              <span className="fx-glass-dark inline-flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5"><span className="grid h-7 min-w-7 place-items-center rounded-full bg-white px-2 text-[11px] font-extrabold text-ink">{catalog.length}</span> produit{catalog.length === 1 ? "" : "s"} publié{catalog.length === 1 ? "" : "s"}</span>
+              <span className="fx-glass-dark inline-flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5"><span className="grid h-7 min-w-7 place-items-center rounded-full bg-white px-2 text-[11px] font-extrabold text-ink">{shops.length}</span> boutique{shops.length === 1 ? "" : "s"} tech</span>
+              <span className="fx-glass-dark inline-flex items-center gap-2 rounded-full px-3.5 py-2.5"><ArrowLeftRight className="h-3.5 w-3.5 text-faso-gold" aria-hidden="true" /> Comparateur jusqu’à 3 appareils</span>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="relative -mt-6 px-3 sm:-mt-8 sm:px-8 lg:px-14" aria-label="Rechercher dans les produits">
-        <div className="rounded-[1.5rem] border border-clay-100 bg-[#fffdfa]/95 p-3 shadow-premium-lg backdrop-blur-xl sm:rounded-[2rem] sm:p-4">
+        <div className="fx-glass rounded-[1.6rem] p-3 sm:rounded-[2rem] sm:p-4">
           <div className="flex flex-col gap-3">
-            <label className="relative flex min-h-12 flex-1 items-center rounded-xl border border-clay-200 bg-white px-4 transition-colors focus-within:border-faso-gold focus-within:ring-2 focus-within:ring-faso-gold/15">
-              <Search className="mr-3 h-5 w-5 shrink-0 text-ink-muted" aria-hidden="true" />
+            <label className="relative flex min-h-14 flex-1 items-center rounded-[1.2rem] border border-clay-200 bg-white pl-2 pr-3 shadow-[0_1px_0_#fff_inset,0_10px_26px_-20px_rgb(26_17_9/.5)] transition-colors focus-within:border-faso-gold focus-within:ring-4 focus-within:ring-faso-gold/15">
+              <span className="mr-3 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-ink text-white" aria-hidden="true"><Search className="h-[18px] w-[18px]" /></span>
               <span className="sr-only">Rechercher</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un téléphone, un ordinateur, une boutique..." className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-ink-muted/70" />
               {query && <button type="button" onClick={() => setQuery("")} aria-label="Effacer la recherche" className="grid h-8 w-8 place-items-center rounded-full text-ink-muted transition hover:bg-clay-50 hover:text-ink"><X className="h-4 w-4" /></button>}
             </label>
             <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3">
               <label className="sr-only" htmlFor="product-availability">Disponibilité</label>
-              <select id="product-availability" value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+              <select id="product-availability" value={availability} onChange={(event) => setAvailability(event.target.value as AvailabilityFilter)} className="fx-select w-full min-w-0">
                 {(["all", "in_stock", "on_order", "out_of_stock"] as const).map((value) => <option key={value} value={value}>{availabilityLabel(value)}</option>)}
               </select>
               <label className="sr-only" htmlFor="product-shop">Boutique</label>
-              <select id="product-shop" value={shopId} onChange={(event) => setShopId(event.target.value)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+              <select id="product-shop" value={shopId} onChange={(event) => setShopId(event.target.value)} className="fx-select w-full min-w-0">
                 <option value="all">Toutes les boutiques</option>
                 {shopOptions.map((shop) => <option key={shop.id} value={shop.id}>{shop.name}</option>)}
               </select>
               {brandOptions.length > 0 && <>
                 <label className="sr-only" htmlFor="product-brand">Marque</label>
-                <select id="product-brand" value={brand} onChange={(event) => setBrand(event.target.value)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+                <select id="product-brand" value={brand} onChange={(event) => setBrand(event.target.value)} className="fx-select w-full min-w-0">
                   <option value="all">Toutes les marques</option>
                   {brandOptions.map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </>}
               <label className="sr-only" htmlFor="product-condition">État</label>
-              <select id="product-condition" value={condition} onChange={(event) => setCondition(event.target.value as ConditionFilter)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+              <select id="product-condition" value={condition} onChange={(event) => setCondition(event.target.value as ConditionFilter)} className="fx-select w-full min-w-0">
                 <option value="all">Tous les états</option>
                 <option value="new">Neuf</option>
                 <option value="used">Occasion</option>
                 <option value="refurbished">Reconditionné</option>
               </select>
               <label className="sr-only" htmlFor="product-sort">Trier les produits</label>
-              <select id="product-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)} className="min-h-11 w-full min-w-0 rounded-xl border border-clay-200 bg-white px-2.5 text-[11px] font-bold text-ink outline-none transition focus:border-faso-gold focus:ring-2 focus:ring-faso-gold/15 sm:px-3 sm:text-xs">
+              <select id="product-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)} className="fx-select w-full min-w-0">
                 <option value="recommended">Tri recommandé</option>
                 <option value="price-asc">Prix : croissant</option>
                 <option value="price-desc">Prix : décroissant</option>
                 <option value="newest">Plus récents</option>
               </select>
-              {hasFilters && <button type="button" onClick={clearFilters} className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-xs font-extrabold text-white transition hover:bg-faso-green-dark sm:col-span-1"><X className="h-3.5 w-3.5" /> Réinitialiser</button>}
+              {hasFilters && <button type="button" onClick={clearFilters} className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-extrabold text-white transition hover:-translate-y-0.5 sm:col-span-1"><X className="h-3.5 w-3.5" /> Réinitialiser</button>}
             </div>
           </div>
-          <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrer par famille de produits">
+          <div className="no-scrollbar mt-3 flex gap-1 overflow-x-auto rounded-full border border-clay-200/80 bg-clay-50/80 p-1" role="group" aria-label="Filtrer par famille de produits">
             {FILTERS.map(({ id, label, icon: Icon }) => (
-              <button key={id} type="button" onClick={() => setFamily(id)} aria-pressed={family === id} className={cn("inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-extrabold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2", family === id ? "border-ink bg-ink text-white shadow-md" : "border-clay-200 bg-white text-ink-soft hover:border-faso-gold hover:text-ink")}>
+              <button key={id} type="button" onClick={() => setFamily(id)} aria-pressed={family === id} className={cn("relative isolate inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-xs font-extrabold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold focus-visible:ring-offset-2", family === id ? "text-white" : "text-ink-soft hover:text-ink")}>
+                {family === id && <motion.span aria-hidden="true" layoutId={reduceMotion ? undefined : "catalog-family-pill"} transition={{ type: "spring", stiffness: 420, damping: 34 }} className="absolute inset-0 -z-10 rounded-full bg-ink shadow-[0_10px_24px_-12px_rgb(26_17_9/.7)]" />}
                 <Icon className="h-4 w-4" aria-hidden="true" /> {label}
               </button>
             ))}
@@ -213,9 +226,9 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="section-kicker"><Sparkles className="h-3.5 w-3.5" /> Sélection actuelle</p>
-            <h2 className="mt-3 font-display text-2xl font-extrabold tracking-[-.04em] text-ink sm:text-3xl">Les offres qui vous attendent</h2>
+            <h2 className="fx-display mt-4 text-[clamp(1.9rem,4vw,3rem)] text-ink">Les offres <span className="font-serif-accent fx-text-gradient pr-1 text-[1.08em]">qui vous attendent.</span></h2>
           </div>
-          <p className="text-sm font-semibold text-ink-muted" role="status" aria-live="polite" aria-atomic="true">{visible.length} résultat{visible.length === 1 ? "" : "s"}</p>
+          <p className="inline-flex w-fit items-center gap-2 rounded-full border border-clay-200 bg-white px-3.5 py-2 text-xs font-bold text-ink-soft shadow-sm" role="status" aria-live="polite" aria-atomic="true"><span className="grid h-6 min-w-6 place-items-center rounded-full bg-ink px-1.5 text-[11px] font-extrabold text-white">{visible.length}</span> résultat{visible.length === 1 ? "" : "s"}</p>
         </div>
 
         <AnimatePresence mode="wait" initial={false}>
@@ -245,14 +258,14 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
             exit={reduceMotion ? undefined : { opacity: 0, y: 24 }}
             className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] mx-auto max-w-2xl sm:bottom-6"
           >
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-ink px-4 py-3 text-white shadow-premium-lg sm:px-5">
+            <div className="fx-beam fx-night flex items-center justify-between gap-3 rounded-[1.4rem] px-4 py-3 text-white shadow-[0_30px_60px_-30px_rgb(18_13_9/.9)] sm:px-5">
               <div className="min-w-0">
                 <p className="text-sm font-extrabold">Comparateur FasoLink</p>
                 <p className="text-xs text-white/65">{compareItems.length}/3 appareil{compareItems.length > 1 ? "s" : ""} sélectionné{compareItems.length > 1 ? "s" : ""}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button type="button" onClick={() => setCompareIds([])} className="grid h-11 w-11 place-items-center rounded-xl text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-faso-gold" aria-label="Effacer la sélection"><Trash2 className="h-4 w-4" /></button>
-                <button type="button" onClick={() => setCompareOpen(true)} disabled={compareItems.length < 2} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-faso-gold px-4 text-xs font-extrabold text-ink transition hover:bg-faso-gold-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-50"><ArrowLeftRight className="h-4 w-4" /> Comparer</button>
+                <button type="button" onClick={() => setCompareOpen(true)} disabled={compareItems.length < 2} className="btn-shine inline-flex min-h-11 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#f8c46e,rgb(var(--faso-gold))_55%,#e59a31)] px-4 text-xs font-extrabold text-ink transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-50"><ArrowLeftRight className="h-4 w-4" /> Comparer</button>
               </div>
             </div>
           </motion.div>
@@ -285,7 +298,7 @@ export function ProductsCatalog({ initialShops }: { initialShops: ShopWithProduc
       </BottomSheet>
 
       <div className="mb-4 flex items-center justify-center gap-2 text-center text-xs font-semibold text-ink-muted"><MapPin className="h-4 w-4 text-faso-red" /> Des vendeurs tech proches de vous, au Burkina Faso.</div>
-      <Link href="/boutiques" className="mx-auto mb-12 flex w-fit items-center gap-2 rounded-full border border-clay-200 bg-white px-5 py-3 text-sm font-extrabold text-ink transition hover:-translate-y-0.5 hover:border-faso-gold hover:shadow-premium">Voir les boutiques <Store className="h-4 w-4" /></Link>
+      <Link href="/boutiques" className="btn-shine mx-auto mb-12 flex w-fit items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_14px_34px_-18px_rgb(26_17_9/.8)] transition hover:-translate-y-0.5">Voir les boutiques <Store className="h-4 w-4" /></Link>
     </div>
   );
 }

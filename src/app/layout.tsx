@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Sora } from "next/font/google";
+import { Geist, Instrument_Serif, Sora } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -9,6 +9,8 @@ import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { AutoRefresh } from "@/components/site/AutoRefresh";
+import { SpotlightTracker } from "@/components/fx/SpotlightTracker";
+import { MotionProvider } from "@/components/fx/motion";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -20,6 +22,14 @@ const sora = Sora({
   subsets: ["latin"],
   weight: ["600", "700", "800"],
   variable: "--font-display",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -72,7 +82,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${geist.variable} ${sora.variable}`} suppressHydrationWarning>
+    <html lang="fr" className={`${geist.variable} ${sora.variable} ${instrumentSerif.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -81,6 +91,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-dvh bg-clay-50 antialiased pb-bottom-nav lg:pb-0">
+        <MotionProvider>
         <AuthProvider>
           <a className="skip-to-content" href="#main-content">
             Passer au contenu principal
@@ -95,7 +106,9 @@ export default function RootLayout({
           <ServiceWorkerRegister />
           <InstallPrompt />
           <AutoRefresh />
+          <SpotlightTracker />
         </AuthProvider>
+        </MotionProvider>
       </body>
     </html>
   );

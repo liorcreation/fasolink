@@ -1,6 +1,7 @@
 "use client";
 
 import { AppLink as Link } from "@/components/site/AppLink";
+import { Backdrop } from "@/components/fx/Backdrop";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -189,16 +190,16 @@ export default function ShopSettingsPage() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative isolate overflow-hidden rounded-[2rem] bg-[#17120E] p-6 text-white shadow-premium-lg sm:p-8"
+            className="fx-night fx-beam relative isolate overflow-hidden rounded-[2rem] p-6 text-white shadow-[0_50px_100px_-60px_rgb(18_13_9/.9)] sm:rounded-[2.5rem] sm:p-10"
           >
-            <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_90%_0,rgba(220,166,55,.27),transparent_42%),radial-gradient(ellipse_at_0_100%,rgba(207,39,43,.2),transparent_45%)]" />
+            <Backdrop dark />
             <div className="flex items-start gap-4">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-faso-gold">
                 <Store className="h-6 w-6" />
               </span>
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#F3D88E]">Espace propriétaire</p>
-                <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Paramètres de la boutique</h1>
+                <h1 className="fx-display mt-3 text-[clamp(2rem,4.4vw,3.4rem)]">Paramètres <span className="font-serif-accent fx-text-gradient-light pr-1 text-[1.08em]">de la boutique.</span></h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">Gardez votre vitrine claire, actuelle et rassurante pour les acheteurs tech du Burkina Faso.</p>
               </div>
             </div>
