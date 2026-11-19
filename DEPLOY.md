@@ -1,18 +1,22 @@
 # Déploiement — FasoLink sur Cloudflare Workers et Firebase
 
-Dernière mise à jour : 7 novembre 2026 (contrastes de marque, publication en attente).
+Dernière mise à jour : 19 novembre 2026 (refonte premium de l'interface, publiée).
 
 ## Adresses actuellement publiées
 
 - Worker avec les dernières améliorations :
   `https://fasolink.jurisia-api.workers.dev`.
-- Dernier commit poussé : `3a39d18`. Le Worker publié est encore le commit
-  `0ac8537`, version `fe8d8a5c-d309-474c-b74f-e67ea4edb682` : le déploiement
-  du focus clavier, du lien « Passer au contenu principal », de la palette et de
-  la recherche instantanée et les contrastes de palette attendent une session
-  Wrangler authentifiée.
-- Les routes `/`, `/boutiques`, `/produits` et `/vendeur/dashboard` répondaient
-  `200` sur cette version précédente au contrôle HTTP du 6 novembre.
+- Worker publié le 18 novembre 2026 depuis le commit `124f9f7` (refonte premium
+  de l'interface), version `4f3e0ee7-9c06-42c5-9161-3a7710f5276c`. Cette
+  publication inclut aussi les améliorations restées en attente : focus clavier,
+  lien « Passer au contenu principal », palette de commandes, recherche
+  instantanée et contrastes de marque.
+- Version précédente, pour revenir en arrière si besoin :
+  `npx wrangler rollback fe8d8a5c-d309-474c-b74f-e67ea4edb682`.
+- Contrôle HTTP du 18 novembre après publication : `/`, `/boutiques`,
+  `/produits`, une vitrine, une fiche produit, `/vendeur/dashboard`,
+  `/connexion`, `/profil`, `/conditions` et `/offline` répondent `200`; une
+  adresse inexistante répond `404`.
 - Site Pages distinct : `https://fasolink.pages.dev` (répond encore mais n'a pas
   les mêmes fichiers ni la section vidéo récente).
 
@@ -37,14 +41,12 @@ et les variables de déploiement sur cette adresse.
 
 ## Secrets Cloudflare Workers
 
-`npm run deploy` construit correctement l'application, mais la publication de
-`308abe0` est bloquée : Wrangler indique qu'il n'est pas authentifié et qu'aucun
-`CLOUDFLARE_API_TOKEN` n'est défini. Après connexion Cloudflare dans
-l'environnement de déploiement autorisé, relancer `npm run deploy`. Ne jamais
-ajouter le jeton au dépôt ou au PDF.
+Wrangler est authentifié sur le poste de déploiement depuis le 18 novembre 2026 :
+`npm run deploy` construit et publie le Worker `fasolink`. Ne jamais ajouter de
+jeton Cloudflare au dépôt ou au PDF.
 
-Le dernier contrôle de `wrangler secret list` pour le Worker applicatif `fasolink`
-a renvoyé une liste vide. Pour le Worker cron, seul un secret nommé `CRON_SECRET`
+Le contrôle de `wrangler secret list` du 18 novembre 2026 pour le Worker
+applicatif `fasolink` renvoie toujours une liste vide. Pour le Worker cron, seul un secret nommé `CRON_SECRET`
 est présent. Un POST sans authentification à `/api/cron/expire` renvoie 401 : le
 Worker API n'a donc pas le secret partagé attendu. Ajouter les secrets seulement
 dans le compte Cloudflare autorisé,
@@ -111,11 +113,19 @@ npm run build
 npm run test:firebase-rules
 ```
 
-ESLint, TypeScript et le build de production ont réussi le 6 novembre 2026 pour
-l’interface de vérification boutique puis les pages d’état et les secours globaux.
-Le commit `a14868f` est poussé sur `origin/main`; le Worker est en version
-`2487f8e4-f2ca-4f6d-8ec7-e547442599f5`. Après déploiement, `/`, `/boutiques`,
-`/produits` et `/vendeur/dashboard` ont répondu HTTP 200. Le téléversement des images
+Publication du 18 novembre 2026 (commit `124f9f7`, refonte premium) : ESLint,
+TypeScript et le build de production ont réussi; `npm run test:firebase-rules`
+n'a pas pu s'exécuter faute de Java 21 sur ce poste (la refonte ne modifie pas
+les règles). Le Worker est en version `4f3e0ee7-9c06-42c5-9161-3a7710f5276c`.
+Toutes les pages ont été contrôlées en capture sur ordinateur (1440 px) et sur
+mobile (390 px), avec et sans réduction des animations, sans débordement ni
+erreur de console autre que l'avertissement Firestore connu sur les produits
+publics. L'espace vendeur, le tableau de bord et l'administration n'ont été vus
+que déconnectés : leur recette avec un compte réel reste à faire.
+
+OpenNext signale qu'il n'est pas pleinement compatible avec Windows; la
+publication du 18 novembre fonctionne, mais WSL est recommandé pour les
+prochaines. Le téléversement des images
 nécessite encore la recette Firebase Storage avec un compte vendeur. Le
 dernier build Pages vérifié concernait le commit `3328929` et était en échec;
 le résultat des pushs plus récents sur Pages n'a pas encore été vérifié. Après
