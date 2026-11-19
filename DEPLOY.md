@@ -45,21 +45,33 @@ Wrangler est authentifié sur le poste de déploiement depuis le 18 novembre 202
 `npm run deploy` construit et publie le Worker `fasolink`. Ne jamais ajouter de
 jeton Cloudflare au dépôt ou au PDF.
 
-Le contrôle de `wrangler secret list` du 18 novembre 2026 pour le Worker
-applicatif `fasolink` renvoie toujours une liste vide. Pour le Worker cron, seul un secret nommé `CRON_SECRET`
-est présent. Un POST sans authentification à `/api/cron/expire` renvoie 401 : le
-Worker API n'a donc pas le secret partagé attendu. Ajouter les secrets seulement
-dans le compte Cloudflare autorisé,
-jamais dans Git :
+Secrets configurés le 19 novembre 2026 (contrôlés avec `wrangler secret list`,
+qui n'affiche que les noms) :
 
-- `CINETPAY_API_KEY` et `CINETPAY_SITE_ID` : requis pour le checkout;
-- `FIREBASE_SERVICE_ACCOUNT` : requis pour les opérations serveur Firestore;
-- `CRON_SECRET` : requis pour le endpoint d'expiration;
-- `APP_BASE_URL` : URL HTTPS canonique;
-- `PAYMENT_WEBHOOK_SECRET` ou `CINETPAY_SECRET_KEY` : selon la signature mise à
-  disposition par le compte CinetPay;
-- `PEXELS_API_KEY` : seulement si la recherche d'images de substitution doit
-  fonctionner avec ce fournisseur.
+| Secret | Worker | État |
+| --- | --- | --- |
+| `APP_BASE_URL` | `fasolink` | Posé : `https://fasolink.jurisia-api.workers.dev` |
+| `FIREBASE_SERVICE_ACCOUNT` | `fasolink` | Posé depuis le fichier de compte de service local (ignoré par Git) |
+| `CRON_SECRET` | `fasolink` et `fasolink-expiry-cron` | Posé : nouvelle valeur aléatoire, identique sur les deux Workers |
+| `CINETPAY_API_KEY`, `CINETPAY_SITE_ID` | `fasolink` | Manquants : requis pour le checkout |
+| `PAYMENT_WEBHOOK_SECRET` ou `CINETPAY_SECRET_KEY` | `fasolink` | Manquant : l'un des deux est requis pour démarrer un paiement |
+| `PEXELS_API_KEY` | `fasolink` | Manquant, facultatif : recherche d'images de substitution seulement |
+
+Les clés CinetPay sont à saisir par le titulaire du compte, au clavier, sans
+passer par un fichier ni par Git :
+
+```powershell
+npx wrangler secret put CINETPAY_API_KEY --name fasolink
+npx wrangler secret put CINETPAY_SITE_ID --name fasolink
+npx wrangler secret put CINETPAY_SECRET_KEY --name fasolink
+```
+
+Chaque secret posé est actif immédiatement en production. Ne pas ouvrir les
+paiements avant la recette CinetPay ci-dessous.
+
+Si `APP_BASE_URL` change (domaine personnalisé), mettre à jour ce secret, la
+variable `API_URL` de `workers/wrangler.toml`, Firebase Authentication et les
+URL CinetPay en même temps.
 
 Les variables `NEXT_PUBLIC_FIREBASE_*` et `NEXT_PUBLIC_SITE_URL` sont publiques
 et doivent correspondre au projet et au domaine validés. Ne pas transformer un
@@ -83,12 +95,17 @@ navigateur. Cela ne remplace pas une recette avec le véritable compte marchand.
 
 ## Expiration automatique
 
-Le cron séparé se trouve dans `workers/`. Son fichier source vise maintenant le
-Worker actuel, mais le dernier déploiement visible date du 14 septembre : il
-n'inclut donc pas la cible modifiée ensuite. Après choix du domaine, redéployer
-avec `wrangler deploy --config workers/wrangler.toml`, configurer le même
-`CRON_SECRET` des deux côtés, puis déclencher une exécution contrôlée et vérifier
-la réponse de `/api/cron/expire`.
+Le cron séparé se trouve dans `workers/`. Il a été redéployé le 19 novembre 2026
+avec `wrangler deploy --config workers/wrangler.toml` (version
+`5e11e22f-4ba1-449f-a482-2693c52be0ab`) : il s'exécute chaque jour à 3 h UTC et
+appelle `https://fasolink.jurisia-api.workers.dev/api/cron/expire` avec le
+`CRON_SECRET` partagé.
+
+Contrôle du 19 novembre : `/api/cron/expire` répond 401 sans jeton et avec un
+mauvais jeton. Aucune exécution authentifiée n'a été déclenchée manuellement, car
+elle fait expirer de vrais abonnements. Vérifier la première exécution planifiée
+dans les journaux (`npx wrangler tail fasolink-expiry-cron`) ou dans le tableau
+de bord Cloudflare.
 
 ## Limitation des requêtes
 
