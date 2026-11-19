@@ -25,7 +25,7 @@ export function VideoShowcase() {
             <span className="section-kicker"><Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" /> Le film FasoLink</span>
           </Reveal>
           <h2 id="fasolink-video-title" className="fx-display mt-5 text-[clamp(2.3rem,5vw,4rem)] text-ink">
-            <RevealText inView text="Une minute pour" className="block" />
+            <RevealText inView text="45 secondes pour" className="block" />
             <span className="font-serif-accent fx-text-gradient block pb-1 text-[1.08em]">tout comprendre.</span>
           </h2>
           <Reveal delay={0.1}>
@@ -46,10 +46,10 @@ export function VideoShowcase() {
                 controls
                 preload="none"
                 playsInline
-                poster="/fasolink-video-poster.webp"
+                poster="/fasolink-film-poster.webp"
                 aria-label="Film de présentation de FasoLink, le catalogue tech du Burkina Faso"
               >
-                <source src="/FasoLink_Film_60s_1920x1080_partage.mp4" type="video/mp4" />
+                <source src="/FasoLink_Film_45s_1920x1080.mp4" type="video/mp4" />
                 Votre navigateur ne prend pas en charge la lecture vidéo.
               </video>
             </motion.div>
