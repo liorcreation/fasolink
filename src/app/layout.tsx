@@ -86,7 +86,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(()=>{var key="fasolink:splash-seen:v4",cookie="fasolink_splash_seen",seen=false;try{seen=sessionStorage.getItem(key)==="1";if(!seen)sessionStorage.setItem(key,"1")}catch(e){try{seen=document.cookie.split(";").some(function(p){return p.trim()===cookie+"=1"});if(!seen)document.cookie=cookie+"=1; Path=/; SameSite=Lax"}catch(_){seen=false}}window.__fasolinkSplashShouldPlay=!seen;if(seen)document.documentElement.dataset.fasolinkSplashSeen="true"})()`,
+            __html: `(()=>{var key="fasolink:splash-seen:v4",cookie="fasolink_splash_seen",seen=false;try{seen=sessionStorage.getItem(key)==="1";if(!seen)sessionStorage.setItem(key,"1")}catch(e){try{seen=document.cookie.split(";").some(function(p){return p.trim()===cookie+"=1"});if(!seen)document.cookie=cookie+"=1; Path=/; SameSite=Lax"}catch(_){seen=false}}if(/[?&]intro(=|&|$)/.test(location.search))seen=false;window.__fasolinkSplashShouldPlay=!seen;if(seen)document.documentElement.dataset.fasolinkSplashSeen="true"})()`,
           }}
         />
       </head>
