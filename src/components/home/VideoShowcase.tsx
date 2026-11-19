@@ -49,7 +49,7 @@ export function VideoShowcase() {
                 poster="/fasolink-film-poster.webp"
                 aria-label="Film de présentation de FasoLink, le catalogue tech du Burkina Faso"
               >
-                <source src="/FasoLink_Film_45s_1920x1080.mp4" type="video/mp4" />
+                <source src="/FasoLink_Film_45s_1920x1080_v2.mp4" type="video/mp4" />
                 Votre navigateur ne prend pas en charge la lecture vidéo.
               </video>
             </motion.div>
