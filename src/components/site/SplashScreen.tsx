@@ -13,7 +13,8 @@ import type { gsap as GsapInstance } from "gsap";
  * Contraintes conservées :
  * - lecture unique par session (décision prise par le script du layout avant
  *   le premier affichage, `window.__fasolinkSplashShouldPlay`) ;
- * - logo statique dans le HTML serveur, visible avant le JavaScript ;
+ * - écran noir uni dans le HTML serveur : rien du site ni du logo n'apparaît
+ *   avant que l'animation démarre (elle part elle-même du noir) ;
  * - sécurité CSS `.fasolink-splash` (masquage après 12 s quoi qu'il arrive) ;
  * - GSAP n'est téléchargé que si l'intro joue réellement ;
  * - clic ou Échap pour passer ; aucune intro si les animations sont réduites.
@@ -59,6 +60,21 @@ const MARK_STYLE = {
   transformStyle: "preserve-3d",
 } as CSSProperties;
 
+/**
+ * GSAP est demandé dès l'évaluation de ce module, sans attendre la fin de
+ * l'hydratation : l'écran noir initial est ainsi le plus court possible.
+ * Uniquement si l'intro va réellement jouer (décision du script du layout,
+ * animations non réduites) : les visiteurs qui reviennent ne le chargent pas.
+ */
+const gsapPreload: Promise<typeof import("gsap")> | null =
+  typeof window !== "undefined" &&
+  (window as Window & { __fasolinkSplashShouldPlay?: boolean }).__fasolinkSplashShouldPlay !== false &&
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? import("gsap")
+    : null;
+// Évite un rejet non géré si le préchargement échoue : l'effet gère l'échec.
+gsapPreload?.catch(() => undefined);
+
 export function SplashScreen() {
   const [visible, setVisible] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -102,7 +118,7 @@ export function SplashScreen() {
     } else {
       // Filet de sécurité si GSAP ne se charge pas (réseau très lent).
       timers.push(window.setTimeout(finish, 9000));
-      import("gsap")
+      (gsapPreload ?? import("gsap"))
         .then(({ gsap }) => {
           if (cancelled) return;
           context = gsap.context(() => {
@@ -183,18 +199,6 @@ export function SplashScreen() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,.65)_100%)]" />
       </div>
 
-      {/* Logo statique : présent dans le HTML serveur, avant tout JavaScript. */}
-      <div data-static className="absolute inset-0 flex flex-col items-center justify-center">
-        <svg viewBox="0 0 48 48" width="104" height="104">
-          <path d="M8 6h16l4 4v2H14v4h10v6H14v10H8z" fill="#F4EEE2" />
-          <path d="M24 22h6v14h8v2l-4 4h-10z" fill="#F4EEE2" />
-          <path d="m24 17 5 5-5 5-5-5z" fill="#FBC66A" />
-        </svg>
-        <div className="mt-4 font-display text-[1.4rem] leading-none tracking-[-0.03em] text-[#F4EEE2]">
-          <span className="font-medium">Faso</span>
-          <span className="font-extrabold">Link</span>
-        </div>
-      </div>
 
       {/* Scène animée (révélée par GSAP). */}
       <div data-stage className="invisible absolute inset-0 grid place-items-center" style={{ perspective: 1100 }}>
@@ -349,8 +353,7 @@ function buildIntro(gsap: Gsap, root: HTMLElement, done: () => void) {
   const tl = gsap.timeline({ defaults: { ease: "expo.out" }, onComplete: done });
 
   // 1. La nuit s'installe, le rayon d'or s'ouvre puis se referme.
-  tl.to(q("[data-static]"), { autoAlpha: 0, duration: 0.25, ease: "power1.out" }, 0)
-    .to(q("[data-bg]"), { opacity: 1, duration: 0.9, ease: "power2.out" }, 0)
+  tl.to(q("[data-bg]"), { opacity: 1, duration: 0.9, ease: "power2.out" }, 0)
     .fromTo(q("[data-floor]"), { opacity: 0 }, { opacity: 0.6, duration: 1.6, ease: "power3.out" }, 0.1)
     .to(q("[data-streak]"), { scaleX: 1, opacity: 1, duration: 0.55 }, 0.1)
     .to(q("[data-streak]"), { scaleX: 0, opacity: 0, duration: 0.4, ease: "expo.in" }, 0.6);
